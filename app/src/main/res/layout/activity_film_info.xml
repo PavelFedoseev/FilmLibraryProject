@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_gray"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:layout_editor_absoluteX="195dp"
+    tools:layout_editor_absoluteY="278dp"
+    tools:context=".FilmInfoActivity">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/layout_borders_margin"
+            android:background="@drawable/shape_rounded"
+            android:elevation="@dimen/element_box_elevation"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/textView_film_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_film_info"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="@dimen/view_spacing"
+                android:layout_marginEnd="@dimen/view_spacing"
+                android:layout_marginBottom="@dimen/view_spacing"
+                android:layout_marginTop="@dimen/film_spacing"
+                />
+            <TextView
+                android:id="@+id/textView_description"
+                android:layout_width="match_parent"
+                android:textSize="@dimen/text_film_info"
+                android:layout_alignTop="@id/textView_film_name"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/view_spacing"
+                android:layout_marginEnd="@dimen/view_spacing"
+                android:layout_marginTop="@dimen/button_size_height"
+                />
+
+
+        </RelativeLayout>
+    <EditText
+        android:id="@+id/editText_comment"
+        android:layout_width="match_parent"
+        android:hint="@string/edittext_comment_hint"
+        android:inputType="text"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/edittext_margin"
+        android:layout_marginEnd="@dimen/edittext_margin"
+        android:layout_marginBottom="@dimen/edittext_margin_bottom"
+        android:importantForAutofill="no"
+        android:elevation="@dimen/element_box_elevation"
+        app:layout_anchor="@id/button_like"
+        app:layout_dodgeInsetEdges="bottom"
+         />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/button_like"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/view_spacing"
+        android:src="@drawable/ic_baseline_thumb_up_alt_24"
+        app:layout_dodgeInsetEdges="bottom"
+        app:layout_anchorGravity="bottom|end"/>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
