@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="button_share">Invite friend</string>
+    <string name="button_info">Detail</string>
+    <string name="snackbar_like">I like</string>
+    <string name="snackbar_dont_like">I dont like</string>
+    <string name="edittext_comment_hint">Your comment</string>
+
+    <string name="label_library">Library</string>
+
+    <string name="message_share">I use this app to watch movie ratings: https://github.com/PavelFedoseev/FilmLibraryProject</string>
+
+    <string name="text_film_1">Joker</string>
+    <string name="text_description_1">Gotham, early 1980s. Comedian Arthur Fleck lives with a sick mother who teaches him from childhood to "walk with a smile." Trying to bring good things to the world and give people joy, Arthur is faced with human cruelty and gradually comes to the conclusion that this world will not receive a kind smile from him, but the grin of the villain Joker.</string>
+    <string name="text_film_2">Green Book</string>
+    <string name="text_description_2">1960s. After the closure of a New York nightclub for renovations, bouncer Tony, nicknamed Chatterbox, is looking for a part-time job for a couple of months. Just at this time, Don Shirley, a sophisticated socialite, a wealthy and talented black musician who plays classical music, is going on a tour of the southern states, where racist beliefs and segregation reigns. He hires Tony as a driver, bodyguard, and problem-solver. The two have so little in common that this trip will change the lives of both forever.</string>
+    <string name="text_film_3">Mulan</string>
+    <string name="text_description_3">A decree issued by the Emperor of China calling for one man from each family to serve in the army to protect the country from northern invaders inspires Mulan, the eldest daughter of an honorary warrior, to take the place of a sick father in the army. Disguising herself as a man, a girl is tested at every step, showing her inner strength and true potential. An epic journey awaits Mulan that will transform her into a valiant warrior, earn the respect of the people and become the pride of her father.</string>
+    <string name="text_film_4">Tenet</string>
+    <string name="text_description_4">After the terrorist attack at the Kiev Opera House, a CIA agent teams up with British intelligence to confront a Russian oligarch who made a fortune in the arms trade. To do this, agents use time inversion - a technology of the future that allows time to go backwards. </string>
+</resources>

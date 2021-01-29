@@ -6,6 +6,8 @@
     <string name="snackbar_dont_like">Не нравится</string>
     <string name="edittext_comment_hint">Ваш комментарий</string>
 
+    <string name="label_library">Библиотека</string>
+
     <string name="message_share">Я пользуюсь этим приложением для просмотров рейтинга фильмов: https://github.com/PavelFedoseev/FilmLibraryProject</string>
 
     <string name="text_film_1">Джокер</string>

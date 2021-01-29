@@ -18,15 +18,15 @@ class FilmInfoActivity : AppCompatActivity() {
         const val TAG_FILM = "TAG_FILM_ELEMENT"
         const val TAG_FILM_POS = "TAG_FILM_POSITION"
 
-        fun startActivity(activity: Activity, filmElement: FilmElement, position: Int){
+        fun startActivity(activity: Activity, filmItem: FilmItem, position: Int){
             Intent(activity, FilmInfoActivity::class.java).apply{
-                putExtra(TAG_FILM, filmElement)
+                putExtra(TAG_FILM, filmItem)
                 putExtra(TAG_FILM_POS, position)
                 activity.startActivityForResult(this, CODE_FILM_INFO)
             }
         }
     }
-    var filmElement: FilmElement? = null
+    var filmItem: FilmItem? = null
     var position = 0
 
     lateinit var textViewDescriprion: TextView
@@ -40,28 +40,28 @@ class FilmInfoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_film_info)
         initViews()
 
-        filmElement = intent.getParcelableExtra(TAG_FILM)
+        filmItem = intent.getParcelableExtra(TAG_FILM)
         position = intent.getIntExtra(TAG_FILM_POS, 0)
-        thumbUp_Select(filmElement?.isLiked ?: true)
+        thumbUp_Select(filmItem?.isLiked ?: true)
 
-        textViewName.text = filmElement?.name
+        textViewName.text = filmItem?.name
 
-        textViewDescriprion.text = filmElement?.description
-        editText_comment.setText(filmElement?.user_comment)
+        textViewDescriprion.text = filmItem?.description
+        editText_comment.setText(filmItem?.user_comment)
 
         buttonLike.setOnClickListener {
 
-            if(filmElement?.isLiked != false){
+            if(filmItem?.isLiked != false){
                 Snackbar.make(coordinatorLayout, getString(R.string.snackbar_dont_like), Snackbar.LENGTH_SHORT).show()
-                filmElement?.isLiked = false
+                filmItem?.isLiked = false
                 buttonLike.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.teal_700, null))
             }
             else{
                 Snackbar.make(coordinatorLayout, getString(R.string.snackbar_like), Snackbar.LENGTH_SHORT).show()
-                filmElement?.isLiked = true
+                filmItem?.isLiked = true
                 buttonLike.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.cyan, null))
             }
-            thumbUp_Select(filmElement?.isLiked ?: true)
+            thumbUp_Select(filmItem?.isLiked ?: true)
             saveResults()
         }
         editText_comment.addTextChangedListener(object :TextWatcher{
@@ -74,7 +74,7 @@ class FilmInfoActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                filmElement?.user_comment = p0?.toString()
+                filmItem?.user_comment = p0?.toString()
                 saveResults()
             }
         })
@@ -82,7 +82,7 @@ class FilmInfoActivity : AppCompatActivity() {
 
     private fun saveResults(){
         setResult(Activity.RESULT_OK, Intent().apply {
-            putExtra(TAG_FILM, filmElement)
+            putExtra(TAG_FILM, filmItem)
             putExtra(TAG_FILM_POS, position)
         })
     }
