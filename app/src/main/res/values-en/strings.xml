@@ -5,6 +5,9 @@
     <string name="snackbar_like">I like</string>
     <string name="snackbar_dont_like">I dont like</string>
     <string name="edittext_comment_hint">Your comment</string>
+    <string name="text_exit_dialog">Exit the application?</string>
+    <string name="button_exit_accept">Exit</string>
+    <string name="button_exit_dismiss">Cancel</string>
 
     <string name="label_library">Library</string>
 

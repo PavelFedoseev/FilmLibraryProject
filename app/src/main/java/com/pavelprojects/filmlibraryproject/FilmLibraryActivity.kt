@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -51,17 +52,17 @@ class FilmLibraryActivity : AppCompatActivity() {
             list_of_films.add(FilmItem(getString(R.string.text_film_4), getString(R.string.text_description_4), R.drawable.tenet, false))
         }
 
-        val adapter = FilmAdapter(list_of_films, object : FilmAdapter.FilmClickListener{
-            override fun onItemCLick(filmItem: FilmItem) {
+        val adapter = FilmAdapter(list_of_films, object : FilmAdapter.FilmClickListener(){
+            override fun onLikeClick(filmItem: FilmItem, position: Int) {
 
             }
 
-            override fun onLikeClick(filmItem: FilmItem) {
-                //TODO("Not yet implemented")
+            override fun onDetailClick(filmItem: FilmItem, position: Int) {
+
             }
 
-            override fun onDetailClick(filmItem: FilmItem) {
-                FilmInfoActivity.startActivity(this@FilmLibraryActivity, filmItem, list_of_films.indexOf(filmItem) + 1 )// + 1 = header
+            override fun onDoubleClick(filmItem: FilmItem, position: Int) {
+                Toast.makeText(baseContext, "Нравится", Toast.LENGTH_SHORT).show()
             }
         })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup(){
@@ -81,15 +82,10 @@ class FilmLibraryActivity : AppCompatActivity() {
 
     }
 
-    private fun changeTextViewColors(i: Int){
-
-    }
-
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         selected_film_num = savedInstanceState.getInt(KEY_SELECTED_FILM)
         list_of_films = savedInstanceState.getParcelableArrayList<FilmItem>(KEY_FILM_LIST) as ArrayList<FilmItem>
-        changeTextViewColors(selected_film_num)
     }
 
     private fun initViews(){
@@ -126,5 +122,18 @@ class FilmLibraryActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        ExitDialog.createDialog(supportFragmentManager, object : ExitDialog.OnDialogClickListener {
+            override fun onAcceptButtonCLick() {
+                finish()
+            }
+
+            override fun onDismissButtonClick() {
+                
+            }
+
+        })
     }
 }

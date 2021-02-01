@@ -5,6 +5,9 @@
     <string name="snackbar_like">Нравится</string>
     <string name="snackbar_dont_like">Не нравится</string>
     <string name="edittext_comment_hint">Ваш комментарий</string>
+    <string name="text_exit_dialog">Завершенить работу?</string>
+    <string name="button_exit_accept">Выйти</string>
+    <string name="button_exit_dismiss">Отмена</string>
 
     <string name="label_library">Библиотека</string>
 
