@@ -4,7 +4,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
@@ -15,10 +15,12 @@ class FilmLibraryActivity : AppCompatActivity() {
     companion object {
         const val KEY_SELECTED_FILM = "selected_movie"
         const val KEY_FILM_LIST = "FILM_LIST"
+        const val KEY_LIKED_FILM_LIST = "LIKED_FILM_LIST"
     }
 
     var selected_film_num : Int = 0
     var list_of_films = arrayListOf<FilmItem>()
+    var list_of_liked_films = arrayListOf<FilmItem>()
 
     var orientation : Int = 0
 
@@ -31,7 +33,7 @@ class FilmLibraryActivity : AppCompatActivity() {
         orientation = resources.configuration.orientation
 
         initViews()
-        findViewById<Button>(R.id.button_invite).setOnClickListener {
+        findViewById<View>(R.id.button_invite).setOnClickListener {
             val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_TEXT, resources.getString(R.string.message_share))
@@ -39,6 +41,9 @@ class FilmLibraryActivity : AppCompatActivity() {
             }
 
             startActivity(Intent.createChooser(sendIntent, null))
+        }
+        findViewById<View>(R.id.button_favorite).setOnClickListener{
+            supportFragmentManager.beginTransaction().add(FavoriteFilmsFragment(), FavoriteFilmsFragment.TAG).commit()
         }
 
     }
@@ -58,11 +63,27 @@ class FilmLibraryActivity : AppCompatActivity() {
             }
 
             override fun onDetailClick(filmItem: FilmItem, position: Int) {
-
+                FilmInfoActivity.startActivity(this@FilmLibraryActivity, filmItem, position)
             }
 
             override fun onDoubleClick(filmItem: FilmItem, position: Int) {
-                Toast.makeText(baseContext, "Нравится", Toast.LENGTH_SHORT).show()
+
+                if(filmItem.isLiked) {
+                    list_of_liked_films.remove(filmItem)
+                    filmItem.isLiked = false
+                    Toast.makeText(baseContext, "Не нравится", Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    filmItem.isLiked = true
+                    if(list_of_liked_films.contains(filmItem))
+                        list_of_liked_films[list_of_liked_films.indexOf(filmItem)] = filmItem
+                    else
+                        list_of_liked_films.add(filmItem)
+                    Toast.makeText(baseContext, "Нравится", Toast.LENGTH_SHORT).show()
+                }
+                list_of_films[position - 1] = filmItem
+
+                recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
             }
         })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup(){
@@ -78,6 +99,7 @@ class FilmLibraryActivity : AppCompatActivity() {
             }
         }
         recyclerView.adapter = adapter
+        recyclerView.itemAnimator = FilmItemAnimator(this)
 
 
     }
@@ -86,6 +108,7 @@ class FilmLibraryActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         selected_film_num = savedInstanceState.getInt(KEY_SELECTED_FILM)
         list_of_films = savedInstanceState.getParcelableArrayList<FilmItem>(KEY_FILM_LIST) as ArrayList<FilmItem>
+        list_of_liked_films = savedInstanceState.getParcelableArrayList<FilmItem>(KEY_LIKED_FILM_LIST) as ArrayList<FilmItem>
     }
 
     private fun initViews(){
@@ -103,6 +126,7 @@ class FilmLibraryActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_SELECTED_FILM, selected_film_num)
         outState.putParcelableArrayList(KEY_FILM_LIST, list_of_films)
+        outState.putParcelableArrayList(KEY_LIKED_FILM_LIST, list_of_liked_films)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -115,8 +139,8 @@ class FilmLibraryActivity : AppCompatActivity() {
                     if(element!=null){
                         list_of_films[position - 1] = element
 
-                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_ISLIKE+list_of_films[position].isLiked)
-                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_COMMENT+list_of_films[position].user_comment)
+                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_ISLIKE+list_of_films[position - 1].isLiked)
+                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_COMMENT+list_of_films[position - 1].user_comment)
                     }
 
                 }

@@ -15,6 +15,7 @@
         android:layout_margin="@dimen/layout_borders_margin"
         android:orientation="vertical">
         <FrameLayout
+            android:id="@+id/frameLayout_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -26,6 +27,13 @@
             android:layout_gravity="center"
             android:src="@drawable/joker"
             tools:src="@drawable/no_image" />
+            <ImageView
+                android:id="@+id/imageView_like"
+                android:layout_width="@dimen/like_anim_scale"
+                android:layout_height="@dimen/like_anim_scale"
+                android:layout_gravity="center"
+                android:visibility="gone"/>
+
         </FrameLayout>
 
         <TextView

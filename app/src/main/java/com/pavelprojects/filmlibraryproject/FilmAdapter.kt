@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -66,11 +67,13 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener): Re
     }
 
     class FilmItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+        val imageView_like : ImageView = itemView.findViewById(R.id.imageView_like)
         val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val titleTv: TextView = itemView.findViewById(R.id.textView_name)
         val detailButton: Button = itemView.findViewById(R.id.button_detail)
-
+        var item : FilmItem? = null
         fun bindView(item: FilmItem){
+            this.item = item
             imageView.setImageResource(item.icon_id)
             titleTv.text = item.name
         }

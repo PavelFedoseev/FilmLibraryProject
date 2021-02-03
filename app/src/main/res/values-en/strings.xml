@@ -8,6 +8,7 @@
     <string name="text_exit_dialog">Exit the application?</string>
     <string name="button_exit_accept">Exit</string>
     <string name="button_exit_dismiss">Cancel</string>
+    <string name="button_favorite">Favorite</string>
 
     <string name="label_library">Library</string>
 
