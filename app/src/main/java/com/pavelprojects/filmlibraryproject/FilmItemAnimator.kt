@@ -35,8 +35,8 @@ class FilmItemAnimator(val context: Context): DefaultItemAnimator() {
     }
 
     private fun animateLikeIcon(holder : FilmAdapter.FilmItemViewHolder, resId: Int){
-        holder.imageView_like.visibility = View.VISIBLE
-        holder.imageView_like.setImageResource(resId)
+        holder.imageViewLike.visibility = View.VISIBLE
+        holder.imageViewLike.setImageResource(resId)
 
         val animationIn = AnimationUtils.loadAnimation(context, R.anim.anim_like_1)
         val animationOut = AnimationUtils.loadAnimation(context, R.anim.anim_like_2)
@@ -46,7 +46,7 @@ class FilmItemAnimator(val context: Context): DefaultItemAnimator() {
             }
 
             override fun onAnimationEnd(p0: Animation?) {
-                holder.imageView_like.startAnimation(animationOut)
+                holder.imageViewLike.startAnimation(animationOut)
             }
 
             override fun onAnimationRepeat(p0: Animation?) {
@@ -59,14 +59,14 @@ class FilmItemAnimator(val context: Context): DefaultItemAnimator() {
             }
 
             override fun onAnimationEnd(p0: Animation?) {
-                holder.imageView_like.visibility = View.GONE
+                holder.imageViewLike.visibility = View.GONE
             }
 
             override fun onAnimationRepeat(p0: Animation?) {
 
             }
         })
-        holder.imageView_like.startAnimation(animationIn)
+        holder.imageViewLike.startAnimation(animationIn)
     }
 
     override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder, payloads: MutableList<Any>) = true

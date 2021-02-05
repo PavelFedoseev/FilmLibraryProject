@@ -10,7 +10,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:layout_editor_absoluteX="195dp"
     tools:layout_editor_absoluteY="278dp"
-    tools:context=".FilmInfoActivity">
+    tools:context=".FilmInfoFragment">
 
 
         <RelativeLayout

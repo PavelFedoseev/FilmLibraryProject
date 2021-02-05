@@ -33,7 +33,7 @@ class FavoriteFilmsFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        list_of_favorite = (activity as FilmLibraryActivity).list_of_liked_films
+        list_of_favorite = (activity as FilmLibraryActivity).listOfLikedFilms
     }
 
     private fun initRecycler(){
@@ -43,7 +43,7 @@ class FavoriteFilmsFragment : Fragment() {
             }
 
             override fun onDetailClick(filmItem: FilmItem, position: Int) {
-                FilmInfoActivity.startActivity(activity!!.parent, filmItem, position)
+                //FilmInfoActivity.startActivity(activity!!.parent, filmItem, position)
             }
 
             override fun onDoubleClick(filmItem: FilmItem, position: Int) {
