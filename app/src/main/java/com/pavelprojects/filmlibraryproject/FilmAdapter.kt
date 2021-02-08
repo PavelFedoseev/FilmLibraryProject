@@ -43,13 +43,13 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
             val item = list[position - 1]
             holder.bindView(item)
             holder.itemView.setOnClickListener {
-                listener.onItemCLick(item, position)
+                listener.onItemClick(item, position)
             }
             holder.detailButton.setOnClickListener {
                 listener.onDetailClick(item, position)
             }
             holder.titleTv.setOnClickListener {
-                listener.onItemCLick(item, position)
+                listener.onItemClick(item, position)
             }
         }
     }
@@ -86,8 +86,7 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
     }
 
     interface FilmClickInterface {
-        fun onItemCLick(filmItem: FilmItem, position: Int)
-        fun onLikeClick(filmItem: FilmItem, position: Int)
+        fun onItemClick(filmItem: FilmItem, position: Int)
         fun onDetailClick(filmItem: FilmItem, position: Int)
     }
 
@@ -96,7 +95,7 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
             private const val DOUBLE_CLICK_DELTA = 300 //milleseconds interaval between clicks
         }
         private var lastClickTime: Long = 0
-        override fun onItemCLick(filmItem: FilmItem, position: Int) {
+        override fun onItemClick(filmItem: FilmItem, position: Int) {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastClickTime < DOUBLE_CLICK_DELTA) {
                 onDoubleClick(filmItem, position)

@@ -1,14 +1,11 @@
 package com.pavelprojects.filmlibraryproject
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 
-class FilmLibraryActivity : AppCompatActivity() {
+class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickListener{
 
     companion object {
-        const val KEY_SELECTED_FILM = "selected_movie"
         const val KEY_FILM_LIST = "FILM_LIST"
         const val KEY_LIKED_FILM_LIST = "LIKED_FILM_LIST"
     }
@@ -25,17 +22,27 @@ class FilmLibraryActivity : AppCompatActivity() {
         setContentView(R.layout.activity_filmlibrary)
     }
 
-    private fun openFilmListFragment(){
+    private fun openFilmListFragment(listOfFilms: ArrayList<FilmItem>){
         supportFragmentManager
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, FilmListFragment.newInstance(), FilmListFragment.TAG)
-                .addToBackStack(null)
+                .replace(R.id.fragmentContainer, FilmListFragment.newInstance(listOfFilms), FilmListFragment.TAG)
                 .commit()
     }
     private fun openFilmInfoFragment(filmItem: FilmItem, position: Int){
         supportFragmentManager
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, position), FilmInfoFragment.TAG)
+                .replace(R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, position),
+                        FilmInfoFragment.TAG)
+                .addToBackStack(null)
+                .commit()
+    }
+    private fun openFavoriteFilmsFragment(favoriteFilms: ArrayList<FilmItem>){
+        supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragmentContainer,
+                        FavoriteFilmsFragment.newInstance(favoriteFilms),
+                        FavoriteFilmsFragment.TAG)
+                .commit()
     }
 
     override fun onResume() {
@@ -46,6 +53,7 @@ class FilmLibraryActivity : AppCompatActivity() {
             listOfFilms.add(FilmItem(getString(R.string.text_film_3), getString(R.string.text_description_3), R.drawable.mulan, false))
             listOfFilms.add(FilmItem(getString(R.string.text_film_4), getString(R.string.text_description_4), R.drawable.tenet, false))
         }
+        openFilmListFragment(listOfFilms)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -60,33 +68,31 @@ class FilmLibraryActivity : AppCompatActivity() {
         outState.putParcelableArrayList(KEY_FILM_LIST, listOfFilms)
         outState.putParcelableArrayList(KEY_LIKED_FILM_LIST, listOfLikedFilms)
     }
-/*
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            CODE_FILM_INFO -> {
-                data?.let {
-                    val element = data.getParcelableExtra<FilmItem>(FilmInfoFragment.TAG)
-                    val position = data.getIntExtra(FilmInfoFragment.TAG_FILM_POS, 0)
-                    if (element != null) {
-                        listOfFilms[position - 1] = element
 
-                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_ISLIKE + listOfFilms[position - 1].isLiked)
-                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_COMMENT + listOfFilms[position - 1].userComment)
-                    }
-                }
-            }
-        }
+    override fun onLikeClicked(filmItem: FilmItem, position: Int) {
+        listOfFilms[position-1] = filmItem
+        listOfLikedFilms.add(filmItem)
     }
 
- */
+    override fun onDislikeClicked(filmItem: FilmItem, position: Int) {
+        listOfFilms[position-1] = filmItem
+        filmItem.isLiked = true
+        listOfLikedFilms.remove(filmItem)
+    }
+
+    override fun onDetailClicked(filmItem: FilmItem, position: Int) {
+        openFilmInfoFragment(filmItem, position)
+    }
 
     override fun onBackPressed() {
+        if(supportFragmentManager.backStackEntryCount > 0){
+            supportFragmentManager.popBackStack()
+        }
+        else
         ExitDialog.createDialog(supportFragmentManager, object : ExitDialog.OnDialogClickListener {
             override fun onAcceptButtonCLick() {
                 finish()
             }
-
             override fun onDismissButtonClick() {
 
             }

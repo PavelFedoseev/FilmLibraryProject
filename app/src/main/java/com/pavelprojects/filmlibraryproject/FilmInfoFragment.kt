@@ -1,7 +1,5 @@
 package com.pavelprojects.filmlibraryproject
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -37,20 +35,17 @@ class FilmInfoFragment : Fragment() {
     private lateinit var editTextComment: EditText
     private lateinit var buttonLike: FloatingActionButton
     private lateinit var coordinatorLayout: CoordinatorLayout
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
     
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.activity_film_info, container, false)
+
+        filmItem = arguments?.getParcelable(KEY_FILMITEM)
+        position = arguments?.getInt(KEY_POSITION, 0)!!
+
         initViews(view)
-        if(savedInstanceState!=null) {
-            filmItem = savedInstanceState.getParcelable(KEY_FILMITEM)
-            position = savedInstanceState.getInt(KEY_POSITION, 0)
-        }
+        initListeners()
+
         thumbUpSelect(filmItem?.isLiked ?: true)
         textViewName.text = filmItem?.name
         textViewDescriprion.text = filmItem?.description
@@ -110,5 +105,7 @@ class FilmInfoFragment : Fragment() {
         coordinatorLayout = view.findViewById(R.id.coordinator)
         editTextComment = view.findViewById(R.id.editText_comment)
     }
+
+
 
 }
