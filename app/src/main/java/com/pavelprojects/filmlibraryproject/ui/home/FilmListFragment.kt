@@ -1,6 +1,5 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui.home
 
-import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,19 +9,20 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.pavelprojects.filmlibraryproject.*
 
 class FilmListFragment : Fragment() {
     companion object {
-         const val TAG = "FilmListFragment"
-            private const val KEY_LIST_FILMS = "ListOfFilms"
+        const val TAG = "FilmListFragment"
+        private const val KEY_LIST_FILMS = "ListOfFilms"
         fun newInstance(listOfFilms: ArrayList<FilmItem>) = FilmListFragment().apply {
             arguments = Bundle().apply {
                 putParcelableArrayList(KEY_LIST_FILMS, listOfFilms)
             }
         }
     }
+
     var listOfFilms = arrayListOf<FilmItem>()
-    var listOfLikedFilms = arrayListOf<FilmItem>()
     var orientation: Int = 0
 
     lateinit var layoutManager: GridLayoutManager
@@ -32,32 +32,17 @@ class FilmListFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
         listOfFilms = arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
         orientation = resources.configuration.orientation
-        if(orientation == Configuration.ORIENTATION_PORTRAIT)
-        layoutManager = GridLayoutManager(requireContext(), 2)
+        layoutManager = if (orientation == Configuration.ORIENTATION_PORTRAIT)
+            GridLayoutManager(requireContext(), 2)
         else
-            layoutManager = GridLayoutManager(requireContext(), 4)
-        initListeners(view)
+            GridLayoutManager(requireContext(), 4)
         initRecycler(view)
         return view
     }
 
-    private fun initListeners(view: View) {
-        view.findViewById<View>(R.id.button_favorite).setOnClickListener {
-            //supportFragmentManager.beginTransaction().add(FavoriteFilmsFragment(), FavoriteFilmsFragment.TAG).commit()
-        }
-        view.findViewById<View>(R.id.button_invite).setOnClickListener {
-            val sendIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, resources.getString(R.string.message_share))
-                type = "text/plain"
-            }
-            startActivity(Intent.createChooser(sendIntent, null))
-        }
-    }
-
     private fun initRecycler(view: View) {
         recyclerView = view.findViewById(R.id.recyclerView_films)
-        val adapter = FilmAdapter(listOfFilms, object : FilmAdapter.FilmClickListener() {
+        val adapter = FilmAdapter(listOfFilms, requireContext().getString(R.string.label_library), object : FilmAdapter.FilmClickListener() {
 
 
             override fun onDetailClick(filmItem: FilmItem, position: Int) {
@@ -66,15 +51,12 @@ class FilmListFragment : Fragment() {
 
             override fun onDoubleClick(filmItem: FilmItem, position: Int) {
                 if (filmItem.isLiked) {
-                    listOfLikedFilms.remove(filmItem)
+                    (activity as OnFilmClickListener).onDislikeClicked(filmItem, position)
                     filmItem.isLiked = false
                     Toast.makeText(requireContext(), "Не нравится", Toast.LENGTH_SHORT).show()
                 } else {
                     filmItem.isLiked = true
-                    if (listOfLikedFilms.contains(filmItem))
-                        listOfLikedFilms[listOfLikedFilms.indexOf(filmItem)] = filmItem
-                    else
-                        listOfLikedFilms.add(filmItem)
+                    (activity as OnFilmClickListener).onLikeClicked(filmItem, position)
                     Toast.makeText(requireContext(), "Нравится", Toast.LENGTH_SHORT).show()
                 }
                 listOfFilms[position - 1] = filmItem
@@ -98,7 +80,7 @@ class FilmListFragment : Fragment() {
         recyclerView.itemAnimator = FilmItemAnimator(requireContext())
     }
 
-    interface OnFilmClickListener{
+    interface OnFilmClickListener {
         fun onLikeClicked(filmItem: FilmItem, position: Int)
         fun onDislikeClicked(filmItem: FilmItem, position: Int)
         fun onDetailClicked(filmItem: FilmItem, position: Int)

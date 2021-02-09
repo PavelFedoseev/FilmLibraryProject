@@ -7,31 +7,33 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 
-class ExitDialog(val listener: OnDialogClickListener) : DialogFragment() {
-    companion object{
-        const val TAG_EXIT_DIALOG = "ExitDialog"
-        fun createDialog(fragmentManager: FragmentManager, listener: OnDialogClickListener){
+class ExitDialog(private val listener: OnDialogClickListener) : DialogFragment() {
+    companion object {
+        private const val TAG_EXIT_DIALOG = "ExitDialog"
+        fun createDialog(fragmentManager: FragmentManager, listener: OnDialogClickListener) {
             val dialog = ExitDialog(listener)
             dialog.show(fragmentManager, TAG_EXIT_DIALOG)
         }
     }
+
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         val view = View.inflate(requireContext(), R.layout.fragment_exit_dialog, null)
-        view.findViewById<View>(R.id.button_exit_accept).setOnClickListener { 
+        view.findViewById<View>(R.id.button_exit_accept).setOnClickListener {
             listener.onAcceptButtonCLick()
             dismiss()
         }
-        view.findViewById<View>(R.id.button_exit_dismiss).setOnClickListener { 
+        view.findViewById<View>(R.id.button_exit_dismiss).setOnClickListener {
             listener.onDismissButtonClick()
             dismiss()
         }
         return view
     }
-    interface OnDialogClickListener{
+
+    interface OnDialogClickListener {
         fun onAcceptButtonCLick()
         fun onDismissButtonClick()
     }

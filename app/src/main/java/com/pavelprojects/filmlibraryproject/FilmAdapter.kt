@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: FilmClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
@@ -29,7 +29,7 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
             }
             else -> {
                 view = layoutInflater.inflate(R.layout.item_header, parent, false)
-                HeaderItemViewHolder(view)
+                HeaderItemViewHolder(view, header)
             }
         }
 
@@ -51,6 +51,8 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
             holder.titleTv.setOnClickListener {
                 listener.onItemClick(item, position)
             }
+        } else if (holder is HeaderItemViewHolder) {
+            holder.bindView()
         }
     }
 
@@ -80,9 +82,11 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
         fun bindView() {}
     }
 
-    class HeaderItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //TODO Header
-        fun bindView() {}
+    class HeaderItemViewHolder(itemView: View, var header: String) : RecyclerView.ViewHolder(itemView) {
+        val textView: TextView = itemView.findViewById(R.id.textview_header)
+        fun bindView() {
+            textView.text = header
+        }
     }
 
     interface FilmClickInterface {
@@ -94,6 +98,7 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
         companion object {
             private const val DOUBLE_CLICK_DELTA = 300 //milleseconds interaval between clicks
         }
+
         private var lastClickTime: Long = 0
         override fun onItemClick(filmItem: FilmItem, position: Int) {
             val currentTime = System.currentTimeMillis()
@@ -102,6 +107,7 @@ class FilmAdapter(var list: List<FilmItem>, var listener: FilmClickListener) : R
             }
             lastClickTime = currentTime
         }
+
         abstract fun onDoubleClick(filmItem: FilmItem, position: Int)
     }
 }

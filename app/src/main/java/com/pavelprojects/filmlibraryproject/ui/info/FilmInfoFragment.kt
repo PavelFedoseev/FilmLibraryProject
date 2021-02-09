@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui.info
 
 import android.os.Bundle
 import android.text.Editable
@@ -13,35 +13,33 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.pavelprojects.filmlibraryproject.FilmItem
+import com.pavelprojects.filmlibraryproject.R
 
 class FilmInfoFragment : Fragment() {
     companion object {
         const val TAG = "FilmInfoFragment"
         const val KEY_FILMITEM = "FilmItem"
-        const val KEY_POSITION = "FilmItem"
-        fun newInstance(filmItem: FilmItem, position: Int) = FilmInfoFragment().apply {
+        fun newInstance(filmItem: FilmItem) = FilmInfoFragment().apply {
             arguments = Bundle().apply {
                 putParcelable(KEY_FILMITEM, filmItem)
-                putInt(KEY_POSITION, position)
             }
         }
     }
 
     var filmItem: FilmItem? = null
-    private var position = 0
 
     private lateinit var textViewDescriprion: TextView
     private lateinit var textViewName: TextView
     private lateinit var editTextComment: EditText
     private lateinit var buttonLike: FloatingActionButton
     private lateinit var coordinatorLayout: CoordinatorLayout
-    
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.activity_film_info, container, false)
 
         filmItem = arguments?.getParcelable(KEY_FILMITEM)
-        position = arguments?.getInt(KEY_POSITION, 0)!!
 
         initViews(view)
         initListeners()
@@ -80,7 +78,8 @@ class FilmInfoFragment : Fragment() {
                 buttonLike.setBackgroundColor(ResourcesCompat.getColor(resources, R.color.cyan, null))
             }
             thumbUpSelect(filmItem?.isLiked ?: true)
-                    //saveResults()
+            //saveResults()
+            filmItem?.let { it1 -> (activity as OnInfoFragmentListener).onRateButtonClicked(it1) }
         }
         editTextComment.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
@@ -93,7 +92,7 @@ class FilmInfoFragment : Fragment() {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 filmItem?.userComment = p0?.toString()
-                        //saveResults()
+                //saveResults()
             }
         })
     }
@@ -106,6 +105,9 @@ class FilmInfoFragment : Fragment() {
         editTextComment = view.findViewById(R.id.editText_comment)
     }
 
+    interface OnInfoFragmentListener {
+        fun onRateButtonClicked(item: FilmItem)
+    }
 
 
 }

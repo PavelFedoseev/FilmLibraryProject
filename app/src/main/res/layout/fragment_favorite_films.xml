@@ -4,13 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".FavoriteFilmsFragment">
-
+    tools:context=".ui.favorites.FavoriteFilmsFragment">
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_marginTop="@dimen/view_spacing"
+       android:background="@drawable/shape_rounded_top"
+       android:elevation="@dimen/element_box_elevation"
+       android:orientation="vertical">
    <androidx.recyclerview.widget.RecyclerView
        android:id="@+id/recyclerView_favorite"
        android:layout_width="match_parent"
        android:layout_height="match_parent"
+       android:layout_marginStart="@dimen/layout_borders_margin"
+       android:layout_marginEnd="@dimen/layout_borders_margin"
+       android:layout_marginTop="@dimen/layout_borders_margin"
        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
        app:spanCount="2"/>
+   </LinearLayout>
 
 </FrameLayout>
