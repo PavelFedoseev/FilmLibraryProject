@@ -15,6 +15,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         const val VIEW_TYPE_HEADER = 2
     }
 
+    var adapterPosition = 0
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val view: View
@@ -44,12 +46,15 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
             holder.bindView(item)
             holder.itemView.setOnClickListener {
                 listener.onItemClick(item, position)
+                adapterPosition = holder.adapterPosition
             }
             holder.detailButton.setOnClickListener {
                 listener.onDetailClick(item, position)
+                adapterPosition = holder.adapterPosition
             }
             holder.titleTv.setOnClickListener {
                 listener.onItemClick(item, position)
+                adapterPosition = holder.adapterPosition
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()

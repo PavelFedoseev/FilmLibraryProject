@@ -63,7 +63,7 @@ class FavoriteFilmsFragment : Fragment() {
             override fun onDoubleClick(filmItem: FilmItem, position: Int) {
                 listOfFavorite.remove(filmItem)
                 (activity as OnFavoriteListener).onFavoriteDeleted(filmItem)
-                recyclerView.adapter?.notifyItemRemoved(position)
+                recyclerView.adapter?.notifyItemRemoved((recyclerView.adapter as? FilmAdapter)!!.adapterPosition)
                 if (listOfFavorite.isEmpty()) {
                     recyclerView.background = ResourcesCompat.getDrawable(requireContext().resources, R.drawable.background_recycler_favorite, null)
                 }
