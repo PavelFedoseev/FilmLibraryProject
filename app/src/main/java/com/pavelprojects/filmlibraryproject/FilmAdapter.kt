@@ -15,8 +15,6 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         const val VIEW_TYPE_HEADER = 2
     }
 
-    var adapterPosition = 0
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val view: View
@@ -45,16 +43,13 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
             val item = list[position - 1]
             holder.bindView(item)
             holder.itemView.setOnClickListener {
-                listener.onItemClick(item, position)
-                adapterPosition = holder.adapterPosition
+                listener.onItemClick(item, position, holder.adapterPosition)
             }
             holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position)
-                adapterPosition = holder.adapterPosition
+                listener.onDetailClick(item, position, holder.adapterPosition)
             }
             holder.titleTv.setOnClickListener {
-                listener.onItemClick(item, position)
-                adapterPosition = holder.adapterPosition
+                listener.onItemClick(item, position, holder.adapterPosition)
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
@@ -95,8 +90,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
     }
 
     interface FilmClickInterface {
-        fun onItemClick(filmItem: FilmItem, position: Int)
-        fun onDetailClick(filmItem: FilmItem, position: Int)
+        fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition : Int)
+        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition : Int)
     }
 
     abstract class FilmClickListener : FilmClickInterface {
@@ -105,14 +100,14 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         }
 
         private var lastClickTime: Long = 0
-        override fun onItemClick(filmItem: FilmItem, position: Int) {
+        override fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastClickTime < DOUBLE_CLICK_DELTA) {
-                onDoubleClick(filmItem, position)
+                onDoubleClick(filmItem, position, adapterPosition)
             }
             lastClickTime = currentTime
         }
 
-        abstract fun onDoubleClick(filmItem: FilmItem, position: Int)
+        abstract fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition : Int)
     }
 }

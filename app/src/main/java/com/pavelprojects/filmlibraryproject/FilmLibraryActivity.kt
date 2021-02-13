@@ -103,18 +103,18 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     }
 
     //OnFilmCLickListener
-    override fun onLikeClicked(filmItem: FilmItem, position: Int) {
+    override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         listOfFilms[position - 1] = filmItem
         listOfLikedFilms.add(filmItem)
     }
 
-    override fun onDislikeClicked(filmItem: FilmItem, position: Int) {
+    override fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         listOfFilms[position - 1] = filmItem
         filmItem.isLiked = true
         listOfLikedFilms.remove(filmItem)
     }
 
-    override fun onDetailClicked(filmItem: FilmItem, position: Int) {
+    override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         openFilmInfoFragment(filmItem)
     }
 

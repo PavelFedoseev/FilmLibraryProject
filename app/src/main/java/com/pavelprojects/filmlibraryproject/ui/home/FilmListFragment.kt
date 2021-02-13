@@ -45,18 +45,18 @@ class FilmListFragment : Fragment() {
         val adapter = FilmAdapter(listOfFilms, requireContext().getString(R.string.label_library), object : FilmAdapter.FilmClickListener() {
 
 
-            override fun onDetailClick(filmItem: FilmItem, position: Int) {
-                (activity as OnFilmClickListener).onDetailClicked(filmItem, position)
+            override fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
+                (activity as OnFilmClickListener).onDetailClicked(filmItem, position, adapterPosition)
             }
 
-            override fun onDoubleClick(filmItem: FilmItem, position: Int) {
+            override fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
                 if (filmItem.isLiked) {
-                    (activity as OnFilmClickListener).onDislikeClicked(filmItem, position)
+                    (activity as OnFilmClickListener).onDislikeClicked(filmItem, position, adapterPosition)
                     filmItem.isLiked = false
                     Toast.makeText(requireContext(), "Не нравится", Toast.LENGTH_SHORT).show()
                 } else {
                     filmItem.isLiked = true
-                    (activity as OnFilmClickListener).onLikeClicked(filmItem, position)
+                    (activity as OnFilmClickListener).onLikeClicked(filmItem, position, adapterPosition)
                     Toast.makeText(requireContext(), "Нравится", Toast.LENGTH_SHORT).show()
                 }
                 listOfFilms[position - 1] = filmItem
@@ -81,9 +81,9 @@ class FilmListFragment : Fragment() {
     }
 
     interface OnFilmClickListener {
-        fun onLikeClicked(filmItem: FilmItem, position: Int)
-        fun onDislikeClicked(filmItem: FilmItem, position: Int)
-        fun onDetailClicked(filmItem: FilmItem, position: Int)
+        fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition : Int)
+        fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition : Int)
+        fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition : Int)
     }
 
 }

@@ -56,14 +56,14 @@ class FavoriteFilmsFragment : Fragment() {
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = FilmAdapter(listOfFavorite, requireContext().getString(R.string.label_favorite), object : FilmAdapter.FilmClickListener() {
 
-            override fun onDetailClick(filmItem: FilmItem, position: Int) {
+            override fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
                 (activity as OnFavoriteListener).onFavoriteDetail(filmItem)
             }
 
-            override fun onDoubleClick(filmItem: FilmItem, position: Int) {
+            override fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
                 listOfFavorite.remove(filmItem)
                 (activity as OnFavoriteListener).onFavoriteDeleted(filmItem)
-                recyclerView.adapter?.notifyItemRemoved((recyclerView.adapter as? FilmAdapter)!!.adapterPosition)
+                recyclerView.adapter?.notifyItemRemoved(adapterPosition)
                 if (listOfFavorite.isEmpty()) {
                     recyclerView.background = ResourcesCompat.getDrawable(requireContext().resources, R.drawable.background_recycler_favorite, null)
                 }
