@@ -16,6 +16,8 @@
     <string name="label_library">Библиотека</string>
     <string name="label_favorite">Избранное</string>
 
+    <string name="snackbar_action">Отмена</string>
+
     <string name="message_favorite_delete">Фильм убран из избранного</string>
 
     <string name="message_share">Я пользуюсь этим приложением для просмотров рейтинга фильмов: https://github.com/PavelFedoseev/FilmLibraryProject</string>

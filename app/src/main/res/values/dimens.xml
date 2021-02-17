@@ -11,10 +11,13 @@
     <dimen name="imageview_size_height">200dp</dimen>
     <dimen name="button_size_height">45dp</dimen>
     <dimen name="element_box_elevation">6dp</dimen>
+    <dimen name="info_fragment_elevation">6dp</dimen>
     <dimen name="element_elevation">9dp</dimen>
     <dimen name="element_radius">20dp</dimen>
 
     <dimen name="like_anim_scale">80dp</dimen>
+
+    <dimen name="blur_info_height">80dp</dimen>
 
     <dimen name="edittext_margin_bottom">80dp</dimen>
     <dimen name="edittext_margin">30dp</dimen>
@@ -23,4 +26,5 @@
     <dimen name="text_film_name">14sp</dimen>
     <dimen name="text_film_info">16sp</dimen>
     <dimen name="text_labels">18sp</dimen>
+    <dimen name="toolbar_title_expanded">30sp</dimen>
 </resources>

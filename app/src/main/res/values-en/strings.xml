@@ -17,6 +17,8 @@
     <string name="label_library">Library</string>
     <string name="label_favorite">Favorite</string>
 
+    <string name="snackbar_action">Отмена</string>
+
     <string name="message_favorite_delete">Item deleted</string>
 
     <string name="message_share">I use this app to watch movie ratings: https://github.com/PavelFedoseev/FilmLibraryProject</string>

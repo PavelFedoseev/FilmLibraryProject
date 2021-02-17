@@ -28,20 +28,23 @@ class FavoriteFilmsFragment : Fragment() {
         }
     }
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var layoutManager: GridLayoutManager
+    private var listOfFavorite = arrayListOf<FilmItem>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
     }
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var layoutManager: GridLayoutManager
-    private var listOfFavorite = arrayListOf<FilmItem>()
 
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
-        listOfFavorite = arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
+        listOfFavorite =
+            arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
         initRecycler()
         return view
@@ -54,22 +57,43 @@ class FavoriteFilmsFragment : Fragment() {
         else
             GridLayoutManager(requireContext(), 4)
         recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = FilmAdapter(listOfFavorite, requireContext().getString(R.string.label_favorite), object : FilmAdapter.FilmClickListener() {
+        recyclerView.adapter = FilmAdapter(
+            listOfFavorite,
+            requireContext().getString(R.string.label_favorite),
+            object : FilmAdapter.FilmClickListener() {
 
-            override fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
-                (activity as OnFavoriteListener).onFavoriteDetail(filmItem)
-            }
-
-            override fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
-                listOfFavorite.remove(filmItem)
-                (activity as OnFavoriteListener).onFavoriteDeleted(filmItem)
-                recyclerView.adapter?.notifyItemRemoved(adapterPosition)
-                if (listOfFavorite.isEmpty()) {
-                    recyclerView.background = ResourcesCompat.getDrawable(requireContext().resources, R.drawable.background_recycler_favorite, null)
+                override fun onDetailClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int,
+                    view: View
+                ) {
+                    //val extras = FragmentNavigatorExtras(view to "imageview_film_info")
+                    (activity as OnFavoriteListener).onFavoriteDetail(filmItem)
                 }
-                Toast.makeText(requireContext(), requireContext().getString(R.string.message_favorite_delete), Toast.LENGTH_SHORT).show()
-            }
-        })
+
+                override fun onDoubleClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    listOfFavorite.remove(filmItem)
+                    (activity as OnFavoriteListener).onFavoriteDeleted(filmItem)
+                    recyclerView.adapter?.notifyItemRemoved(adapterPosition)
+                    if (listOfFavorite.isEmpty()) {
+                        recyclerView.background = ResourcesCompat.getDrawable(
+                            requireContext().resources,
+                            R.drawable.background_recycler_favorite,
+                            null
+                        )
+                    }
+                    Toast.makeText(
+                        requireContext(),
+                        requireContext().getString(R.string.message_favorite_delete),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (recyclerView.adapter?.getItemViewType(position)) {
@@ -83,7 +107,11 @@ class FavoriteFilmsFragment : Fragment() {
             }
         }
         if (listOfFavorite.isEmpty()) {
-            recyclerView.background = ResourcesCompat.getDrawable(requireContext().resources, R.drawable.background_recycler_favorite, null)
+            recyclerView.background = ResourcesCompat.getDrawable(
+                requireContext().resources,
+                R.drawable.background_recycler_favorite,
+                null
+            )
         }
     }
 

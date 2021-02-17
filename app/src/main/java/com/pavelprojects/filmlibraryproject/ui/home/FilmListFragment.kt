@@ -28,9 +28,14 @@ class FilmListFragment : Fragment() {
     lateinit var layoutManager: GridLayoutManager
     private lateinit var recyclerView: RecyclerView
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
-        listOfFilms = arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
+        listOfFilms =
+            arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
         orientation = resources.configuration.orientation
         layoutManager = if (orientation == Configuration.ORIENTATION_PORTRAIT)
             GridLayoutManager(requireContext(), 2)
@@ -42,27 +47,51 @@ class FilmListFragment : Fragment() {
 
     private fun initRecycler(view: View) {
         recyclerView = view.findViewById(R.id.recyclerView_films)
-        val adapter = FilmAdapter(listOfFilms, requireContext().getString(R.string.label_library), object : FilmAdapter.FilmClickListener() {
+        val adapter = FilmAdapter(
+            listOfFilms,
+            requireContext().getString(R.string.label_library),
+            object : FilmAdapter.FilmClickListener() {
 
 
-            override fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
-                (activity as OnFilmClickListener).onDetailClicked(filmItem, position, adapterPosition)
-            }
-
-            override fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
-                if (filmItem.isLiked) {
-                    (activity as OnFilmClickListener).onDislikeClicked(filmItem, position, adapterPosition)
-                    filmItem.isLiked = false
-                    Toast.makeText(requireContext(), "Не нравится", Toast.LENGTH_SHORT).show()
-                } else {
-                    filmItem.isLiked = true
-                    (activity as OnFilmClickListener).onLikeClicked(filmItem, position, adapterPosition)
-                    Toast.makeText(requireContext(), "Нравится", Toast.LENGTH_SHORT).show()
+                override fun onDetailClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int,
+                    view: View
+                ) {
+                    (activity as OnFilmClickListener).onDetailClicked(
+                        filmItem,
+                        position,
+                        adapterPosition
+                    )
                 }
-                listOfFilms[position - 1] = filmItem
-                recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
-            }
-        })
+
+                override fun onDoubleClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    if (filmItem.isLiked) {
+                        (activity as OnFilmClickListener).onDislikeClicked(
+                            filmItem,
+                            position,
+                            adapterPosition
+                        )
+                        filmItem.isLiked = false
+                        Toast.makeText(requireContext(), "Не нравится", Toast.LENGTH_SHORT).show()
+                    } else {
+                        filmItem.isLiked = true
+                        (activity as OnFilmClickListener).onLikeClicked(
+                            filmItem,
+                            position,
+                            adapterPosition
+                        )
+                        Toast.makeText(requireContext(), "Нравится", Toast.LENGTH_SHORT).show()
+                    }
+                    listOfFilms[position - 1] = filmItem
+                    recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
+                }
+            })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (adapter.getItemViewType(position)) {
@@ -81,9 +110,9 @@ class FilmListFragment : Fragment() {
     }
 
     interface OnFilmClickListener {
-        fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition : Int)
-        fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition : Int)
-        fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition : Int)
+        fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int)
+        fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int)
+        fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int)
     }
 
 }

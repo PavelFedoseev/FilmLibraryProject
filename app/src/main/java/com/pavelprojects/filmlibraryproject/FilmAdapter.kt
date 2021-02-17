@@ -8,7 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: FilmClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: FilmClickListener) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
@@ -46,7 +47,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
                 listener.onItemClick(item, position, holder.adapterPosition)
             }
             holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position, holder.adapterPosition)
+                listener.onDetailClick(item, position, holder.adapterPosition, holder.itemView)
             }
             holder.titleTv.setOnClickListener {
                 listener.onItemClick(item, position, holder.adapterPosition)
@@ -82,7 +83,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         fun bindView() {}
     }
 
-    class HeaderItemViewHolder(itemView: View, var header: String) : RecyclerView.ViewHolder(itemView) {
+    class HeaderItemViewHolder(itemView: View, var header: String) :
+        RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.textview_header)
         fun bindView() {
             textView.text = header
@@ -90,8 +92,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
     }
 
     interface FilmClickInterface {
-        fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition : Int)
-        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition : Int)
+        fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
+        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int, view: View)
     }
 
     abstract class FilmClickListener : FilmClickInterface {
@@ -100,7 +102,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         }
 
         private var lastClickTime: Long = 0
-        override fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition : Int) {
+        override fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int) {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastClickTime < DOUBLE_CLICK_DELTA) {
                 onDoubleClick(filmItem, position, adapterPosition)
@@ -108,6 +110,6 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
             lastClickTime = currentTime
         }
 
-        abstract fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition : Int)
+        abstract fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
     }
 }
