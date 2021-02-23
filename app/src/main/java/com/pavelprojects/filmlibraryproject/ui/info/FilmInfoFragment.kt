@@ -48,7 +48,8 @@ class FilmInfoFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val animation = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.move)
+        val animation =
+            TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.move)
         sharedElementEnterTransition = animation
         sharedElementReturnTransition = animation
     }
@@ -63,12 +64,9 @@ class FilmInfoFragment : Fragment() {
 
         initViews(view)
         initListeners()
-
         thumbUpSelect(filmItem?.isLiked ?: true)
         toolbar.title = filmItem?.name
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
-        //toolbarLayout.title = filmItem?.name
-
         textViewDescriprion.text = filmItem?.description
         editTextComment.setText(filmItem?.userComment)
         val iconId = filmItem?.icon_id ?: ResourcesCompat.getColor(resources, R.color.gray, null)
@@ -117,7 +115,7 @@ class FilmInfoFragment : Fragment() {
             }
             thumbUpSelect(filmItem?.isLiked ?: true)
             //saveResults()
-            filmItem?.let { it1 -> (activity as OnInfoFragmentListener).onRateButtonClicked(it1) }
+            filmItem?.let { it1 -> (activity as? OnInfoFragmentListener)?.onRateButtonClicked(it1) }
         }
         editTextComment.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {

@@ -58,13 +58,11 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             }
             startActivity(Intent.createChooser(sendIntent, null))
         }
-
          */
     }
 
     private fun openFilmListFragment(listOfFilms: ArrayList<FilmItem>) {
         supportFragmentManager.popBackStack()
-        //changeTopBar(false)
         supportFragmentManager
             .beginTransaction()
             .replace(
@@ -77,7 +75,6 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
 
     private fun openFilmInfoFragment(filmItem: FilmItem) {
         supportFragmentManager.popBackStack()
-        //changeTopBar(true)
         supportFragmentManager
             .beginTransaction()
             .replace(
@@ -89,7 +86,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     }
 
     private fun openFavoriteFilmsFragment(favoriteFilms: ArrayList<FilmItem>) {
-        //changeTopBar(false)
+        supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
             .replace(
@@ -156,20 +153,25 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     //OnFilmCLickListener
     override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         listOfFilms[position - 1] = filmItem
-        listOfLikedFilms.add(filmItem)
+        if (!listOfLikedFilms.contains(filmItem)) {
+            listOfLikedFilms.add(filmItem)
+        }
         Snackbar.make(frameLayout, R.string.snackbar_like, Snackbar.LENGTH_SHORT)
             .setAction(R.string.snackbar_action) {
                 listOfLikedFilms.remove(filmItem)
+                listOfFilms[position - 1] = filmItem.apply { isLiked = false }
             }.show()
     }
 
     override fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         listOfFilms[position - 1] = filmItem
-        filmItem.isLiked = true
-        listOfLikedFilms.remove(filmItem)
+        if (listOfLikedFilms.contains(filmItem)) {
+            listOfLikedFilms.remove(filmItem)
+        }
         Snackbar.make(frameLayout, R.string.snackbar_dont_like, Snackbar.LENGTH_SHORT)
             .setAction(R.string.snackbar_action) {
                 listOfLikedFilms.add(filmItem)
+                listOfFilms[position - 1] = filmItem.apply { isLiked = true }
             }.show()
     }
 

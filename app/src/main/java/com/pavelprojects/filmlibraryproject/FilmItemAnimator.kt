@@ -28,7 +28,7 @@ class FilmItemAnimator(val context: Context) : DefaultItemAnimator() {
         if (changeFlags == FLAG_CHANGED)
             for (payload in payloads)
                 if (payload as? String == TAG_LIKE_ANIM) {
-                    return FilmItemHolderInfo((viewHolder as FilmAdapter.FilmItemViewHolder).item!!.isLiked)
+                    return FilmItemHolderInfo((viewHolder as? FilmAdapter.FilmItemViewHolder)?.item!!.isLiked)
                 }
         return super.recordPreLayoutInformation(state, viewHolder, changeFlags, payloads)
     }

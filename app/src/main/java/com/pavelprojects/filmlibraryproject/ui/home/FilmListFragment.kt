@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -51,15 +50,13 @@ class FilmListFragment : Fragment() {
             listOfFilms,
             requireContext().getString(R.string.label_library),
             object : FilmAdapter.FilmClickListener() {
-
-
                 override fun onDetailClick(
                     filmItem: FilmItem,
                     position: Int,
                     adapterPosition: Int,
                     view: View
                 ) {
-                    (activity as OnFilmClickListener).onDetailClicked(
+                    (activity as? OnFilmClickListener)?.onDetailClicked(
                         filmItem,
                         position,
                         adapterPosition
@@ -72,21 +69,21 @@ class FilmListFragment : Fragment() {
                     adapterPosition: Int
                 ) {
                     if (filmItem.isLiked) {
-                        (activity as OnFilmClickListener).onDislikeClicked(
+                        filmItem.isLiked = false
+                        (activity as? OnFilmClickListener)?.onDislikeClicked(
                             filmItem,
                             position,
                             adapterPosition
                         )
-                        filmItem.isLiked = false
-                        Toast.makeText(requireContext(), "Не нравится", Toast.LENGTH_SHORT).show()
+                        //Toast.makeText(requireContext(), resources.getText(R.string.snackbar_dont_like), Toast.LENGTH_SHORT).show()
                     } else {
                         filmItem.isLiked = true
-                        (activity as OnFilmClickListener).onLikeClicked(
+                        (activity as? OnFilmClickListener)?.onLikeClicked(
                             filmItem,
                             position,
                             adapterPosition
                         )
-                        Toast.makeText(requireContext(), "Нравится", Toast.LENGTH_SHORT).show()
+                        //Toast.makeText(requireContext(), resources.getText(R.string.snackbar_like), Toast.LENGTH_SHORT).show()
                     }
                     listOfFilms[position - 1] = filmItem
                     recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)

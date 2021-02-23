@@ -69,7 +69,7 @@ class FavoriteFilmsFragment : Fragment() {
                     view: View
                 ) {
                     //val extras = FragmentNavigatorExtras(view to "imageview_film_info")
-                    (activity as OnFavoriteListener).onFavoriteDetail(filmItem)
+                    (activity as? OnFavoriteListener)?.onFavoriteDetail(filmItem)
                 }
 
                 override fun onDoubleClick(
@@ -78,7 +78,7 @@ class FavoriteFilmsFragment : Fragment() {
                     adapterPosition: Int
                 ) {
                     listOfFavorite.remove(filmItem)
-                    (activity as OnFavoriteListener).onFavoriteDeleted(filmItem)
+                    (activity as? OnFavoriteListener)?.onFavoriteDeleted(filmItem)
                     recyclerView.adapter?.notifyItemRemoved(adapterPosition)
                     if (listOfFavorite.isEmpty()) {
                         recyclerView.background = ResourcesCompat.getDrawable(
