@@ -1,139 +1,177 @@
 package com.pavelprojects.filmlibraryproject
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.TextView
+import android.view.MenuItem
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
+import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
+import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
+import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
-class FilmLibraryActivity : AppCompatActivity() {
+class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickListener,
+    FavoriteFilmsFragment.OnFavoriteListener, FilmInfoFragment.OnInfoFragmentListener {
 
-    companion object {
-        const val KEY_SELECTED_FILM = "selected_movie"
-        const val KEY_FILM_LIST = "FILM_LIST"
-    }
+    private val viewModel by lazy { ViewModelProvider(this).get(FilmLibraryViewModel::class.java) }
+    private var listOfFilms = arrayListOf<FilmItem>()
+    private var listOfLikedFilms = arrayListOf<FilmItem>()
 
-    lateinit var button_film_1: Button
-    lateinit var button_film_2: Button
-    lateinit var button_film_3: Button
-    lateinit var button_film_4: Button
-
-    lateinit var textView_film_1: TextView
-    lateinit var textView_film_2: TextView
-    lateinit var textView_film_3: TextView
-    lateinit var textView_film_4: TextView
-
-    var selected_film_num : Int = 0
-    var list_of_films = arrayListOf<FilmElement>()
+    private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_filmlibrary)
+        initViews()
+        initListeners()
+        initModel()
+        if (savedInstanceState == null)
+            openFilmListFragment(listOfFilms)
 
-        initializeViews()
+    }
 
+    private fun initViews() {
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
+        bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
+            if (item.itemId == R.id.menu_home) {
+                openFilmListFragment(listOfFilms)
+            } else {
+                openFavoriteFilmsFragment(listOfLikedFilms)
+            }
+            return@setOnNavigationItemSelectedListener true
+        }
+    }
 
-
-        findViewById<Button>(R.id.button_invite).setOnClickListener {
+    private fun initListeners() {
+        /*findViewById<View>(R.id.button_invite).setOnClickListener {
             val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_TEXT, resources.getString(R.string.message_share))
                 type = "text/plain"
             }
-
             startActivity(Intent.createChooser(sendIntent, null))
         }
-
-
-
-        button_film_1.setOnClickListener {
-            selected_film_num = 1
-            changeTextViewColors(selected_film_num)
-            FilmInfoActivity.startActivity(this, list_of_films[0], 0)
+         */
+    }
+    private fun initModel(){
+        viewModel.getAllFilms().observe(this){
+            listOfLikedFilms.clear()
+            listOfLikedFilms.addAll(it)
         }
-        button_film_2.setOnClickListener {
-            selected_film_num = 2
-            changeTextViewColors(selected_film_num)
-            FilmInfoActivity.startActivity(this, list_of_films[1], 1)
-        }
-        button_film_3.setOnClickListener {
-            selected_film_num = 3
-            changeTextViewColors(selected_film_num)
-            FilmInfoActivity.startActivity(this, list_of_films[2], 2)
-        }
-        button_film_4.setOnClickListener {
-            selected_film_num = 4
-            FilmInfoActivity.startActivity(this, list_of_films[3], 3)
-            changeTextViewColors(selected_film_num)
+        viewModel.getPopularMovies().observe(this){
+            listOfFilms.addAll(it)
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        if(list_of_films.isEmpty()){
-            list_of_films.add(FilmElement(getString(R.string.text_film_1), getString(R.string.text_description_1), R.drawable.joker, false))
-            list_of_films.add(FilmElement(getString(R.string.text_film_2), getString(R.string.text_description_2), R.drawable.green_book, false))
-            list_of_films.add(FilmElement(getString(R.string.text_film_3), getString(R.string.text_description_3), R.drawable.mulan, false))
-            list_of_films.add(FilmElement(getString(R.string.text_film_4), getString(R.string.text_description_4), R.drawable.dovod, false))
-        }
+    private fun openFilmListFragment(listOfFilms: ArrayList<FilmItem>) {
+        supportFragmentManager.popBackStack()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer,
+                FilmListFragment.newInstance(listOfFilms),
+                FilmListFragment.TAG
+            )
+            .commit()
     }
 
-    private fun changeTextViewColors(i: Int){
-        textView_film_1.setTextColor(ResourcesCompat.getColor(resources, R.color.black,null))
-        textView_film_2.setTextColor(ResourcesCompat.getColor(resources, R.color.black,null))
-        textView_film_3.setTextColor(ResourcesCompat.getColor(resources, R.color.black,null))
-        textView_film_4.setTextColor(ResourcesCompat.getColor(resources, R.color.black,null))
+    private fun openFilmInfoFragment(filmItem: FilmItem) {
+        supportFragmentManager.popBackStack()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem),
+                FilmInfoFragment.TAG
+            )
+            .addToBackStack(null)
+            .commit()
+    }
 
-        when (i){
-            1->textView_film_1.setTextColor(ResourcesCompat.getColor(resources, R.color.teal_700, null))
-            2->textView_film_2.setTextColor(ResourcesCompat.getColor(resources, R.color.teal_700, null))
-            3->textView_film_3.setTextColor(ResourcesCompat.getColor(resources, R.color.teal_700, null))
-            4->textView_film_4.setTextColor(ResourcesCompat.getColor(resources, R.color.teal_700, null))
-        }
+    private fun openFavoriteFilmsFragment(favoriteFilms: ArrayList<FilmItem>) {
+        supportFragmentManager.popBackStack()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer,
+                FavoriteFilmsFragment.newInstance(favoriteFilms),
+                FavoriteFilmsFragment.TAG
+            )
+            .commit()
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        selected_film_num = savedInstanceState.getInt(KEY_SELECTED_FILM)
-        list_of_films = savedInstanceState.getParcelableArrayList<FilmElement>(KEY_FILM_LIST) as ArrayList<FilmElement>
-        changeTextViewColors(selected_film_num)
     }
 
-    private fun initializeViews(){
-        button_film_1 = findViewById(R.id.button_info_1)
-        button_film_2 = findViewById(R.id.button_info_2)
-        button_film_3 = findViewById(R.id.button_info_3)
-        button_film_4 = findViewById(R.id.button_info_4)
-
-        textView_film_1 = findViewById(R.id.textView_name_1)
-        textView_film_2 = findViewById(R.id.textView_name_2)
-        textView_film_3 = findViewById(R.id.textView_name_3)
-        textView_film_4 = findViewById(R.id.textView_name_4)
-    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(KEY_SELECTED_FILM, selected_film_num)
-        outState.putParcelableArrayList(KEY_FILM_LIST, list_of_films)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when(requestCode){
-            CODE_FILM_INFO -> {
-                data?.let {
-                    val element = data.getParcelableExtra<FilmElement>(FilmInfoActivity.TAG_FILM)
-                    val position = data.getIntExtra(FilmInfoActivity.TAG_FILM_POS, 0)
-                    if(element!=null){
-                        list_of_films[position] = element
-                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_ISLIKE+list_of_films[position].isLiked)
-                        Log.i(TAG_ACTRES_FILMINFO, LOG_MSG_FILMINFO_COMMENT+list_of_films[position].user_comment)
+    //OnFilmCLickListener
+    override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
+        //listOfFilms[position - 1] = filmItem
+        if (!listOfLikedFilms.contains(filmItem)) {
+            viewModel.insert(filmItem)
+        }
+        Snackbar.make(frameLayout, R.string.snackbar_like, Snackbar.LENGTH_SHORT)
+            .setAction(R.string.snackbar_action) {
+                viewModel.delete(filmItem)
+                //listOfFilms[position - 1] = filmItem.apply { isLiked = false }
+            }.show()
+    }
+
+    override fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
+        //listOfFilms[position - 1] = filmItem
+        if (listOfLikedFilms.contains(filmItem)) {
+            viewModel.delete(filmItem)
+        }
+        Snackbar.make(frameLayout, R.string.snackbar_dont_like, Snackbar.LENGTH_SHORT)
+            .setAction(R.string.snackbar_action) {
+                viewModel.insert(filmItem)
+                //listOfFilms[position - 1] = filmItem.apply { isLiked = true }
+            }.show()
+    }
+
+    override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
+        openFilmInfoFragment(filmItem)
+    }
+
+    //OnFavoriteListener
+    override fun onFavoriteDeleted(item: FilmItem) {
+        //listOfFilms[listOfFilms.indexOf(item)].isLiked = false
+    }
+
+    override fun onFavoriteDetail(item: FilmItem) {
+        openFilmInfoFragment(item)
+    }
+
+    //OnInfoFragmentListener
+    override fun onRateButtonClicked(item: FilmItem) {
+        //listOfFilms[listOfFilms.indexOf(item)].isLiked = item.isLiked
+        if (item.isLiked) {
+            viewModel.insert(item)
+        } else
+            viewModel.delete(item)
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        } else
+            ExitDialog.createDialog(
+                supportFragmentManager,
+                object : ExitDialog.OnDialogClickListener {
+                    override fun onAcceptButtonCLick() {
+                        finish()
                     }
 
-                }
-            }
-        }
+                    override fun onDismissButtonClick() {
+
+                    }
+                })
     }
+
+
 }
