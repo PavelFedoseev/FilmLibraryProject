@@ -18,6 +18,9 @@
 
     <string name="snackbar_action">Отмена</string>
 
+    <string name="snackbar_network_error">Не удалось получить фильмы</string>
+    <string name="snackbar_network_error_action">Повторить</string>
+
     <string name="message_favorite_delete">Фильм убран из избранного</string>
 
     <string name="message_share">Я пользуюсь этим приложением для просмотров рейтинга фильмов: https://github.com/PavelFedoseev/FilmLibraryProject</string>

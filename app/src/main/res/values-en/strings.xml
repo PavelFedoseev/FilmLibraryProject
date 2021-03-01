@@ -19,6 +19,9 @@
 
     <string name="snackbar_action">Отмена</string>
 
+    <string name="snackbar_network_error">Failed to get movies</string>
+    <string name="snackbar_network_error_action">Try again</string>
+
     <string name="message_favorite_delete">Item deleted</string>
 
     <string name="message_share">I use this app to watch movie ratings: https://github.com/PavelFedoseev/FilmLibraryProject</string>

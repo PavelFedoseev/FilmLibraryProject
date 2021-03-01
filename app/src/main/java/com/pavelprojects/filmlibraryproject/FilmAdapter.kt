@@ -57,6 +57,11 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         }
     }
 
+    fun setValue(list: List<FilmItem>){
+        this.list = list
+        notifyDataSetChanged()
+    }
+
     override fun getItemViewType(position: Int): Int {
         return when (position) {
             0 -> VIEW_TYPE_HEADER
@@ -73,7 +78,6 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         var item: FilmItem? = null
         fun bindView(item: FilmItem) {
             this.item = item
-            imageView.setImageResource(item.icon_id)
             titleTv.text = item.name
         }
     }

@@ -4,6 +4,9 @@ const val CODE_FILM_INFO = 1001
 
 const val TAG_LIKE_ANIM = "likeAnim"
 
-const val TAG_ACTRES_FILMINFO = "TAG_ACTRES_FILMINFO"
-const val LOG_MSG_FILMINFO_COMMENT = "FilmInfoActivity: Recived string comment: "
-const val LOG_MSG_FILMINFO_ISLIKE = "FilmInfoActivity: Recived boolean rating: "
+const val LINK_TMDB = "https://api.themoviedb.org/3/"
+const val LINK_TMDB_DISCOVER = "discover/movie"
+
+const val FILTER_TMDB_POPUlAR = "popularity.desc"
+
+const val API_KEY_TMDB = "473d343bb4af4dc7e510821907ee4e99"

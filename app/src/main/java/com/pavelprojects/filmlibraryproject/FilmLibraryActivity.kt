@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
@@ -13,25 +14,18 @@ import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickListener,
     FavoriteFilmsFragment.OnFavoriteListener, FilmInfoFragment.OnInfoFragmentListener {
 
-    companion object {
-        private const val KEY_FILM_LIST = "FILM_LIST"
-        private const val KEY_LIKED_FILM_LIST = "LIKED_FILM_LIST"
-    }
-
+    private val viewModel by lazy { ViewModelProvider(this).get(FilmLibraryViewModel::class.java) }
     private var listOfFilms = arrayListOf<FilmItem>()
     private var listOfLikedFilms = arrayListOf<FilmItem>()
 
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
-    //private val constraintLayout by lazy { findViewById<ConstraintLayout>(R.id.constraintLayout_parent) }
-
-
-    //private val fragmentContainer by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_filmlibrary)
         initViews()
         initListeners()
+        initModel()
         if (savedInstanceState == null)
             openFilmListFragment(listOfFilms)
 
@@ -59,6 +53,15 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             startActivity(Intent.createChooser(sendIntent, null))
         }
          */
+    }
+    private fun initModel(){
+        viewModel.getAllFilms().observe(this){
+            listOfLikedFilms.clear()
+            listOfLikedFilms.addAll(it)
+        }
+        viewModel.getPopularMovies().observe(this){
+            listOfFilms.addAll(it)
+        }
     }
 
     private fun openFilmListFragment(listOfFilms: ArrayList<FilmItem>) {
@@ -97,81 +100,37 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             .commit()
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (listOfFilms.isEmpty()) {
-            listOfFilms.add(
-                FilmItem(
-                    getString(R.string.text_film_1),
-                    getString(R.string.text_description_1),
-                    R.drawable.joker,
-                    false
-                )
-            )
-            listOfFilms.add(
-                FilmItem(
-                    getString(R.string.text_film_2),
-                    getString(R.string.text_description_2),
-                    R.drawable.green_book,
-                    false
-                )
-            )
-            listOfFilms.add(
-                FilmItem(
-                    getString(R.string.text_film_3),
-                    getString(R.string.text_description_3),
-                    R.drawable.mulan,
-                    false
-                )
-            )
-            listOfFilms.add(
-                FilmItem(
-                    getString(R.string.text_film_4),
-                    getString(R.string.text_description_4),
-                    R.drawable.tenet,
-                    false
-                )
-            )
-        }
-    }
-
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        listOfFilms =
-            savedInstanceState.getParcelableArrayList<FilmItem>(KEY_FILM_LIST) as ArrayList<FilmItem>
-        listOfLikedFilms =
-            savedInstanceState.getParcelableArrayList<FilmItem>(KEY_LIKED_FILM_LIST) as ArrayList<FilmItem>
     }
 
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelableArrayList(KEY_FILM_LIST, listOfFilms)
-        outState.putParcelableArrayList(KEY_LIKED_FILM_LIST, listOfLikedFilms)
     }
 
     //OnFilmCLickListener
     override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
-        listOfFilms[position - 1] = filmItem
+        //listOfFilms[position - 1] = filmItem
         if (!listOfLikedFilms.contains(filmItem)) {
-            listOfLikedFilms.add(filmItem)
+            viewModel.insert(filmItem)
         }
         Snackbar.make(frameLayout, R.string.snackbar_like, Snackbar.LENGTH_SHORT)
             .setAction(R.string.snackbar_action) {
-                listOfLikedFilms.remove(filmItem)
-                listOfFilms[position - 1] = filmItem.apply { isLiked = false }
+                viewModel.delete(filmItem)
+                //listOfFilms[position - 1] = filmItem.apply { isLiked = false }
             }.show()
     }
 
     override fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
-        listOfFilms[position - 1] = filmItem
+        //listOfFilms[position - 1] = filmItem
         if (listOfLikedFilms.contains(filmItem)) {
-            listOfLikedFilms.remove(filmItem)
+            viewModel.delete(filmItem)
         }
         Snackbar.make(frameLayout, R.string.snackbar_dont_like, Snackbar.LENGTH_SHORT)
             .setAction(R.string.snackbar_action) {
-                listOfLikedFilms.add(filmItem)
-                listOfFilms[position - 1] = filmItem.apply { isLiked = true }
+                viewModel.insert(filmItem)
+                //listOfFilms[position - 1] = filmItem.apply { isLiked = true }
             }.show()
     }
 
@@ -181,7 +140,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
 
     //OnFavoriteListener
     override fun onFavoriteDeleted(item: FilmItem) {
-        listOfFilms[listOfFilms.indexOf(item)].isLiked = false
+        //listOfFilms[listOfFilms.indexOf(item)].isLiked = false
     }
 
     override fun onFavoriteDetail(item: FilmItem) {
@@ -190,11 +149,11 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
 
     //OnInfoFragmentListener
     override fun onRateButtonClicked(item: FilmItem) {
-        listOfFilms[listOfFilms.indexOf(item)].isLiked = item.isLiked
+        //listOfFilms[listOfFilms.indexOf(item)].isLiked = item.isLiked
         if (item.isLiked) {
-            listOfLikedFilms.add(item)
+            viewModel.insert(item)
         } else
-            listOfLikedFilms.remove(item)
+            viewModel.delete(item)
     }
 
     override fun onBackPressed() {

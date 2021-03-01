@@ -69,8 +69,6 @@ class FilmInfoFragment : Fragment() {
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
         textViewDescriprion.text = filmItem?.description
         editTextComment.setText(filmItem?.userComment)
-        val iconId = filmItem?.icon_id ?: ResourcesCompat.getColor(resources, R.color.gray, null)
-        imageViewPreview.setImageResource(iconId)
         return view
     }
 
