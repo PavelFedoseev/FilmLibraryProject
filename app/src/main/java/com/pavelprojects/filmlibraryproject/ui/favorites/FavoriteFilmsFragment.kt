@@ -8,10 +8,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.FilmAdapter
 import com.pavelprojects.filmlibraryproject.FilmItem
+import com.pavelprojects.filmlibraryproject.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.R
 
 
@@ -28,6 +30,7 @@ class FavoriteFilmsFragment : Fragment() {
         }
     }
 
+    private lateinit var viewModel: FilmLibraryViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
     private var listOfFavorite = arrayListOf<FilmItem>()
@@ -43,6 +46,7 @@ class FavoriteFilmsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
+        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application).create(FilmLibraryViewModel::class.java)
         listOfFavorite =
             arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
@@ -60,6 +64,7 @@ class FavoriteFilmsFragment : Fragment() {
         recyclerView.adapter = FilmAdapter(
             listOfFavorite,
             requireContext().getString(R.string.label_favorite),
+            viewModel,
             object : FilmAdapter.FilmClickListener() {
 
                 override fun onDetailClick(

@@ -43,6 +43,7 @@
                 android:scaleType="centerCrop"
                 android:transitionName="imageview_film_info"
                 app:layout_collapseMode="parallax"
+                android:src="@drawable/film_prew_splash_screen"
                 tools:src="@drawable/joker"
                 />
             <no.danielzeller.blurbehindlib.BlurBehindLayout

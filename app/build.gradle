@@ -19,11 +19,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    buildFeatures{
+        viewBinding = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -67,6 +71,9 @@ dependencies {
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
+    //Pagging
+    implementation "androidx.paging:paging-runtime-ktx:2.1.2"
 
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

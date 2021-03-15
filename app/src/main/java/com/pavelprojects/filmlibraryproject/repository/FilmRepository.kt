@@ -61,7 +61,7 @@ class FilmRepository(val application: Application) {
         filmItemDao?.deleteAllFilms()
     }
 
-    fun getPopularMovies(page: Int = 1, listener: PopularMoviesResponseListener){
+    fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener){
         val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             application.applicationContext.resources.configuration.locales[0].language
         } else {

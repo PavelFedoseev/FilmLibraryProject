@@ -15,6 +15,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -69,6 +71,10 @@ class FilmInfoFragment : Fragment() {
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
         textViewDescriprion.text = filmItem?.description
         editTextComment.setText(filmItem?.userComment)
+        Glide.with(this)
+            .load("https://image.tmdb.org/t/p/w780${filmItem?.backdropPath}")
+            .transform(CenterCrop())
+            .into(imageViewPreview)
         return view
     }
 

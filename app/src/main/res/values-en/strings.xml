@@ -17,7 +17,8 @@
     <string name="label_library">Library</string>
     <string name="label_favorite">Favorite</string>
 
-    <string name="snackbar_action">Отмена</string>
+    <string name="snackbar_cancel">Cancel</string>
+    <string name="snackbar_repeat">Repeat</string>
 
     <string name="snackbar_network_error">Failed to get movies</string>
     <string name="snackbar_network_error_action">Try again</string>

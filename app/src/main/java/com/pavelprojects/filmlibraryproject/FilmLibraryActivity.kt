@@ -1,7 +1,9 @@
 package com.pavelprojects.filmlibraryproject
 
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +20,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     private var listOfFilms = arrayListOf<FilmItem>()
     private var listOfLikedFilms = arrayListOf<FilmItem>()
 
+
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,15 +30,15 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
         initListeners()
         initModel()
         if (savedInstanceState == null)
-            openFilmListFragment(listOfFilms)
+            openFilmListFragment()
 
     }
 
     private fun initViews() {
-        val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView) 
         bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
             if (item.itemId == R.id.menu_home) {
-                openFilmListFragment(listOfFilms)
+                openFilmListFragment()
             } else {
                 openFavoriteFilmsFragment(listOfLikedFilms)
             }
@@ -54,23 +57,27 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
         }
          */
     }
+
     private fun initModel(){
         viewModel.getAllFilms().observe(this){
             listOfLikedFilms.clear()
             listOfLikedFilms.addAll(it)
         }
-        viewModel.getPopularMovies().observe(this){
-            listOfFilms.addAll(it)
+        viewModel.getSnackBarString().observe(this){
+            Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
+                .setAction(R.string.snackbar_repeat) {
+                    viewModel.initFilmDownloading()
+                }.show()
         }
     }
 
-    private fun openFilmListFragment(listOfFilms: ArrayList<FilmItem>) {
+    private fun openFilmListFragment() {
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
             .replace(
                 R.id.fragmentContainer,
-                FilmListFragment.newInstance(listOfFilms),
+                FilmListFragment.newInstance(),
                 FilmListFragment.TAG
             )
             .commit()
@@ -100,15 +107,6 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             .commit()
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-    }
-
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-    }
-
     //OnFilmCLickListener
     override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         //listOfFilms[position - 1] = filmItem
@@ -116,7 +114,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             viewModel.insert(filmItem)
         }
         Snackbar.make(frameLayout, R.string.snackbar_like, Snackbar.LENGTH_SHORT)
-            .setAction(R.string.snackbar_action) {
+            .setAction(R.string.snackbar_cancel) {
                 viewModel.delete(filmItem)
                 //listOfFilms[position - 1] = filmItem.apply { isLiked = false }
             }.show()
@@ -128,7 +126,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             viewModel.delete(filmItem)
         }
         Snackbar.make(frameLayout, R.string.snackbar_dont_like, Snackbar.LENGTH_SHORT)
-            .setAction(R.string.snackbar_action) {
+            .setAction(R.string.snackbar_cancel) {
                 viewModel.insert(filmItem)
                 //listOfFilms[position - 1] = filmItem.apply { isLiked = true }
             }.show()

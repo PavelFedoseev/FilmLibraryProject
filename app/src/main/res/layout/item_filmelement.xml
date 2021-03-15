@@ -21,7 +21,7 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="@dimen/imageview_size_width"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/imageview_size_height"
             android:transitionName="imageview_film_item"
             android:layout_marginBottom="@dimen/view_spacing"

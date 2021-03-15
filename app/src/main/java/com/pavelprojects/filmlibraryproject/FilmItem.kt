@@ -13,7 +13,8 @@ import kotlinx.android.parcel.Parcelize
 data class FilmItem(
     @PrimaryKey
     @ColumnInfo(name = "id")
-    var id: Long,
+    @SerializedName("current_id")
+    var id: Long = 0,
     @SerializedName("id") var filmId: Int, //TMDB film id
     @SerializedName("title") var name: String,
     @SerializedName("overview") var description: String,

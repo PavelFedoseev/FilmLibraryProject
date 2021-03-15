@@ -5,16 +5,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 
-class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: FilmClickListener) :
+class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: FilmLibraryViewModel, var listener: FilmClickListener) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
         const val VIEW_TYPE_HEADER = 2
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -54,6 +60,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
+        } else if(holder is FooterItemViewHolder) {
+            holder.bindView(viewModel.getLoadingStatus())
         }
     }
 
@@ -79,17 +87,31 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         fun bindView(item: FilmItem) {
             this.item = item
             titleTv.text = item.name
+
+            Glide.with(itemView)
+                .load("https://image.tmdb.org/t/p/w342${item.posterPath}")
+                .transform()
+                .into(imageView)
         }
     }
 
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         //TODO Footer
-        fun bindView() {}
+        private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
+        fun bindView(isLoading : Boolean?) {
+            if(isLoading == true){
+                progressBar.visibility = View.VISIBLE
+            }
+            else {
+                progressBar.visibility = View.GONE
+            }
+
+        }
     }
 
     class HeaderItemViewHolder(itemView: View, var header: String) :
         RecyclerView.ViewHolder(itemView) {
-        val textView: TextView = itemView.findViewById(R.id.textview_header)
+        private val textView: TextView = itemView.findViewById(R.id.textview_header)
         fun bindView() {
             textView.text = header
         }

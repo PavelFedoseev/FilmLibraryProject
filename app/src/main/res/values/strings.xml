@@ -16,7 +16,8 @@
     <string name="label_library">Библиотека</string>
     <string name="label_favorite">Избранное</string>
 
-    <string name="snackbar_action">Отмена</string>
+    <string name="snackbar_cancel">Отмена</string>
+    <string name="snackbar_repeat">Повторить</string>
 
     <string name="snackbar_network_error">Не удалось получить фильмы</string>
     <string name="snackbar_network_error_action">Повторить</string>
