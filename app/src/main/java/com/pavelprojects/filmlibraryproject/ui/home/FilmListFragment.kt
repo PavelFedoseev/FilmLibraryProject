@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
+import com.pavelprojects.filmlibraryproject.broadcast.InternetBroadcast
 
 class FilmListFragment : Fragment() {
     companion object {
@@ -54,6 +55,14 @@ class FilmListFragment : Fragment() {
         viewModel.getNetworkLoadingStatus().observe(requireActivity()) {
 
         }
+        InternetBroadcast(
+            object : InternetBroadcast.OnBroadcastReceiver{
+                override fun onOnlineStatus(status: Boolean) {
+                    viewModel.initFilmDownloading()
+                }
+
+            }
+            )
     }
 
     private fun initRecycler(view: View) {

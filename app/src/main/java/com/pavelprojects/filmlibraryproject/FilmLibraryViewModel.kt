@@ -97,7 +97,6 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
                 override fun onSuccess(data: FilmDataResponse?) {
                     allPages = data?.pages ?: 1
                     listOfFilmItem.postValue(data?.movies)
-                    currentPage.postValue(data?.page)
                     isNetworkLoading.postValue(false)
                 }
 
