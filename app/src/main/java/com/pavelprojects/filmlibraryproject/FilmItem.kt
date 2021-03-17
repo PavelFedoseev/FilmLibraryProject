@@ -11,10 +11,10 @@ import kotlinx.android.parcel.Parcelize
 @Entity(tableName = "film_table")
 @Parcelize
 data class FilmItem(
-    @PrimaryKey
     @ColumnInfo(name = "id")
     @SerializedName("current_id")
-    var id: Long = 0,
+    @PrimaryKey(autoGenerate = true)
+    var id: Int,
     @SerializedName("id") var filmId: Int, //TMDB film id
     @SerializedName("title") var name: String,
     @SerializedName("overview") var description: String,

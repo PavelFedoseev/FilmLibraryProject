@@ -3,98 +3,112 @@ package com.pavelprojects.filmlibraryproject.repository
 import android.app.Application
 import android.os.Build
 import android.util.Log
+import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.FilmItem
 import com.pavelprojects.filmlibraryproject.dao.FilmItemDao
+import com.pavelprojects.filmlibraryproject.database.FavoriteFilmDbObject
 import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
 import com.pavelprojects.filmlibraryproject.retrofit.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.retrofit.RetroApi
+import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
-class FilmRepository(val application: Application) {
+class FilmRepository() {
 
-    private val api: RetroApi
-
-    companion object{
+    companion object {
         const val TAG_FILM_REPO = "FilmRepository"
+        const val CODE_FILM_DB = 1
+        const val CODE_FAV_FILM_DB = 2
     }
 
-    init {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(RetroApi.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
-        api = retrofit.create(RetroApi::class.java)
-    }
     private var filmItemDao: FilmItemDao? =
-        FilmDatabaseObject.getInstance(application)?.getFilmItemDao()
+        FilmDatabaseObject.getInstance(App.instance)?.getFilmItemDao()
+    private var favFilmDao: FilmItemDao? =
+        FavoriteFilmDbObject.getInstance(App.instance)?.getFilmItemDao()
 
-    fun insert(filmItem: FilmItem) {
+    fun insert(filmItem: FilmItem, code: Int) {
+        if(code == CODE_FILM_DB)
         filmItemDao?.insert(filmItem)
+        else favFilmDao?.insert(filmItem)
     }
 
-    fun insertAll(listOfFilms: List<FilmItem>) {
+    fun insertAll(listOfFilms: List<FilmItem>, code: Int) {
+        if(code == CODE_FILM_DB)
         filmItemDao?.insertAll(listOfFilms)
+        else favFilmDao?.insertAll(listOfFilms)
     }
 
-    fun update(filmItem: FilmItem) {
+    fun update(filmItem: FilmItem, code: Int) {
+        if(code == CODE_FILM_DB)
         filmItemDao?.update(filmItem)
+        else favFilmDao?.update(filmItem)
     }
 
-    fun getAllFilms(): List<FilmItem>? {
-        return filmItemDao?.getAll()
+    fun getAllFilms(code: Int): List<FilmItem>? {
+        return if(code == CODE_FILM_DB)
+         filmItemDao?.getAll()
+        else favFilmDao?.getAll()
     }
 
-    fun getFilmById(id: Long): FilmItem? {
-        return filmItemDao?.getById(id)
+    fun getFilmById(id: Long, code: Int): FilmItem? {
+        return if(code == CODE_FILM_DB)
+            filmItemDao?.getById(id)
+        else favFilmDao?.getById(id)
     }
 
-    fun delete(filmItem: FilmItem) {
-        filmItemDao?.delete(filmItem)
+    fun delete(filmItem: FilmItem, code: Int) {
+        if(code == CODE_FILM_DB)
+            filmItemDao?.delete(filmItem)
+        else favFilmDao?.delete(filmItem)
     }
 
-    fun deleteAll() {
+    fun deleteAll(code: Int) {
+        if(code == CODE_FILM_DB)
         filmItemDao?.deleteAllFilms()
+        else favFilmDao?.deleteAllFilms()
     }
 
-    fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener){
+    fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener) {
         val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            application.applicationContext.resources.configuration.locales[0].language
+            App.instance.applicationContext.resources.configuration.locales[0].language
         } else {
-            application.applicationContext.resources.configuration.locale.language
+            App.instance.applicationContext.resources.configuration.locale.language
         }
-            api.getPopularMovies(page = page, language = languageCode).enqueue(object: Callback<FilmDataResponse> {
-            override fun onFailure(call: Call<FilmDataResponse>, t: Throwable) {
-                listener.onFailure()
-                Log.e(TAG_FILM_REPO, t.toString())
-            }
+        App.instance.api.getPopularMovies(page = page, language = languageCode)
+            .enqueue(object : Callback<FilmDataResponse> {
+                override fun onFailure(call: Call<FilmDataResponse>, t: Throwable) {
+                    listener.onFailure()
+                    Log.e(TAG_FILM_REPO, t.toString())
+                }
 
-            override fun onResponse(
-                call: Call<FilmDataResponse>,
-                response: Response<FilmDataResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val responseBody = response.body()
+                override fun onResponse(
+                    call: Call<FilmDataResponse>,
+                    response: Response<FilmDataResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val responseBody = response.body()
 
-                    if (responseBody != null) {
-                        listener.onSuccess(response.body())
-                        Log.d(TAG_FILM_REPO, "Movies: ${responseBody.movies}")
-                    } else {
-                        listener.onFailure()
-                        Log.d(TAG_FILM_REPO, "Failed to get response")
+                        if (responseBody != null) {
+                            listener.onSuccess(response.body())
+                            Log.d(TAG_FILM_REPO, "Movies: ${responseBody.movies}")
+                        } else {
+                            listener.onFailure()
+                            Log.d(TAG_FILM_REPO, "Failed to get response")
+                        }
                     }
                 }
-            }
-        })
+            })
 
     }
 
-    interface PopularMoviesResponseListener{
-        fun onSuccess(data : FilmDataResponse?)
+    interface PopularMoviesResponseListener {
+        fun onSuccess(data: FilmDataResponse?)
         fun onFailure()
     }
 

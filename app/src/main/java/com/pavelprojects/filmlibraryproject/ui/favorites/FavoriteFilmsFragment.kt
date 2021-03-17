@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui.favorites
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,10 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.pavelprojects.filmlibraryproject.FilmAdapter
-import com.pavelprojects.filmlibraryproject.FilmItem
-import com.pavelprojects.filmlibraryproject.FilmLibraryViewModel
-import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.*
 
 
 class FavoriteFilmsFragment : Fragment() {
@@ -23,11 +21,7 @@ class FavoriteFilmsFragment : Fragment() {
         const val TAG = "Favorite Fragment"
         const val KEY_LIST_FILMS = "arrayList list films"
 
-        fun newInstance(arrayList: ArrayList<FilmItem>) = FavoriteFilmsFragment().apply {
-            arguments = Bundle().apply {
-                putParcelableArrayList(KEY_LIST_FILMS, arrayList)
-            }
-        }
+        fun newInstance() = FavoriteFilmsFragment()
     }
 
     private lateinit var viewModel: FilmLibraryViewModel
@@ -46,12 +40,23 @@ class FavoriteFilmsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
-        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application).create(FilmLibraryViewModel::class.java)
-        listOfFavorite =
-            arguments?.getParcelableArrayList<FilmItem>(KEY_LIST_FILMS) as ArrayList<FilmItem>
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
+        initModel()
         initRecycler()
         return view
+    }
+    private fun initModel(){
+        viewModel = if(activity is FilmLibraryActivity) {
+            (requireActivity() as FilmLibraryActivity).viewModel
+        } else {
+            ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
+                .create(FilmLibraryViewModel::class.java)
+        }
+        viewModel.getAllFilms(FilmLibraryViewModel.CODE_FAV_FILM_DB).observe(requireActivity()){
+            listOfFavorite.clear()
+            listOfFavorite.addAll(it)
+            //recyclerView.adapter?.notifyDataSetChanged()
+        }
     }
 
     private fun initRecycler() {
@@ -82,8 +87,8 @@ class FavoriteFilmsFragment : Fragment() {
                     position: Int,
                     adapterPosition: Int
                 ) {
+                    viewModel.delete(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
                     listOfFavorite.remove(filmItem)
-                    (activity as? OnFavoriteListener)?.onFavoriteDeleted(filmItem)
                     recyclerView.adapter?.notifyItemRemoved(adapterPosition)
                     if (listOfFavorite.isEmpty()) {
                         recyclerView.background = ResourcesCompat.getDrawable(
@@ -111,17 +116,10 @@ class FavoriteFilmsFragment : Fragment() {
                 }
             }
         }
-        if (listOfFavorite.isEmpty()) {
-            recyclerView.background = ResourcesCompat.getDrawable(
-                requireContext().resources,
-                R.drawable.background_recycler_favorite,
-                null
-            )
-        }
+
     }
 
     interface OnFavoriteListener {
-        fun onFavoriteDeleted(item: FilmItem)
         fun onFavoriteDetail(item: FilmItem)
     }
 }

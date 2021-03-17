@@ -19,6 +19,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
         const val VIEW_TYPE_HEADER = 2
+        const val VIEW_TYPE_NULL = -1
     }
 
 
@@ -34,9 +35,13 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
                 view = layoutInflater.inflate(R.layout.item_footer, parent, false)
                 FooterItemViewHolder(view)
             }
-            else -> {
+            VIEW_TYPE_HEADER -> {
                 view = layoutInflater.inflate(R.layout.item_header, parent, false)
                 HeaderItemViewHolder(view, header)
+            }
+            else -> {
+                view = layoutInflater.inflate(R.layout.item_null, parent, false)
+                EmptyItemViewHolder(view)
             }
         }
 
@@ -73,7 +78,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
     override fun getItemViewType(position: Int): Int {
         return when (position) {
             0 -> VIEW_TYPE_HEADER
-            list.size + 1 -> VIEW_TYPE_FOOTER
+            list.size + 1 -> if(list.size > 2) VIEW_TYPE_FOOTER else VIEW_TYPE_NULL
             else -> VIEW_TYPE_FILM
         }
     }
@@ -96,7 +101,6 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
     }
 
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //TODO Footer
         private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
         fun bindView(isLoading : Boolean?) {
             if(isLoading == true){
@@ -109,6 +113,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
         }
     }
 
+
     class HeaderItemViewHolder(itemView: View, var header: String) :
         RecyclerView.ViewHolder(itemView) {
         private val textView: TextView = itemView.findViewById(R.id.textview_header)
@@ -117,10 +122,13 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
         }
     }
 
+    class EmptyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
     interface FilmClickInterface {
         fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
         fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int, view: View)
     }
+
 
     abstract class FilmClickListener : FilmClickInterface {
         companion object {

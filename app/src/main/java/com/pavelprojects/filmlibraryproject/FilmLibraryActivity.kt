@@ -1,9 +1,7 @@
 package com.pavelprojects.filmlibraryproject
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.view.MenuItem
-import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -14,12 +12,9 @@ import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
 class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickListener,
-    FavoriteFilmsFragment.OnFavoriteListener, FilmInfoFragment.OnInfoFragmentListener {
+    FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener {
 
-    private val viewModel by lazy { ViewModelProvider(this).get(FilmLibraryViewModel::class.java) }
-    private var listOfFilms = arrayListOf<FilmItem>()
-    private var listOfLikedFilms = arrayListOf<FilmItem>()
-
+    val viewModel by lazy { ViewModelProvider(this).get(FilmLibraryViewModel::class.java) }
 
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
 
@@ -35,12 +30,12 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     }
 
     private fun initViews() {
-        val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView) 
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
         bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
             if (item.itemId == R.id.menu_home) {
                 openFilmListFragment()
             } else {
-                openFavoriteFilmsFragment(listOfLikedFilms)
+                openFavoriteFilmsFragment()
             }
             return@setOnNavigationItemSelectedListener true
         }
@@ -58,12 +53,8 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
          */
     }
 
-    private fun initModel(){
-        viewModel.getAllFilms().observe(this){
-            listOfLikedFilms.clear()
-            listOfLikedFilms.addAll(it)
-        }
-        viewModel.getSnackBarString().observe(this){
+    private fun initModel() {
+        viewModel.getSnackBarString().observe(this) {
             Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
                 .setAction(R.string.snackbar_repeat) {
                     viewModel.initFilmDownloading()
@@ -95,18 +86,19 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             .commit()
     }
 
-    private fun openFavoriteFilmsFragment(favoriteFilms: ArrayList<FilmItem>) {
+    private fun openFavoriteFilmsFragment() {
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
             .replace(
                 R.id.fragmentContainer,
-                FavoriteFilmsFragment.newInstance(favoriteFilms),
+                FavoriteFilmsFragment.newInstance(),
                 FavoriteFilmsFragment.TAG
             )
             .commit()
     }
 
+    /*
     //OnFilmCLickListener
     override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         //listOfFilms[position - 1] = filmItem
@@ -123,7 +115,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     override fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         //listOfFilms[position - 1] = filmItem
         if (listOfLikedFilms.contains(filmItem)) {
-            viewModel.delete(filmItem)
+            viewModel.delete(filmItem, )
         }
         Snackbar.make(frameLayout, R.string.snackbar_dont_like, Snackbar.LENGTH_SHORT)
             .setAction(R.string.snackbar_cancel) {
@@ -132,10 +124,19 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             }.show()
     }
 
+     */
+    override fun onRateButtonClicked(item: FilmItem) {
+
+    }
+
     override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
         openFilmInfoFragment(filmItem)
     }
 
+    override fun onFavoriteDetail(item: FilmItem) {
+        openFilmInfoFragment(item)
+    }
+    /*
     //OnFavoriteListener
     override fun onFavoriteDeleted(item: FilmItem) {
         //listOfFilms[listOfFilms.indexOf(item)].isLiked = false
@@ -145,6 +146,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
         openFilmInfoFragment(item)
     }
 
+
     //OnInfoFragmentListener
     override fun onRateButtonClicked(item: FilmItem) {
         //listOfFilms[listOfFilms.indexOf(item)].isLiked = item.isLiked
@@ -153,6 +155,8 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
         } else
             viewModel.delete(item)
     }
+
+     */
 
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {

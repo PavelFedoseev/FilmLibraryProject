@@ -10,20 +10,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.broadcast.InternetBroadcast
 
 class FilmListFragment : Fragment() {
     companion object {
         const val TAG = "FilmListFragment"
-        private const val KEY_LIST_FILMS = "ListOfFilms"
-        private const val KEY_FILM_PAGE = "FilmLLISTPAGE"
         fun newInstance() = FilmListFragment()
     }
 
     var listOfFilms = arrayListOf<FilmItem>()
     var orientation = 0
-    private var currentPage = 1
 
     lateinit var layoutManager: GridLayoutManager
     private lateinit var recyclerView: RecyclerView
@@ -35,34 +33,43 @@ class FilmListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
-        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
-            .create(FilmLibraryViewModel::class.java)
+        viewModel = if (activity is FilmLibraryActivity) {
+            (requireActivity() as FilmLibraryActivity).viewModel
+        } else {
+            ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
+                .create(FilmLibraryViewModel::class.java)
+        }
         orientation = resources.configuration.orientation
         layoutManager = if (orientation == Configuration.ORIENTATION_PORTRAIT)
             GridLayoutManager(requireContext(), 2)
         else
             GridLayoutManager(requireContext(), 4)
         initRecycler(view)
-        initModel()
+        initModel(view)
         return view
     }
 
-    private fun initModel() {
-        viewModel.getPopularMovies(viewModel.getCurrentPage() ?: 1 +1).observe(requireActivity()) {
+    private fun initModel(view: View) {
+        viewModel.getPopularMovies().observe(requireActivity()) {
             listOfFilms.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
         }
         viewModel.getNetworkLoadingStatus().observe(requireActivity()) {
 
         }
-        InternetBroadcast(
-            object : InternetBroadcast.OnBroadcastReceiver{
-                override fun onOnlineStatus(status: Boolean) {
+        viewModel.getSnackBarString().observe(requireActivity()) {
+            Snackbar.make(view.rootView, it, Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.snackbar_repeat) {
                     viewModel.initFilmDownloading()
+                }.show()
+        }
+        InternetBroadcast(
+            object : InternetBroadcast.OnBroadcastReceiver {
+                override fun onOnlineStatus(status: Boolean) {
+                    viewModel.downloadPopularMovies()
                 }
-
             }
-            )
+        )
     }
 
     private fun initRecycler(view: View) {
@@ -92,21 +99,14 @@ class FilmListFragment : Fragment() {
                 ) {
                     if (filmItem.isLiked) {
                         filmItem.isLiked = false
-                        (activity as? OnFilmClickListener)?.onDislikeClicked(
-                            filmItem,
-                            position,
-                            adapterPosition
-                        )
+                        viewModel.delete(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
                         //Toast.makeText(requireContext(), resources.getText(R.string.snackbar_dont_like), Toast.LENGTH_SHORT).show()
                     } else {
                         filmItem.isLiked = true
-                        (activity as? OnFilmClickListener)?.onLikeClicked(
-                            filmItem,
-                            position,
-                            adapterPosition
-                        )
+                        viewModel.insert(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
                         //Toast.makeText(requireContext(), resources.getText(R.string.snackbar_like), Toast.LENGTH_SHORT).show()
                     }
+                    viewModel.update(filmItem, FilmLibraryViewModel.CODE_FILM_DB)
                     listOfFilms[position - 1] = filmItem
                     recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
                 }
@@ -133,9 +133,9 @@ class FilmListFragment : Fragment() {
                 val visibleItemCount = layoutManager.childCount
                 val pastVisibleItem = layoutManager.findFirstVisibleItemPosition()
                 val viewCount = adapter.itemCount - 2
-                if (viewModel.getLoadingStatus() != true && viewModel.getCurrentPage() ?: 1 < viewModel.allPages)
+                if (viewModel.getLoadingStatus() != true && viewModel.page < viewModel.allPages)
                     if (visibleItemCount + pastVisibleItem >= viewCount) {
-                        viewModel.getPopularMovies(viewModel.getCurrentPage() ?: 1 + 1)
+                        viewModel.getPopularMovies()
                     }
                 super.onScrolled(recyclerView, dx, dy)
             }
@@ -144,8 +144,6 @@ class FilmListFragment : Fragment() {
     }
 
     interface OnFilmClickListener {
-        fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int)
-        fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int)
         fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int)
     }
 
