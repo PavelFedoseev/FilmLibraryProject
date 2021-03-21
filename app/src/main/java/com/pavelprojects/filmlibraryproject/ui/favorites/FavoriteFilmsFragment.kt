@@ -1,6 +1,5 @@
 package com.pavelprojects.filmlibraryproject.ui.favorites
 
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -52,10 +51,10 @@ class FavoriteFilmsFragment : Fragment() {
             ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
                 .create(FilmLibraryViewModel::class.java)
         }
-        viewModel.getAllFilms(FilmLibraryViewModel.CODE_FAV_FILM_DB).observe(requireActivity()){
+        viewModel.getFavFilms().observe(this.viewLifecycleOwner){
             listOfFavorite.clear()
             listOfFavorite.addAll(it)
-            //recyclerView.adapter?.notifyDataSetChanged()
+            recyclerView.adapter?.notifyDataSetChanged()
         }
     }
 

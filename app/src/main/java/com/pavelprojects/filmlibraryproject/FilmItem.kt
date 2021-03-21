@@ -15,13 +15,13 @@ data class FilmItem(
     @SerializedName("current_id")
     @PrimaryKey(autoGenerate = true)
     var id: Int,
-    @SerializedName("id") var filmId: Int, //TMDB film id
-    @SerializedName("title") var name: String,
-    @SerializedName("overview") var description: String,
-    @SerializedName("poster_path") val posterPath: String,
-    @SerializedName("backdrop_path") val backdropPath: String,
-    @SerializedName("vote_average") val rating: Float,
-    @SerializedName("release_date") val releaseDate: String,
+    @SerializedName("id") var filmId: Int?, //TMDB film id
+    @SerializedName("title") var name: String?,
+    @SerializedName("overview") var description: String?,
+    @SerializedName("poster_path") val posterPath: String?,
+    @SerializedName("backdrop_path") val backdropPath: String?,
+    @SerializedName("vote_average") val rating: Float?,
+    @SerializedName("release_date") val releaseDate: String?,
     var userComment: String? = null,
     var isLiked: Boolean
 ) : Parcelable

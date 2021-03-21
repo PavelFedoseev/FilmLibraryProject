@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     companion object {
-        const val TAG_FLVM = "FilmLibraryViewModel"
+        const val TAG = "FilmLibraryViewModel"
         const val LOG_INTERNET = "Network Status"
         const val CODE_FILM_DB = 1
         const val CODE_FAV_FILM_DB = 2
@@ -28,12 +28,11 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     private val listOfFilmItem = MutableLiveData<List<FilmItem>>()
     private val snackBarText = MutableLiveData<String>()
     private val isNetworkLoading = MutableLiveData<Boolean>()
-    var page: Int = 1
 
     var allPages = 1
 
     init {
-        Log.d(TAG_FLVM, this.toString())
+        Log.d(TAG, this.toString())
     }
 
     fun insert(filmItem: FilmItem, code: Int) {
@@ -47,6 +46,14 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
             repository.insertAll(list, code)
         }
     }
+    /*
+    private fun insertAllGetFilms(list: List<FilmItem>): List<FilmItem> {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insertAllGetFilms(list)
+        }
+    }
+
+     */
 
     fun update(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -54,12 +61,19 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun getAllFilms(code: Int): LiveData<List<FilmItem>> {
+    fun getAllFilms(): LiveData<List<FilmItem>> {
         viewModelScope.launch(Dispatchers.IO) {
-            listOfFavoriteFilmItem.postValue(repository.getAllFilms(code))
+            if(App.instance.loadedPage!=1)
+            listOfFilmItem.postValue(repository.getAllFilms())
         }
-        return if (code == CODE_FILM_DB) listOfFilmItem
-        else listOfFavoriteFilmItem
+        return listOfFilmItem
+    }
+
+    fun getFavFilms(): LiveData<List<FilmItem>> {
+        viewModelScope.launch(Dispatchers.IO) {
+            listOfFavoriteFilmItem.postValue(repository.getFavFilms())
+        }
+        return listOfFavoriteFilmItem
     }
 
     fun getFilmById(id: Long, code: Int): LiveData<FilmItem?> {
@@ -81,35 +95,41 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun getPopularMovies(page: Int = 1): LiveData<List<FilmItem>> {
-        if (isOnline(app))
-            initFilmDownloading(page)
+    fun getPopularMovies(): LiveData<List<FilmItem>> {
+        if(isOnline(app))
+            initFilmDownloading()
         return listOfFilmItem
     }
 
-    fun downloadPopularMovies(page: Int = 1) {
-        if (isOnline(app))
+    fun downloadPopularMovies(){
+        if(isOnline(app))
             initFilmDownloading()
     }
 
     fun getLoadingStatus(): Boolean? = isNetworkLoading.value
 
 
-    fun initFilmDownloading(page: Int = 1) {
+    fun initFilmDownloading() {
+        Log.d(TAG, "initFilmDownloading: loadedPage = ${App.instance.loadedPage}")
         isNetworkLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             repository.getPopularMovies(
-                page,
+                App.instance.loadedPage,
                 object : FilmRepository.PopularMoviesResponseListener {
                     override fun onSuccess(data: FilmDataResponse?) {
                         allPages = data?.pages ?: 1
-                        listOfFilmItem.postValue(data?.movies)
-                        this@FilmLibraryViewModel.page = data?.page ?: 1
+                        if(App.instance.loadedPage == 1)
+                            deleteAll(CODE_FILM_DB)
+                        App.instance.loadedPage++
+                        if(data!=null) {
+                            insertAll(data.movies, CODE_FILM_DB)
+                            listOfFilmItem.postValue(data.movies)
+                        }
                         isNetworkLoading.postValue(false)
                     }
 
                     override fun onFailure() {
-                        snackBarText.postValue(app.resources.getString(R.string.snackbar_network_error))
+                        snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
                     }
                 })
         }

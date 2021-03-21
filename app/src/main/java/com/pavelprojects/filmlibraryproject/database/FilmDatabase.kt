@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.pavelprojects.filmlibraryproject.FilmItem
 import com.pavelprojects.filmlibraryproject.dao.FilmItemDao
 
-@Database(entities = [FilmItem::class], version = 2, exportSchema = false)
+@Database(entities = [FilmItem::class], version = 3, exportSchema = false)
 abstract class FilmDatabase : RoomDatabase() {
     abstract fun getFilmItemDao(): FilmItemDao
 }

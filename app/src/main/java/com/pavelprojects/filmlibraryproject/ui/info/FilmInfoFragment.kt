@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.res.ConfigurationHelper
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -22,6 +23,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.FilmItem
 import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 
 
@@ -72,7 +74,7 @@ class FilmInfoFragment : Fragment() {
         textViewDescriprion.text = filmItem?.description
         editTextComment.setText(filmItem?.userComment)
         Glide.with(this)
-            .load("https://image.tmdb.org/t/p/w780${filmItem?.backdropPath}")
+            .load(LINK_TMDB_POSTER+filmItem?.backdropPath)
             .transform(CenterCrop())
             .into(imageViewPreview)
         return view

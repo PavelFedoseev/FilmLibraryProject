@@ -1,5 +1,7 @@
 package com.pavelprojects.filmlibraryproject
 
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.FrameLayout
@@ -7,9 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.pavelprojects.filmlibraryproject.broadcast.InternetBroadcast
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
+import kotlinx.android.synthetic.main.activity_filmlibrary.*
 
 class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickListener,
     FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener {
@@ -17,6 +21,8 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     val viewModel by lazy { ViewModelProvider(this).get(FilmLibraryViewModel::class.java) }
 
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
+    private lateinit var snackbar: Snackbar
+    private lateinit var broadcast: InternetBroadcast
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +66,22 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
                     viewModel.initFilmDownloading()
                 }.show()
         }
+        viewModel.getSnackBarString().observe(this) {
+            makeSnackBar(it, this.getString(R.string.snackbar_network_error_action))
+        }
+        val filter = IntentFilter("com.pavelprojects.BroadcastReceiver").apply { addAction(
+            ConnectivityManager.CONNECTIVITY_ACTION)}
+        broadcast = InternetBroadcast(
+            object : InternetBroadcast.OnBroadcastReceiver {
+                override fun onOnlineStatus(isOnline: Boolean) {
+                    if(isOnline) {
+                        viewModel.downloadPopularMovies()
+                        dismissSnackBar()
+                    }
+                    else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
+                }
+            })
+        registerReceiver(broadcast, filter)
     }
 
     private fun openFilmListFragment() {
@@ -98,33 +120,19 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
             .commit()
     }
 
-    /*
-    //OnFilmCLickListener
-    override fun onLikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
-        //listOfFilms[position - 1] = filmItem
-        if (!listOfLikedFilms.contains(filmItem)) {
-            viewModel.insert(filmItem)
-        }
-        Snackbar.make(frameLayout, R.string.snackbar_like, Snackbar.LENGTH_SHORT)
-            .setAction(R.string.snackbar_cancel) {
-                viewModel.delete(filmItem)
-                //listOfFilms[position - 1] = filmItem.apply { isLiked = false }
-            }.show()
+    fun makeSnackBar(text: String, action: String? = null) {
+        snackbar = Snackbar.make(constraintLayoutParent, text, Snackbar.LENGTH_INDEFINITE)
+                .setAction(action) {
+                    viewModel.initFilmDownloading()
+                }.also { it.show() }
     }
 
-    override fun onDislikeClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
-        //listOfFilms[position - 1] = filmItem
-        if (listOfLikedFilms.contains(filmItem)) {
-            viewModel.delete(filmItem, )
+    fun dismissSnackBar() {
+        if(this::snackbar.isInitialized){
+            snackbar.dismiss()
         }
-        Snackbar.make(frameLayout, R.string.snackbar_dont_like, Snackbar.LENGTH_SHORT)
-            .setAction(R.string.snackbar_cancel) {
-                viewModel.insert(filmItem)
-                //listOfFilms[position - 1] = filmItem.apply { isLiked = true }
-            }.show()
     }
 
-     */
     override fun onRateButtonClicked(item: FilmItem) {
 
     }
@@ -136,27 +144,6 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
     override fun onFavoriteDetail(item: FilmItem) {
         openFilmInfoFragment(item)
     }
-    /*
-    //OnFavoriteListener
-    override fun onFavoriteDeleted(item: FilmItem) {
-        //listOfFilms[listOfFilms.indexOf(item)].isLiked = false
-    }
-
-    override fun onFavoriteDetail(item: FilmItem) {
-        openFilmInfoFragment(item)
-    }
-
-
-    //OnInfoFragmentListener
-    override fun onRateButtonClicked(item: FilmItem) {
-        //listOfFilms[listOfFilms.indexOf(item)].isLiked = item.isLiked
-        if (item.isLiked) {
-            viewModel.insert(item)
-        } else
-            viewModel.delete(item)
-    }
-
-     */
 
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
@@ -175,5 +162,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmClickLis
                 })
     }
 
-
+    override fun onDestroy() {
+        super.onDestroy()
+    }
 }

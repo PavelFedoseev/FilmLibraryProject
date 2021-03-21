@@ -21,6 +21,7 @@ class App : Application() {
 
     lateinit var api: RetroApi
     lateinit var repository: FilmRepository
+    var loadedPage: Int = 1
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG_APP, "$TAG_APP onCreate")
@@ -33,8 +34,8 @@ class App : Application() {
             .baseUrl(RetroApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(
-                OkHttpClient().newBuilder().connectTimeout(2, TimeUnit.SECONDS)
-                    .readTimeout(2, TimeUnit.SECONDS).build()
+                OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS).build()
             )
             .build()
         api = retrofit.create(RetroApi::class.java)

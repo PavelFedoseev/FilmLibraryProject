@@ -19,7 +19,8 @@
     <string name="snackbar_cancel">Отмена</string>
     <string name="snackbar_repeat">Повторить</string>
 
-    <string name="snackbar_network_error">Не удалось получить фильмы</string>
+    <string name="snackbar_download_error">Не удалось получить фильмы</string>
+    <string name="snackbar_network_error">Ошибка подключения</string>
     <string name="snackbar_network_error_action">Повторить</string>
 
     <string name="message_favorite_delete">Фильм убран из избранного</string>

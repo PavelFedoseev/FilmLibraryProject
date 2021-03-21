@@ -10,14 +10,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.*
-import com.pavelprojects.filmlibraryproject.broadcast.InternetBroadcast
 
 class FilmListFragment : Fragment() {
     companion object {
         const val TAG = "FilmListFragment"
         fun newInstance() = FilmListFragment()
+
+        const val KEY_LIST = "FilmList"
+        const val KEY_RECYCLER_POS = "RecycelerViewPos"
     }
 
     var listOfFilms = arrayListOf<FilmItem>()
@@ -27,11 +28,13 @@ class FilmListFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewModel: FilmLibraryViewModel
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d(TAG, "onCreateView")
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
         viewModel = if (activity is FilmLibraryActivity) {
             (requireActivity() as FilmLibraryActivity).viewModel
@@ -45,34 +48,30 @@ class FilmListFragment : Fragment() {
         else
             GridLayoutManager(requireContext(), 4)
         initRecycler(view)
-        initModel(view)
+        initModel()
         return view
     }
 
-    private fun initModel(view: View) {
-        viewModel.getPopularMovies().observe(requireActivity()) {
+    private fun initModel() {
+        Log.d(TAG, "initModel")
+        viewModel.getPopularMovies().observe(this.viewLifecycleOwner) {
+        }
+        viewModel.getAllFilms().observe(this.viewLifecycleOwner){
+            if(!listOfFilms.containsAll(it))
             listOfFilms.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
         }
-        viewModel.getNetworkLoadingStatus().observe(requireActivity()) {
+        viewModel.getNetworkLoadingStatus().observe(this.viewLifecycleOwner) {
 
         }
-        viewModel.getSnackBarString().observe(requireActivity()) {
-            Snackbar.make(view.rootView, it, Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.snackbar_repeat) {
-                    viewModel.initFilmDownloading()
-                }.show()
+        viewModel.getFavFilms().observe(this.viewLifecycleOwner){
+
         }
-        InternetBroadcast(
-            object : InternetBroadcast.OnBroadcastReceiver {
-                override fun onOnlineStatus(status: Boolean) {
-                    viewModel.downloadPopularMovies()
-                }
-            }
-        )
+
     }
 
     private fun initRecycler(view: View) {
+        Log.d(TAG, "initRecycler")
         recyclerView = view.findViewById(R.id.recyclerView_films)
         val adapter = FilmAdapter(
             listOfFilms,
@@ -129,11 +128,10 @@ class FilmListFragment : Fragment() {
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                Log.d(TAG, "OnScrollChange: ")
                 val visibleItemCount = layoutManager.childCount
                 val pastVisibleItem = layoutManager.findFirstVisibleItemPosition()
-                val viewCount = adapter.itemCount - 2
-                if (viewModel.getLoadingStatus() != true && viewModel.page < viewModel.allPages)
+                val viewCount = adapter.itemCount - 2 // - 2 Header + Footer
+                if (viewModel.getLoadingStatus() != true && App.instance.loadedPage < viewModel.allPages)
                     if (visibleItemCount + pastVisibleItem >= viewCount) {
                         viewModel.getPopularMovies()
                     }

@@ -43,6 +43,6 @@ class InternetBroadcast(private val listener: OnBroadcastReceiver) : BroadcastRe
             listener.onOnlineStatus(isOnline)
         }
     interface OnBroadcastReceiver{
-        fun onOnlineStatus(status: Boolean)
+        fun onOnlineStatus(isOnline: Boolean)
     }
     }

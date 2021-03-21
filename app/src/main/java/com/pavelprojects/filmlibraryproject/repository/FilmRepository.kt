@@ -1,6 +1,5 @@
 package com.pavelprojects.filmlibraryproject.repository
 
-import android.app.Application
 import android.os.Build
 import android.util.Log
 import com.pavelprojects.filmlibraryproject.App
@@ -9,14 +8,9 @@ import com.pavelprojects.filmlibraryproject.dao.FilmItemDao
 import com.pavelprojects.filmlibraryproject.database.FavoriteFilmDbObject
 import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
 import com.pavelprojects.filmlibraryproject.retrofit.FilmDataResponse
-import com.pavelprojects.filmlibraryproject.retrofit.RetroApi
-import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
 class FilmRepository() {
 
@@ -44,16 +38,23 @@ class FilmRepository() {
         else favFilmDao?.insertAll(listOfFilms)
     }
 
+    fun insertAllGetFilms(listOfFilms: List<FilmItem>): List<FilmItem>?{
+        filmItemDao?.insertAll(listOfFilms)
+        return filmItemDao?.getAll()
+    }
+
     fun update(filmItem: FilmItem, code: Int) {
         if(code == CODE_FILM_DB)
         filmItemDao?.update(filmItem)
         else favFilmDao?.update(filmItem)
     }
 
-    fun getAllFilms(code: Int): List<FilmItem>? {
-        return if(code == CODE_FILM_DB)
-         filmItemDao?.getAll()
-        else favFilmDao?.getAll()
+    fun getAllFilms(): List<FilmItem>? {
+        return filmItemDao?.getAll()
+    }
+
+    fun getFavFilms(): List<FilmItem>? {
+        return favFilmDao?.getAll()
     }
 
     fun getFilmById(id: Long, code: Int): FilmItem? {

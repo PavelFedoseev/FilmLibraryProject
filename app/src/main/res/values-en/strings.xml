@@ -20,8 +20,9 @@
     <string name="snackbar_cancel">Cancel</string>
     <string name="snackbar_repeat">Repeat</string>
 
-    <string name="snackbar_network_error">Failed to get movies</string>
-    <string name="snackbar_network_error_action">Try again</string>
+    <string name="snackbar_download_error">Failed to get movies</string>
+    <string name="snackbar_network_error">Connection lost</string>
+    <string name="snackbar_network_error_action">Repeat</string>
 
     <string name="message_favorite_delete">Item deleted</string>
 
