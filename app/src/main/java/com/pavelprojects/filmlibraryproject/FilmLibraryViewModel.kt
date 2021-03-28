@@ -25,6 +25,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     private val repository: FilmRepository = App.instance.repository
     private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
     private val filmItemById = MutableLiveData<FilmItem?>()
+    private val listOfDatabase = MutableLiveData<List<FilmItem>>()
     private val listOfFilmItem = MutableLiveData<List<FilmItem>>()
     private val snackBarText = MutableLiveData<String>()
     private val isNetworkLoading = MutableLiveData<Boolean>()
@@ -33,11 +34,26 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     init {
         Log.d(TAG, this.toString())
+        if (listOfFavoriteFilmItem.value == null)
+            listOfFavoriteFilmItem.postValue(listOf())
     }
 
     fun insert(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.insert(filmItem, code)
+            if (code == CODE_FAV_FILM_DB) {
+                var isRepeat = false
+                repository.getFavFilms()?.forEach {
+                    if (it.filmId == filmItem.filmId) {
+                        isRepeat = true
+                        filmItem.filmId = it.filmId
+                    }
+                }
+                if (!isRepeat)
+                    repository.insert(filmItem, CODE_FAV_FILM_DB)
+                else
+                    repository.update(filmItem, CODE_FAV_FILM_DB)
+            } else
+                repository.insert(filmItem, CODE_FILM_DB)
         }
     }
 
@@ -46,27 +62,38 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
             repository.insertAll(list, code)
         }
     }
-    /*
-    private fun insertAllGetFilms(list: List<FilmItem>): List<FilmItem> {
+
+    private fun insertAllGetFilms(list: List<FilmItem>): List<FilmItem>? {
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertAllGetFilms(list)
         }
+        return repository.getAllFilms()
     }
-
-     */
 
     fun update(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.update(filmItem, code)
+            if (code == CODE_FILM_DB) {
+                repository.getAllFilms()?.forEach {
+                    if (it.filmId == filmItem.filmId)
+                        filmItem.id = it.id
+                }
+                repository.update(filmItem, CODE_FILM_DB)
+            } else {
+                repository.getFavFilms()?.forEach {
+                    if (it.filmId == filmItem.filmId)
+                        filmItem.id = it.id
+                }
+                repository.update(filmItem, CODE_FAV_FILM_DB)
+            }
         }
     }
 
     fun getAllFilms(): LiveData<List<FilmItem>> {
         viewModelScope.launch(Dispatchers.IO) {
-            if(App.instance.loadedPage!=1)
-            listOfFilmItem.postValue(repository.getAllFilms())
+            if (App.instance.loadedPage != 1)
+                listOfDatabase.postValue(repository.getAllFilms())
         }
-        return listOfFilmItem
+        return listOfDatabase
     }
 
     fun getFavFilms(): LiveData<List<FilmItem>> {
@@ -85,7 +112,16 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun delete(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.delete(filmItem, code)
+
+            if (code == CODE_FAV_FILM_DB) {
+                listOfFavoriteFilmItem.value?.forEach {
+                    if (it.filmId == filmItem.filmId) {
+                        filmItem.id = it.id
+                    }
+                }
+                repository.delete(filmItem, CODE_FAV_FILM_DB)
+            } else
+                repository.delete(filmItem, CODE_FILM_DB)
         }
     }
 
@@ -96,13 +132,13 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     fun getPopularMovies(): LiveData<List<FilmItem>> {
-        if(isOnline(app))
+        if (isOnline(app))
             initFilmDownloading()
         return listOfFilmItem
     }
 
-    fun downloadPopularMovies(){
-        if(isOnline(app))
+    fun downloadPopularMovies() {
+        if (isOnline(app))
             initFilmDownloading()
     }
 
@@ -114,32 +150,41 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         isNetworkLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             repository.getPopularMovies(
-                App.instance.loadedPage,
-                object : FilmRepository.PopularMoviesResponseListener {
-                    override fun onSuccess(data: FilmDataResponse?) {
-                        allPages = data?.pages ?: 1
-                        if(App.instance.loadedPage == 1)
-                            deleteAll(CODE_FILM_DB)
-                        App.instance.loadedPage++
-                        if(data!=null) {
-                            insertAll(data.movies, CODE_FILM_DB)
-                            listOfFilmItem.postValue(data.movies)
+                    App.instance.loadedPage,
+                    object : FilmRepository.PopularMoviesResponseListener {
+                        override fun onSuccess(data: FilmDataResponse?) {
+                            allPages = data?.pages ?: 1
+                            if (App.instance.loadedPage == 1)
+                                deleteAll(CODE_FILM_DB)
+                            App.instance.loadedPage++
+                            if (data != null) {
+                                data.movies.forEach { item ->
+                                    listOfFavoriteFilmItem.value?.forEach { item1 ->
+                                        if (item.filmId == item1.filmId) {
+                                            item.isLiked = item1.isLiked
+                                            item.userComment = item1.userComment
+                                        }
+                                    }
+                                }
+                                insertAll(data.movies, CODE_FILM_DB)
+                                listOfFilmItem.postValue(data.movies)
+                            }
+                            isNetworkLoading.postValue(false)
                         }
-                        isNetworkLoading.postValue(false)
-                    }
 
-                    override fun onFailure() {
-                        snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
-                    }
-                })
+                        override fun onFailure() {
+                            snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
+                            isNetworkLoading.postValue(false)
+                        }
+                    })
         }
     }
 
     private fun isOnline(context: Context): Boolean {
         val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val capabilities =
-            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
         if (capabilities != null) {
             if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
                 Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
@@ -154,6 +199,10 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         }
         Log.i(LOG_INTERNET, "Connection failed")
         return false
+    }
+
+    fun clearListOfFilmItem() {
+        listOfFilmItem.postValue(null)
     }
 
     fun getNetworkLoadingStatus(): LiveData<Boolean> = isNetworkLoading

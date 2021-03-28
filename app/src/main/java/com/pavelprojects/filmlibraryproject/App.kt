@@ -22,6 +22,8 @@ class App : Application() {
     lateinit var api: RetroApi
     lateinit var repository: FilmRepository
     var loadedPage: Int = 1
+    var recFilmListPos: Int = 0
+    var recFavPos: Int = 0
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG_APP, "$TAG_APP onCreate")

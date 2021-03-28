@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +10,11 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 
 class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: FilmLibraryViewModel, var listener: FilmClickListener) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
+        const val TAG = "FilmAdapter"
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
         const val VIEW_TYPE_HEADER = 2
@@ -39,7 +38,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
                 view = layoutInflater.inflate(R.layout.item_header, parent, false)
                 HeaderItemViewHolder(view, header)
             }
-            else -> {
+            else -> { //VIEW_TYPE_NULL
                 view = layoutInflater.inflate(R.layout.item_null, parent, false)
                 EmptyItemViewHolder(view)
             }
@@ -78,7 +77,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
     override fun getItemViewType(position: Int): Int {
         return when (position) {
             0 -> VIEW_TYPE_HEADER
-            list.size + 1 -> if(list.size > 2) VIEW_TYPE_FOOTER else VIEW_TYPE_NULL
+            list.size + 1 -> VIEW_TYPE_FOOTER
             else -> VIEW_TYPE_FILM
         }
     }
@@ -103,6 +102,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
         fun bindView(isLoading : Boolean?) {
+            Log.d(TAG, "FooterItemViewHolder: bindView" )
             if(isLoading == true){
                 progressBar.visibility = View.VISIBLE
             }

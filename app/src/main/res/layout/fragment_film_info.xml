@@ -56,9 +56,7 @@
                 app:updateMode="continuously"
                 app:useTextureView="false"
                 app:blurTextureScale="0.5"
-                app:useChildAlphaAsMask="false">
-
-            </no.danielzeller.blurbehindlib.BlurBehindLayout>
+                app:useChildAlphaAsMask="false"/>
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
