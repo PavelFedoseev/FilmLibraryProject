@@ -155,6 +155,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
                 listOfFilms[listOfFilms.indexOf(it)] = item
         }
         viewModel.update(item, FilmLibraryViewModel.CODE_FILM_DB)
+        viewModel.update(item, FilmLibraryViewModel.CODE_FAV_FILM_DB)
         if (item.isLiked) {
             viewModel.insert(item, FilmLibraryViewModel.CODE_FAV_FILM_DB)
         } else {
