@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 
 class FilmListFragment : Fragment(), OnLibraryActivityChild {
     companion object {
@@ -42,12 +43,8 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
     ): View? {
         Log.d(TAG, "onCreateView")
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
-        viewModel = if (activity is FilmLibraryActivity) {
-            (requireActivity() as FilmLibraryActivity).viewModel
-        } else {
-            ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
                     .create(FilmLibraryViewModel::class.java)
-        }
 
         listOfFilms = arguments?.getParcelableArrayList(KEY_LIST) ?: arrayListOf()
         position = App.instance.recFilmListPos
@@ -67,8 +64,22 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
     private fun initModel() {
         Log.d(TAG, "initModel")
         var position: Int
+
+        viewModel.getAllFilms().observe(this.viewLifecycleOwner){
+            if(it!=null && App.instance.loadedPage==1){
+                position = listOfFilms.size
+                if (!listOfFilms.containsAll(it)) {
+                    listOfFilms.addAll(it)
+                    recyclerView.adapter?.notifyItemRangeInserted(position + 2, listOfFilms.size) // size + 1 Footer
+                }
+            }
+        }
         viewModel.getPopularMovies().observe(this.viewLifecycleOwner) {
             if (it != null) {
+                if(App.instance.loadedPage == 2){
+                    listOfFilms.clear()
+                    recyclerView.adapter?.notifyDataSetChanged()
+                }
                 position = listOfFilms.size
                 if (!listOfFilms.containsAll(it)) {
                     listOfFilms.addAll(it)
@@ -204,6 +215,12 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
     override fun onDetach() {
         Log.d(TAG, "onDetach")
         super.onDetach()
+    }
+
+    override fun onOnllineStatusChanged(isOnline: Boolean) {
+        if(isOnline){
+            viewModel.downloadPopularMovies()
+        }
     }
 
     interface OnFilmListFragmentAdapter {

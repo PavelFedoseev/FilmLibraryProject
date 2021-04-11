@@ -15,16 +15,15 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.pavelprojects.filmlibraryproject.*
-import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
+import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER
+import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
-import kotlinx.android.synthetic.main.fragment_film_info.*
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 
 

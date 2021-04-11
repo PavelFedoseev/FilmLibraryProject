@@ -2,14 +2,11 @@ package com.pavelprojects.filmlibraryproject
 
 import android.app.Application
 import android.util.Log
-import com.pavelprojects.filmlibraryproject.database.FilmDatabase
-import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
-import com.pavelprojects.filmlibraryproject.retrofit.RetroApi
+import com.pavelprojects.filmlibraryproject.network.RetroApi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class App : Application() {

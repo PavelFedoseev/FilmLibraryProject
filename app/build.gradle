@@ -3,6 +3,8 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-android-extensions'
     id 'kotlin-kapt'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 
@@ -54,11 +56,17 @@ dependencies {
     implementation 'androidx.room:room-runtime:2.2.6'
     implementation 'android.arch.persistence.room:rxjava2:1.1.1'
 
+    // Google Firebase
+    implementation platform('com.google.firebase:firebase-bom:27.0.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+
     // Extensions = ViewModel + LiveData
     implementation "android.arch.lifecycle:extensions:1.1.1"
     def room_version = "2.2.6"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
+
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:$room_version"
 
@@ -69,7 +77,7 @@ dependencies {
     //Glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'
 
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
     //Pagging

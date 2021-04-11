@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject.retrofit
+package com.pavelprojects.filmlibraryproject.network
 
 import com.pavelprojects.filmlibraryproject.API_KEY_TMDB
 import com.pavelprojects.filmlibraryproject.FILTER_TMDB_POPUlAR

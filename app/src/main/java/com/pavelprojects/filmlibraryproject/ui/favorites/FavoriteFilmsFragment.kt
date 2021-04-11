@@ -12,6 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
 
 class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
@@ -43,12 +45,9 @@ class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
     }
 
     private fun initModel() {
-        viewModel = if (activity is FilmLibraryActivity) {
-            (requireActivity() as FilmLibraryActivity).viewModel
-        } else {
-            ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
                     .create(FilmLibraryViewModel::class.java)
-        }
+
         viewModel.getFavFilms().observe(this.viewLifecycleOwner) {
             listOfFavorite.clear()
             listOfFavorite.addAll(it)
@@ -87,6 +86,8 @@ class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
                     ) {
                         viewModel.delete(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
                         listOfFavorite.remove(filmItem)
+                        filmItem.isLiked = false
+                        (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem, TAG)
                         recyclerView.adapter?.notifyItemRemoved(adapterPosition)
                         if (listOfFavorite.isEmpty()) {
                             recyclerView.background = ResourcesCompat.getDrawable(
@@ -122,9 +123,9 @@ class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
     }
 
     override fun onButtonRateClick(filmItem: FilmItem) {
-        if (this::listOfFavorite.isInitialized) {
-            listOfFavorite.clear()
-        }
+    }
+
+    override fun onOnllineStatusChanged(isOnline: Boolean) {
     }
 
     interface OnFavoriteListener {

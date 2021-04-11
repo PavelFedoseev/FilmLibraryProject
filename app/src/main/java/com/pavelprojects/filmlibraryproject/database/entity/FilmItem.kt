@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.database.entity
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
@@ -14,7 +14,7 @@ data class FilmItem(
         @ColumnInfo(name = "id")
         @SerializedName("current_id")
         @PrimaryKey(autoGenerate = true)
-        var id: Int,
+        var id: Int = -1,
         @SerializedName("id") @ColumnInfo(name = "film_id") var filmId: Int?, //TMDB film id
         @SerializedName("title") var name: String?,
         @SerializedName("overview") var description: String?,
@@ -23,5 +23,18 @@ data class FilmItem(
         @SerializedName("vote_average") val rating: Float?,
         @SerializedName("release_date") val releaseDate: String?,
         var userComment: String? = null,
-        var isLiked: Boolean
+        var isLiked: Boolean = false
 ) : Parcelable
+
+fun FilmItem.toChangedFilmItem() = ChangedFilmItem(
+        id,
+        filmId,
+        name,
+        description,
+        posterPath,
+        backdropPath,
+        rating,
+        releaseDate,
+        userComment,
+        isLiked
+)

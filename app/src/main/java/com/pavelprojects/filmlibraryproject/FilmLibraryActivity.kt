@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.broadcast.InternetBroadcast
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
@@ -88,7 +89,8 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
                 object : InternetBroadcast.OnBroadcastReceiver {
                     override fun onOnlineStatus(isOnline: Boolean) {
                         if (isOnline) {
-                            viewModel.downloadPopularMovies()
+                            if(supportFragmentManager.fragments.size > 0)
+                                (supportFragmentManager.fragments[0] as? OnLibraryActivityChild)?.onOnllineStatusChanged(isOnline)
                             dismissSnackBar()
                         } else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
                     }
@@ -138,7 +140,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         snackbar = Snackbar.make(fragmentContainer, text, Snackbar.LENGTH_INDEFINITE)
                 .setAction(action) {
                     viewModel.initFilmDownloading()
-                }.also { it.show() }
+                }.setAnchorView(navigationView).also { it.show() }
     }
 
     fun dismissSnackBar() {
@@ -199,4 +201,5 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
 
 interface OnLibraryActivityChild {
     fun onButtonRateClick(filmItem: FilmItem)
+    fun onOnllineStatusChanged(isOnline: Boolean)
 }

@@ -3,11 +3,11 @@ package com.pavelprojects.filmlibraryproject.repository
 import android.os.Build
 import android.util.Log
 import com.pavelprojects.filmlibraryproject.App
-import com.pavelprojects.filmlibraryproject.FilmItem
-import com.pavelprojects.filmlibraryproject.dao.FilmItemDao
-import com.pavelprojects.filmlibraryproject.database.FavoriteFilmDbObject
 import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
-import com.pavelprojects.filmlibraryproject.retrofit.FilmDataResponse
+import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
+import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -23,19 +23,17 @@ class FilmRepository() {
 
     private var filmItemDao: FilmItemDao? =
             FilmDatabaseObject.getInstance(App.instance)?.getFilmItemDao()
-    private var favFilmDao: FilmItemDao? =
-            FavoriteFilmDbObject.getInstance(App.instance)?.getFilmItemDao()
 
     fun insert(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.insert(filmItem)
-        else favFilmDao?.insert(filmItem)
+        else filmItemDao?.insert(filmItem.toChangedFilmItem())
     }
 
     fun insertAll(listOfFilms: List<FilmItem>, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.insertAll(listOfFilms)
-        else favFilmDao?.insertAll(listOfFilms)
+        else filmItemDao?.insertAllFav(listOfFilms.map { it.toChangedFilmItem() })
     }
 
     fun insertAllGetFilms(listOfFilms: List<FilmItem>): List<FilmItem>? {
@@ -46,7 +44,7 @@ class FilmRepository() {
     fun update(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.update(filmItem)
-        else favFilmDao?.update(filmItem)
+        else filmItemDao?.update(filmItem.toChangedFilmItem())
     }
 
     fun getAllFilms(): List<FilmItem>? {
@@ -54,25 +52,23 @@ class FilmRepository() {
     }
 
     fun getFavFilms(): List<FilmItem>? {
-        return favFilmDao?.getAll()
+        return filmItemDao?.getAllFav()
     }
 
-    fun getFilmById(id: Long, code: Int): FilmItem? {
-        return if (code == CODE_FILM_DB)
-            filmItemDao?.getById(id)
-        else favFilmDao?.getById(id)
+    fun getFilmById(id: Long): FilmItem? {
+        return filmItemDao?.getById(id)
     }
 
     fun delete(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.delete(filmItem)
-        else favFilmDao?.delete(filmItem)
+        else filmItemDao?.delete(filmItem.toChangedFilmItem())
     }
 
     fun deleteAll(code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.deleteAllFilms()
-        else favFilmDao?.deleteAllFilms()
+        else filmItemDao?.deleteAllFavFilms()
     }
 
     fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener) {
@@ -89,8 +85,8 @@ class FilmRepository() {
                     }
 
                     override fun onResponse(
-                            call: Call<FilmDataResponse>,
-                            response: Response<FilmDataResponse>
+                        call: Call<FilmDataResponse>,
+                        response: Response<FilmDataResponse>
                     ) {
                         if (response.isSuccessful) {
                             val responseBody = response.body()

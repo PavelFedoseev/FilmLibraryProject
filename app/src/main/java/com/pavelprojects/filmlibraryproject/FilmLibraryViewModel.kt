@@ -9,8 +9,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
+import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
-import com.pavelprojects.filmlibraryproject.retrofit.FilmDataResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -105,7 +107,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun getFilmById(id: Long, code: Int): LiveData<FilmItem?> {
         viewModelScope.launch(Dispatchers.IO) {
-            filmItemById.postValue(repository.getFilmById(id, code))
+            filmItemById.postValue(repository.getFilmById(id))
         }
         return filmItemById
     }
@@ -134,15 +136,25 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     fun getPopularMovies(): LiveData<List<FilmItem>> {
         if (isOnline(app))
             initFilmDownloading()
+        else
+            getCachedFilmList()
         return listOfFilmItem
     }
 
     fun downloadPopularMovies() {
         if (isOnline(app))
             initFilmDownloading()
+        else
+            getCachedFilmList()
     }
 
     fun getLoadingStatus(): Boolean? = isNetworkLoading.value
+
+    fun getCachedFilmList(){
+        viewModelScope.launch(Dispatchers.IO) {
+            listOfDatabase.postValue(repository.getAllFilms())
+        }
+    }
 
 
     fun initFilmDownloading() {
@@ -150,41 +162,44 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         isNetworkLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             repository.getPopularMovies(
-                    App.instance.loadedPage,
-                    object : FilmRepository.PopularMoviesResponseListener {
-                        override fun onSuccess(data: FilmDataResponse?) {
-                            allPages = data?.pages ?: 1
-                            if (App.instance.loadedPage == 1)
-                                deleteAll(CODE_FILM_DB)
-                            App.instance.loadedPage++
-                            if (data != null) {
-                                data.movies.forEach { item ->
-                                    listOfFavoriteFilmItem.value?.forEach { item1 ->
-                                        if (item.filmId == item1.filmId) {
-                                            item.isLiked = item1.isLiked
-                                            item.userComment = item1.userComment
-                                        }
+                App.instance.loadedPage,
+                object : FilmRepository.PopularMoviesResponseListener {
+                    override fun onSuccess(data: FilmDataResponse?) {
+                        allPages = data?.pages ?: 1
+                        if (App.instance.loadedPage == 1) {
+                            deleteAll(CODE_FILM_DB)
+                        }
+                        App.instance.loadedPage++
+                        if (data != null) {
+                            val movies = data.movies.map { it.toFilmItem() }
+                            movies.forEach { item ->
+                                listOfFavoriteFilmItem.value?.forEach { item1 ->
+                                    if (item.filmId == item1.filmId) {
+                                        item.isLiked = item1.isLiked
+                                        item.userComment = item1.userComment
                                     }
                                 }
-                                insertAll(data.movies, CODE_FILM_DB)
-                                listOfFilmItem.postValue(data.movies)
                             }
-                            isNetworkLoading.postValue(false)
+                            insertAll(movies, CODE_FILM_DB)
+                            listOfFilmItem.postValue(movies)
                         }
+                        isNetworkLoading.postValue(false)
+                    }
 
-                        override fun onFailure() {
-                            snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
-                            isNetworkLoading.postValue(false)
-                        }
-                    })
+                    override fun onFailure() {
+                        snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
+                        isNetworkLoading.postValue(false)
+                        getCachedFilmList()
+                    }
+                })
         }
     }
 
     private fun isOnline(context: Context): Boolean {
         val connectivityManager =
-                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val capabilities =
-                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
         if (capabilities != null) {
             if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
                 Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
@@ -199,10 +214,6 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         }
         Log.i(LOG_INTERNET, "Connection failed")
         return false
-    }
-
-    fun clearListOfFilmItem() {
-        listOfFilmItem.postValue(null)
     }
 
     fun getNetworkLoadingStatus(): LiveData<Boolean> = isNetworkLoading
