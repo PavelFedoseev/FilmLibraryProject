@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.pavelprojects.filmlibraryproject.R
 
 class ExitDialog(private val listener: OnDialogClickListener) : DialogFragment() {
     companion object {

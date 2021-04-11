@@ -13,6 +13,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
+import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.OnLibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
 

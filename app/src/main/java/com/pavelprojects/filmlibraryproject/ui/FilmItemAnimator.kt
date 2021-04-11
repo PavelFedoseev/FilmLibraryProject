@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui
 
 import android.content.Context
 import android.view.View
@@ -6,6 +6,8 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.RecyclerView
+import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.TAG_LIKE_ANIM
 
 class FilmItemAnimator(val context: Context) : DefaultItemAnimator() {
     override fun animateChange(oldHolder: RecyclerView.ViewHolder, newHolder: RecyclerView.ViewHolder, preInfo: ItemHolderInfo, postInfo: ItemHolderInfo): Boolean {

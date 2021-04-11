@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui
 
 import android.app.Application
 import android.content.Context
@@ -9,6 +9,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.pavelprojects.filmlibraryproject.App
+import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.toFilmItem

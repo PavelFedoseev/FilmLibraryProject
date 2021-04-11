@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui
 
 import android.content.IntentFilter
 import android.net.ConnectivityManager
@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.broadcast.InternetBroadcast
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
@@ -103,7 +104,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         supportFragmentManager
                 .beginTransaction()
                 .replace(
-                        R.id.fragmentContainer,
+                    R.id.fragmentContainer,
                         FilmListFragment.newInstance(listOfFilms),
                         FilmListFragment.TAG
                 )
@@ -117,7 +118,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         supportFragmentManager
                 .beginTransaction()
                 .replace(
-                        R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, callerFragmentTag),
+                    R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, callerFragmentTag),
                         FilmInfoFragment.TAG
                 )
                 .addToBackStack(null)
@@ -129,7 +130,7 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         supportFragmentManager
                 .beginTransaction()
                 .replace(
-                        R.id.fragmentContainer,
+                    R.id.fragmentContainer,
                         FavoriteFilmsFragment.newInstance(),
                         FavoriteFilmsFragment.TAG
                 )
@@ -177,16 +178,16 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
             supportFragmentManager.popBackStack()
         } else
             ExitDialog.createDialog(
-                    supportFragmentManager,
-                    object : ExitDialog.OnDialogClickListener {
-                        override fun onAcceptButtonCLick() {
-                            finish()
-                        }
+                supportFragmentManager,
+                object : ExitDialog.OnDialogClickListener {
+                    override fun onAcceptButtonCLick() {
+                        finish()
+                    }
 
-                        override fun onDismissButtonClick() {
+                    override fun onDismissButtonClick() {
 
-                        }
-                    })
+                    }
+                })
     }
 
     override fun saveListState(list: ArrayList<FilmItem>) {
