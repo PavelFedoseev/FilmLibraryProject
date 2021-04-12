@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
+import com.pavelprojects.filmlibraryproject.database.dao.ChangedItemDao
 import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
@@ -24,16 +25,19 @@ class FilmRepository() {
     private var filmItemDao: FilmItemDao? =
             FilmDatabaseObject.getInstance(App.instance)?.getFilmItemDao()
 
+    private var changedItemDao: ChangedItemDao? =
+        FilmDatabaseObject.getInstance(App.instance)?.getChangedItemDao()
+
     fun insert(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.insert(filmItem)
-        else filmItemDao?.insert(filmItem.toChangedFilmItem())
+        else changedItemDao?.insert(filmItem.toChangedFilmItem())
     }
 
     fun insertAll(listOfFilms: List<FilmItem>, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.insertAll(listOfFilms)
-        else filmItemDao?.insertAllFav(listOfFilms.map { it.toChangedFilmItem() })
+        else changedItemDao?.insertAllFav(listOfFilms.map { it.toChangedFilmItem() })
     }
 
     fun insertAllGetFilms(listOfFilms: List<FilmItem>): List<FilmItem>? {
@@ -44,7 +48,7 @@ class FilmRepository() {
     fun update(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.update(filmItem)
-        else filmItemDao?.update(filmItem.toChangedFilmItem())
+        else changedItemDao?.update(filmItem.toChangedFilmItem())
     }
 
     fun getAllFilms(): List<FilmItem>? {
@@ -52,7 +56,7 @@ class FilmRepository() {
     }
 
     fun getFavFilms(): List<FilmItem>? {
-        return filmItemDao?.getAllFav()
+        return changedItemDao?.getAllFav()
     }
 
     fun getFilmById(id: Long): FilmItem? {
@@ -62,13 +66,13 @@ class FilmRepository() {
     fun delete(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.delete(filmItem)
-        else filmItemDao?.delete(filmItem.toChangedFilmItem())
+        else changedItemDao?.delete(filmItem.toChangedFilmItem())
     }
 
     fun deleteAll(code: Int) {
         if (code == CODE_FILM_DB)
             filmItemDao?.deleteAllFilms()
-        else filmItemDao?.deleteAllFavFilms()
+        else changedItemDao?.deleteAllFavFilms()
     }
 
     fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener) {
