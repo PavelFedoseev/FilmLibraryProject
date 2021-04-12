@@ -155,12 +155,12 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
             if (it.filmId == item.filmId)
                 listOfFilms[listOfFilms.indexOf(it)] = item
         }
-        viewModel.update(item, FilmLibraryViewModel.CODE_FILM_DB)
-        viewModel.update(item, FilmLibraryViewModel.CODE_FAV_FILM_DB)
+        viewModel.update(item, FilmLibraryViewModel.CODE_FILM_TABLE)
+        viewModel.update(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
         if (item.isLiked) {
-            viewModel.insert(item, FilmLibraryViewModel.CODE_FAV_FILM_DB)
+            viewModel.insert(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
         } else {
-            viewModel.delete(item, FilmLibraryViewModel.CODE_FAV_FILM_DB)
+            viewModel.delete(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
         }
         (supportFragmentManager.findFragmentByTag(fragmentTag) as? OnLibraryActivityChild)?.onButtonRateClick(item)
     }

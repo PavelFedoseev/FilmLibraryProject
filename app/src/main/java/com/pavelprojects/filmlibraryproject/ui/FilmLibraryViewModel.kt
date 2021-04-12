@@ -22,8 +22,8 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     companion object {
         const val TAG = "FilmLibraryViewModel"
         const val LOG_INTERNET = "Network Status"
-        const val CODE_FILM_DB = 1
-        const val CODE_FAV_FILM_DB = 2
+        const val CODE_FILM_TABLE = 1
+        const val CODE_CHANGED_FILM_TABLE = 2
     }
 
     private val repository: FilmRepository = App.instance.repository
@@ -44,7 +44,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun insert(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (code == CODE_FAV_FILM_DB) {
+            if (code == CODE_CHANGED_FILM_TABLE) {
                 var isRepeat = false
                 repository.getFavFilms()?.forEach {
                     if (it.filmId == filmItem.filmId) {
@@ -53,11 +53,11 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
                     }
                 }
                 if (!isRepeat)
-                    repository.insert(filmItem, CODE_FAV_FILM_DB)
+                    repository.insert(filmItem, CODE_CHANGED_FILM_TABLE)
                 else
-                    repository.update(filmItem, CODE_FAV_FILM_DB)
+                    repository.update(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
-                repository.insert(filmItem, CODE_FILM_DB)
+                repository.insert(filmItem, CODE_FILM_TABLE)
         }
     }
 
@@ -76,18 +76,18 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun update(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (code == CODE_FILM_DB) {
+            if (code == CODE_FILM_TABLE) {
                 repository.getAllFilms()?.forEach {
                     if (it.filmId == filmItem.filmId)
                         filmItem.id = it.id
                 }
-                repository.update(filmItem, CODE_FILM_DB)
+                repository.update(filmItem, CODE_FILM_TABLE)
             } else {
                 repository.getFavFilms()?.forEach {
                     if (it.filmId == filmItem.filmId)
                         filmItem.id = it.id
                 }
-                repository.update(filmItem, CODE_FAV_FILM_DB)
+                repository.update(filmItem, CODE_CHANGED_FILM_TABLE)
             }
         }
     }
@@ -117,15 +117,15 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     fun delete(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
 
-            if (code == CODE_FAV_FILM_DB) {
+            if (code == CODE_CHANGED_FILM_TABLE) {
                 listOfFavoriteFilmItem.value?.forEach {
                     if (it.filmId == filmItem.filmId) {
                         filmItem.id = it.id
                     }
                 }
-                repository.delete(filmItem, CODE_FAV_FILM_DB)
+                repository.delete(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
-                repository.delete(filmItem, CODE_FILM_DB)
+                repository.delete(filmItem, CODE_FILM_TABLE)
         }
     }
 
@@ -169,7 +169,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
                     override fun onSuccess(data: FilmDataResponse?) {
                         allPages = data?.pages ?: 1
                         if (App.instance.loadedPage == 1) {
-                            deleteAll(CODE_FILM_DB)
+                            deleteAll(CODE_FILM_TABLE)
                         }
                         App.instance.loadedPage++
                         if (data != null) {
@@ -182,7 +182,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
                                     }
                                 }
                             }
-                            insertAll(movies, CODE_FILM_DB)
+                            insertAll(movies, CODE_FILM_TABLE)
                             listOfFilmItem.postValue(movies)
                         }
                         isNetworkLoading.postValue(false)

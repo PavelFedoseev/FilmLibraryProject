@@ -87,7 +87,7 @@ class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
                             position: Int,
                             adapterPosition: Int
                     ) {
-                        viewModel.delete(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
+                        viewModel.delete(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
                         listOfFavorite.remove(filmItem)
                         filmItem.isLiked = false
                         (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem, TAG)

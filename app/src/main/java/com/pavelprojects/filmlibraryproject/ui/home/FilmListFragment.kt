@@ -135,13 +135,13 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
                             adapterPosition: Int
                     ) {
                         if (filmItem.isLiked) {
-                            viewModel.delete(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
+                            viewModel.delete(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
                             filmItem.isLiked = false
                         } else {
                             filmItem.isLiked = true
-                            viewModel.insert(filmItem, FilmLibraryViewModel.CODE_FAV_FILM_DB)
+                            viewModel.insert(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
                         }
-                        viewModel.update(filmItem, FilmLibraryViewModel.CODE_FILM_DB)
+                        viewModel.update(filmItem, FilmLibraryViewModel.CODE_FILM_TABLE)
                         listOfFilms[position - 1] = filmItem
                         recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
                     }

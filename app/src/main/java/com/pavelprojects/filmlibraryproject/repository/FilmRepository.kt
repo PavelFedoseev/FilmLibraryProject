@@ -17,8 +17,8 @@ class FilmRepository() {
 
     companion object {
         const val TAG_FILM_REPO = "FilmRepository"
-        const val CODE_FILM_DB = 1
-        const val CODE_FAV_FILM_DB = 2
+        const val CODE_FILM_TABLE = 1
+        const val CODE_CHANGED_FILM_TABLE = 2
     }
 
 
@@ -29,13 +29,13 @@ class FilmRepository() {
         FilmDatabaseObject.getInstance(App.instance)?.getChangedItemDao()
 
     fun insert(filmItem: FilmItem, code: Int) {
-        if (code == CODE_FILM_DB)
+        if (code == CODE_FILM_TABLE)
             filmItemDao?.insert(filmItem)
         else changedItemDao?.insert(filmItem.toChangedFilmItem())
     }
 
     fun insertAll(listOfFilms: List<FilmItem>, code: Int) {
-        if (code == CODE_FILM_DB)
+        if (code == CODE_FILM_TABLE)
             filmItemDao?.insertAll(listOfFilms)
         else changedItemDao?.insertAllFav(listOfFilms.map { it.toChangedFilmItem() })
     }
@@ -46,7 +46,7 @@ class FilmRepository() {
     }
 
     fun update(filmItem: FilmItem, code: Int) {
-        if (code == CODE_FILM_DB)
+        if (code == CODE_FILM_TABLE)
             filmItemDao?.update(filmItem)
         else changedItemDao?.update(filmItem.toChangedFilmItem())
     }
@@ -64,13 +64,13 @@ class FilmRepository() {
     }
 
     fun delete(filmItem: FilmItem, code: Int) {
-        if (code == CODE_FILM_DB)
+        if (code == CODE_FILM_TABLE)
             filmItemDao?.delete(filmItem)
         else changedItemDao?.delete(filmItem.toChangedFilmItem())
     }
 
     fun deleteAll(code: Int) {
-        if (code == CODE_FILM_DB)
+        if (code == CODE_FILM_TABLE)
             filmItemDao?.deleteAllFilms()
         else changedItemDao?.deleteAllFavFilms()
     }
