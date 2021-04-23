@@ -4,6 +4,9 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -15,10 +18,14 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
+import com.pavelprojects.filmlibraryproject.ui.watchlater.WatchLaterFragment
 import kotlinx.android.synthetic.main.activity_filmlibrary.*
+import kotlinx.android.synthetic.main.fragment_film_info.*
+import no.danielzeller.blurbehindlib.BlurBehindLayout
 
-class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFragmentAdapter,
-        FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener {
+class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, FilmListFragment.OnFilmListFragmentAdapter,
+    FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener,
+    WatchLaterFragment.OnWatchLaterListener {
 
     companion object {
         const val KEY_LIST_OF_FILMS = "ListOfFilms"
@@ -29,6 +36,8 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
+    private val imageButtonWL: View by lazy { findViewById(R.id.imageButton_wl) }
+    private val blurAppBar: BlurBehindLayout by lazy {findViewById(R.id.topBarBlurLayout)}
     private var listOfFilms = arrayListOf<FilmItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +60,12 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
                 if (supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) == null)
                     openFavoriteFilmsFragment()
             }
+
             return@setOnNavigationItemSelectedListener true
+        }
+        imageButtonWL.setOnClickListener {
+            if (supportFragmentManager.findFragmentByTag(WatchLaterFragment.TAG) == null)
+                openWatchLatterFragment()
         }
     }
 
@@ -63,15 +77,15 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         listOfFilms = savedInstanceState.getParcelableArrayList<FilmItem>(KEY_LIST_OF_FILMS)
-                ?: arrayListOf()
+            ?: arrayListOf()
     }
 
     private fun initModel() {
         viewModel.getSnackBarString().observe(this) {
             Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
-                    .setAction(R.string.snackbar_repeat) {
-                        viewModel.initFilmDownloading()
-                    }.show()
+                .setAction(R.string.snackbar_repeat) {
+                    viewModel.initFilmDownloading()
+                }.show()
         }
         viewModel.getSnackBarString().observe(this) {
             makeSnackBar(it, this.getString(R.string.snackbar_network_error_action))
@@ -84,64 +98,81 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         super.onStart()
         val filter = IntentFilter("com.pavelprojects.BroadcastReceiver").apply {
             addAction(
-                    ConnectivityManager.CONNECTIVITY_ACTION)
+                ConnectivityManager.CONNECTIVITY_ACTION
+            )
         }
         broadcast = InternetBroadcast(
-                object : InternetBroadcast.OnBroadcastReceiver {
-                    override fun onOnlineStatus(isOnline: Boolean) {
-                        if (isOnline) {
-                            if(supportFragmentManager.fragments.size > 0)
-                                (supportFragmentManager.fragments[0] as? OnLibraryActivityChild)?.onOnllineStatusChanged(isOnline)
-                            dismissSnackBar()
-                        } else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
-                    }
-                })
+            object : InternetBroadcast.OnBroadcastReceiver {
+                override fun onOnlineStatus(isOnline: Boolean) {
+                    if (isOnline) {
+                        if (supportFragmentManager.fragments.size > 0)
+                            (supportFragmentManager.fragments[0] as? LibraryActivityChild)?.onOnllineStatusChanged(
+                                isOnline
+                            )
+                        dismissSnackBar()
+                    } else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
+                }
+            })
         registerReceiver(broadcast, filter)
     }
 
     private fun openFilmListFragment() {
         supportFragmentManager.popBackStack()
         supportFragmentManager
-                .beginTransaction()
-                .replace(
-                    R.id.fragmentContainer,
-                        FilmListFragment.newInstance(listOfFilms),
-                        FilmListFragment.TAG
-                )
-                .commit()
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer,
+                FilmListFragment.newInstance(listOfFilms),
+                FilmListFragment.TAG
+            )
+            .commit()
+    }
+
+    private fun openWatchLatterFragment() {
+        supportFragmentManager.popBackStack()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer, WatchLaterFragment.newInstance(),
+                WatchLaterFragment.TAG
+            )
+            .addToBackStack(WatchLaterFragment.TAG)
+            .commit()
     }
 
     private fun openFilmInfoFragment(filmItem: FilmItem) {
-        val callerFragmentTag = if (supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null) FilmListFragment.TAG
-        else FavoriteFilmsFragment.TAG
-        supportFragmentManager.popBackStack()
+        val callerFragmentTag = when {
+            supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null -> FilmListFragment.TAG
+            supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) != null -> FavoriteFilmsFragment.TAG
+            else -> WatchLaterFragment.TAG
+        }
         supportFragmentManager
-                .beginTransaction()
-                .replace(
-                    R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, callerFragmentTag),
-                        FilmInfoFragment.TAG
-                )
-                .addToBackStack(null)
-                .commit()
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, callerFragmentTag),
+                FilmInfoFragment.TAG
+            )
+            .addToBackStack(FilmInfoFragment.TAG)
+            .commit()
     }
 
     private fun openFavoriteFilmsFragment() {
         supportFragmentManager.popBackStack()
         supportFragmentManager
-                .beginTransaction()
-                .replace(
-                    R.id.fragmentContainer,
-                        FavoriteFilmsFragment.newInstance(),
-                        FavoriteFilmsFragment.TAG
-                )
-                .commit()
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer,
+                FavoriteFilmsFragment.newInstance(),
+                FavoriteFilmsFragment.TAG
+            )
+            .commit()
     }
 
     fun makeSnackBar(text: String, action: String? = null) {
         snackbar = Snackbar.make(fragmentContainer, text, Snackbar.LENGTH_INDEFINITE)
-                .setAction(action) {
-                    viewModel.initFilmDownloading()
-                }.setAnchorView(navigationView).also { it.show() }
+            .setAction(action) {
+                viewModel.initFilmDownloading()
+            }.setAnchorView(navigationView).also { it.show() }
     }
 
     fun dismissSnackBar() {
@@ -157,12 +188,14 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         }
         viewModel.update(item, FilmLibraryViewModel.CODE_FILM_TABLE)
         viewModel.update(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        if (item.isLiked) {
+        if (item.isLiked || item.isWatchLater) {
             viewModel.insert(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
         } else {
             viewModel.delete(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
         }
-        (supportFragmentManager.findFragmentByTag(fragmentTag) as? OnLibraryActivityChild)?.onButtonRateClick(item)
+        (supportFragmentManager.findFragmentByTag(fragmentTag) as? LibraryActivityChild)?.onButtonRateClick(
+            item
+        )
     }
 
     override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
@@ -170,6 +203,10 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
     }
 
     override fun onFavoriteDetail(item: FilmItem) {
+        openFilmInfoFragment(item)
+    }
+
+    override fun onWatchLaterDetail(item: FilmItem) {
         openFilmInfoFragment(item)
     }
 
@@ -199,9 +236,53 @@ class FilmLibraryActivity : AppCompatActivity(), FilmListFragment.OnFilmListFrag
         super.onStop()
     }
 
+    override fun setupBlur(view: View) {
+        blurAppBar.viewBehind = view
+        if(blurAppBar.visibility == View.GONE){
+            val animation = AnimationUtils.loadAnimation(this, R.anim.anim_show_bar).apply {
+                setAnimationListener(object: Animation.AnimationListener{
+                    override fun onAnimationStart(p0: Animation?) {
+
+                    }
+
+                    override fun onAnimationEnd(p0: Animation?) {
+                        blurAppBar.visibility = View.VISIBLE
+                    }
+
+                    override fun onAnimationRepeat(p0: Animation?) {
+
+                    }
+                })
+            }
+            blurAppBar.startAnimation(animation)
+        }
+    }
+
+    override fun hideAppBar() {
+        val animation = AnimationUtils.loadAnimation(this, R.anim.anim_hide_bar).apply {
+            setAnimationListener(object: Animation.AnimationListener{
+                override fun onAnimationStart(p0: Animation?) {
+
+                }
+
+                override fun onAnimationEnd(p0: Animation?) {
+                    blurAppBar.visibility = View.GONE
+                }
+
+                override fun onAnimationRepeat(p0: Animation?) {
+
+                }
+            })
+        }
+        blurAppBar.startAnimation(animation)
+    }
 }
 
-interface OnLibraryActivityChild {
+interface LibraryActivityChild {
     fun onButtonRateClick(filmItem: FilmItem)
     fun onOnllineStatusChanged(isOnline: Boolean)
+}
+interface ActivityUpdater{
+    fun setupBlur(view: View)
+    fun hideAppBar()
 }

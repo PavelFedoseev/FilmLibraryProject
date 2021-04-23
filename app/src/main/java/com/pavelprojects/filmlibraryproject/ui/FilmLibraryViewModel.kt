@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.toFilmItem
@@ -28,6 +29,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     private val repository: FilmRepository = App.instance.repository
     private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
+    private val listOfWatchLaterFilmItem = MutableLiveData<List<FilmItem>>()
     private val filmItemById = MutableLiveData<FilmItem?>()
     private val listOfDatabase = MutableLiveData<List<FilmItem>>()
     private val listOfFilmItem = MutableLiveData<List<FilmItem>>()
@@ -46,7 +48,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.IO) {
             if (code == CODE_CHANGED_FILM_TABLE) {
                 var isRepeat = false
-                repository.getFavFilms()?.forEach {
+                repository.getAllChanged()?.forEach {
                     if (it.filmId == filmItem.filmId) {
                         isRepeat = true
                         filmItem.filmId = it.filmId
@@ -83,13 +85,17 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
                 }
                 repository.update(filmItem, CODE_FILM_TABLE)
             } else {
-                repository.getFavFilms()?.forEach {
+                repository.getAllChanged()?.forEach {
                     if (it.filmId == filmItem.filmId)
                         filmItem.id = it.id
                 }
                 repository.update(filmItem, CODE_CHANGED_FILM_TABLE)
             }
         }
+    }
+
+    fun updateChanged(changedFilmItem: ChangedFilmItem){
+        repository.updateChanged(changedFilmItem)
     }
 
     fun getAllFilms(): LiveData<List<FilmItem>> {
@@ -105,6 +111,13 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
             listOfFavoriteFilmItem.postValue(repository.getFavFilms())
         }
         return listOfFavoriteFilmItem
+    }
+
+    fun getWatchLatter(): LiveData<List<FilmItem>> {
+        viewModelScope.launch(Dispatchers.IO) {
+            listOfWatchLaterFilmItem.postValue(repository.getWatchLaterFilms())
+        }
+        return listOfWatchLaterFilmItem
     }
 
     fun getFilmById(id: Long, code: Int): LiveData<FilmItem?> {

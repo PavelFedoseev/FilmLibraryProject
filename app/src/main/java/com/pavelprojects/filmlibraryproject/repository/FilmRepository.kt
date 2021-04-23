@@ -6,6 +6,7 @@ import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
 import com.pavelprojects.filmlibraryproject.database.dao.ChangedItemDao
 import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
+import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
@@ -34,6 +35,10 @@ class FilmRepository() {
         else changedItemDao?.insert(filmItem.toChangedFilmItem())
     }
 
+    fun updateChanged(changedFilmItem: ChangedFilmItem){
+        changedItemDao?.update(changedFilmItem)
+    }
+
     fun insertAll(listOfFilms: List<FilmItem>, code: Int) {
         if (code == CODE_FILM_TABLE)
             filmItemDao?.insertAll(listOfFilms)
@@ -59,6 +64,14 @@ class FilmRepository() {
         return changedItemDao?.getAllFav()
     }
 
+    fun getWatchLaterFilms(): List<FilmItem>? {
+        return changedItemDao?.getAllWatchLater()
+    }
+
+    fun getAllChanged(): List<FilmItem>?{
+        return changedItemDao?.getAllChanged()
+    }
+
     fun getFilmById(id: Long): FilmItem? {
         return filmItemDao?.getById(id)
     }
@@ -72,7 +85,7 @@ class FilmRepository() {
     fun deleteAll(code: Int) {
         if (code == CODE_FILM_TABLE)
             filmItemDao?.deleteAllFilms()
-        else changedItemDao?.deleteAllFavFilms()
+        else changedItemDao?.deleteAllChangedFilms()
     }
 
     fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener) {

@@ -12,12 +12,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
-import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
-import com.pavelprojects.filmlibraryproject.ui.FilmItemAnimator
-import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
-import com.pavelprojects.filmlibraryproject.ui.OnLibraryActivityChild
+import com.pavelprojects.filmlibraryproject.ui.*
 
-class FilmListFragment : Fragment(), OnLibraryActivityChild {
+class FilmListFragment : Fragment(), LibraryActivityChild {
     companion object {
         const val TAG = "FilmListFragment"
         const val KEY_LIST = "FilmList"
@@ -61,6 +58,7 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
 
         initRecycler(view, position)
         initModel()
+        (activity as? ActivityUpdater)?.setupBlur(view)
         return view
     }
 
@@ -207,11 +205,13 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         Log.d(TAG, "onSaveInstanceState")
+        if(this::listOfFilms.isInitialized)
         outState.putParcelableArrayList(KEY_LIST, listOfFilms)
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
+        if(this::listOfFilms.isInitialized)
         (activity as OnFilmListFragmentAdapter).saveListState(listOfFilms)
         super.onDestroy()
     }

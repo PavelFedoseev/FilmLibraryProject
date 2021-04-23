@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="@dimen/view_spacing"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <TextView
         android:id="@+id/tv_exit_info"
@@ -20,9 +21,11 @@
         android:layout_height="wrap_content"
         android:text="@string/button_exit_accept"
         android:layout_margin="@dimen/view_spacing"
+        android:layout_marginTop="@dimen/view_spacing"
         app:layout_constraintTop_toBottomOf="@id/tv_exit_info"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/button_exit_dismiss"
+        app:layout_constraintBottom_toBottomOf="parent"
         />
 
     <Button
@@ -31,9 +34,11 @@
         android:layout_height="wrap_content"
         android:text="@string/button_exit_dismiss"
         android:layout_margin="@dimen/view_spacing"
+        android:layout_marginTop="@dimen/view_spacing"
         app:layout_constraintTop_toBottomOf="@id/tv_exit_info"
         app:layout_constraintStart_toEndOf="@id/button_exit_accept"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

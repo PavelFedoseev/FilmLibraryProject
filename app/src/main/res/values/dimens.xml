@@ -9,11 +9,14 @@
     <dimen name="cardview_width">150dp</dimen>
     <dimen name="imageview_size_width">125dp</dimen>
     <dimen name="imageview_size_height">200dp</dimen>
+    <dimen name="imageview_wh_height">50dp</dimen>
     <dimen name="button_size_height">45dp</dimen>
     <dimen name="element_box_elevation">6dp</dimen>
     <dimen name="info_fragment_elevation">6dp</dimen>
     <dimen name="element_elevation">9dp</dimen>
     <dimen name="element_radius">20dp</dimen>
+
+    <dimen name="recycler_header_margin">45dp</dimen>
 
     <dimen name="like_anim_scale">80dp</dimen>
 

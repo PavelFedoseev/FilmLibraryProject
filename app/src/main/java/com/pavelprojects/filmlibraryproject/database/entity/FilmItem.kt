@@ -23,7 +23,8 @@ data class FilmItem(
         @SerializedName("vote_average") val rating: Float?,
         @SerializedName("release_date") val releaseDate: String?,
         var userComment: String? = null,
-        var isLiked: Boolean = false
+        var isLiked: Boolean = false,
+        @ColumnInfo(name ="isWatchLater")var isWatchLater: Boolean = false
 ) : Parcelable
 
 fun FilmItem.toChangedFilmItem() = ChangedFilmItem(
@@ -36,5 +37,6 @@ fun FilmItem.toChangedFilmItem() = ChangedFilmItem(
         rating,
         releaseDate,
         userComment,
-        isLiked
+        isLiked,
+        isWatchLater
 )

@@ -7,6 +7,7 @@ import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -23,6 +24,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 
@@ -50,6 +52,7 @@ class FilmInfoFragment : Fragment() {
     private lateinit var imageViewPreview: ImageView
     private lateinit var toolbar: Toolbar
     private lateinit var toolbarLayout: CollapsingToolbarLayout
+    private lateinit var checkBoxWatchLater: CheckBox
 
     private lateinit var blurLayout: BlurBehindLayout
 
@@ -81,6 +84,7 @@ class FilmInfoFragment : Fragment() {
                 .load(LINK_TMDB_POSTER + filmItem?.backdropPath)
                 .transform(CenterCrop())
                 .into(imageViewPreview)
+        (activity as? ActivityUpdater)?.hideAppBar()
         return view
     }
 
@@ -139,6 +143,9 @@ class FilmInfoFragment : Fragment() {
                 filmItem?.userComment = p0?.toString()
             }
         })
+        checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
+            filmItem?.isWatchLater = compoundButton.isChecked
+        }
     }
 
     override fun onDestroy() {
@@ -156,6 +163,10 @@ class FilmInfoFragment : Fragment() {
         blurLayout = view.findViewById(R.id.blurBehindLayout)
         blurLayout.viewBehind = imageViewPreview
         toolbarLayout = view.findViewById(R.id.collapsing_toolbar)
+        checkBoxWatchLater = view.findViewById(R.id.checkbox_watch_later)
+        if(filmItem?.isWatchLater == true){
+            checkBoxWatchLater.isChecked = true
+        }
     }
 
     interface OnInfoFragmentListener {

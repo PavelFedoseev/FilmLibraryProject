@@ -13,13 +13,14 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
 import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
-import com.pavelprojects.filmlibraryproject.ui.OnLibraryActivityChild
+import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
 
-class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
+class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
 
     companion object {
         const val TAG = "Favorite Fragment"
@@ -44,6 +45,7 @@ class FavoriteFilmsFragment : Fragment(), OnLibraryActivityChild {
         position = App.instance.recFavPos
         initModel()
         initRecycler(position)
+        (activity as? ActivityUpdater)?.setupBlur(view)
         return view
     }
 

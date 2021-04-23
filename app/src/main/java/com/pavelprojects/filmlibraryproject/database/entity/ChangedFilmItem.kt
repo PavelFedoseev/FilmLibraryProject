@@ -21,7 +21,9 @@ data class ChangedFilmItem(
     val rating: Float?,
     val releaseDate: String?,
     var userComment: String? = null,
-    var isLiked: Boolean = false
+    var isLiked: Boolean = false,
+    @ColumnInfo(name ="isWatchLater")var isWatchLater: Boolean = false,
+    @ColumnInfo(name ="watchLatterDate")var watchLatterDate: Long = -1
 ) : Parcelable
 
 fun ChangedFilmItem.toFilmItem() = FilmItem(
@@ -33,5 +35,7 @@ fun ChangedFilmItem.toFilmItem() = FilmItem(
     backdropPath,
     rating,
     releaseDate,
-    userComment
+    userComment,
+    isLiked,
+    isWatchLater
 )

@@ -7,13 +7,35 @@
     android:fitsSystemWindows="true"
     android:background="@color/light_gray">
 
+
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/navigationView"/>
-
+    <no.danielzeller.blurbehindlib.BlurBehindLayout
+        android:id="@+id/topBarBlurLayout"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        app:blurRadius="30.0"
+        app:updateMode="onScroll"
+        app:useTextureView="false"
+        app:blurTextureScale="0.5"
+        app:useChildAlphaAsMask="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <ImageButton
+            android:id="@+id/imageButton_wl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_access_time_filled_40"
+            android:background="@null"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/film_spacing"
+            android:contentDescription="@string/content_description_watch_latter_tab" />
+    </no.danielzeller.blurbehindlib.BlurBehindLayout>
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigationView"
         android:layout_width="match_parent"
