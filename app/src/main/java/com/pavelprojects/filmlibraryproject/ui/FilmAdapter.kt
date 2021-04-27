@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 
-class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: FilmLibraryViewModel, var listener: FilmClickListener) :
+class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: FilmLibraryViewModel, var isAddRotation: Boolean = true, var listener: FilmClickListener) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val TAG = "FilmAdapter"
@@ -54,12 +54,12 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is FilmItemViewHolder) {
             val item = list[position - 1]
-            holder.bindView(item)
+            holder.bindView(item, holder.layoutPosition, isAddRotation)
             holder.itemView.setOnClickListener {
                 listener.onItemClick(item, position, holder.adapterPosition)
             }
             holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position, holder.adapterPosition, holder.itemView)
+                listener.onDetailClick(item, position, holder.adapterPosition)
             }
             holder.titleTv.setOnClickListener {
                 listener.onItemClick(item, position, holder.adapterPosition)
@@ -90,10 +90,15 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
         val titleTv: TextView = itemView.findViewById(R.id.textView_name)
         val detailButton: Button = itemView.findViewById(R.id.button_detail)
         var item: FilmItem? = null
-        fun bindView(item: FilmItem) {
+
+        fun bindView(item: FilmItem, position: Int, isAddRotation: Boolean) {
             this.item = item
             titleTv.text = item.name
-
+            if(isAddRotation)
+            if(position % 2 != 0)
+                itemView.rotationY = itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
+            else
+                itemView.rotationY = -itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
             Glide.with(itemView)
                 .load("https://image.tmdb.org/t/p/w342${item.posterPath}")
                 .transform()
@@ -128,7 +133,7 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
 
     interface FilmClickInterface {
         fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
-        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int, view: View)
+        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
     }
 
 
@@ -143,6 +148,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
             if (currentTime - lastClickTime < DOUBLE_CLICK_DELTA) {
                 onDoubleClick(filmItem, position, adapterPosition)
             }
+
+
             lastClickTime = currentTime
         }
 

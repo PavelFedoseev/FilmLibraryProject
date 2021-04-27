@@ -106,6 +106,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
 
     }
 
+
     private fun initRecycler(view: View, position: Int = 0) {
         Log.d(TAG, "initRecycler")
         recyclerView = view.findViewById(R.id.recyclerView_films)
@@ -113,12 +114,11 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                 listOfFilms,
                 requireContext().getString(R.string.label_library),
                 viewModel,
-                object : FilmAdapter.FilmClickListener() {
+                listener = object : FilmAdapter.FilmClickListener() {
                     override fun onDetailClick(
                             filmItem: FilmItem,
                             position: Int,
-                            adapterPosition: Int,
-                            view: View
+                            adapterPosition: Int
                     ) {
                         (activity as? OnFilmListFragmentAdapter)?.onDetailClicked(
                                 filmItem,
@@ -142,6 +142,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                         viewModel.update(filmItem, FilmLibraryViewModel.CODE_FILM_TABLE)
                         listOfFilms[position - 1] = filmItem
                         recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
+                        viewModel.deleteAllIncorrect()
                     }
                 })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -178,27 +179,11 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
             recyclerView.scrollToPosition(position)
     }
 
-    override fun onButtonRateClick(filmItem: FilmItem) {
-        if (this::listOfFilms.isInitialized) {
-            listOfFilms.forEach {
-                if (it.filmId == filmItem.filmId) {
-                    filmItem.id = it.id
-                    listOfFilms[listOfFilms.indexOf(it)] = filmItem
-                    if (this::recyclerView.isInitialized) {
-                        recyclerView.adapter?.notifyDataSetChanged()
-                    }
-                }
-            }
-        }
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         Log.d(TAG, "onActivityCreated")
         if (savedInstanceState != null) {
             listOfFilms = savedInstanceState.getParcelableArrayList(KEY_LIST) ?: arrayListOf()
-            if (position > 0)
-                recyclerView.smoothScrollToPosition(position)
         }
     }
 
@@ -212,8 +197,15 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         if(this::listOfFilms.isInitialized)
-        (activity as OnFilmListFragmentAdapter).saveListState(listOfFilms)
+        (activity as? OnFilmListFragmentAdapter)?.saveListState(listOfFilms)
         super.onDestroy()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        view?.let {
+            (activity as? ActivityUpdater)?.setupBlur(requireView())
+        }
     }
 
     override fun onDetach() {

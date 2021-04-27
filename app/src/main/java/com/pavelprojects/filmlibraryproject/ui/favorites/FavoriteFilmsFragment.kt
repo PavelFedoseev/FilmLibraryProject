@@ -57,6 +57,13 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
             listOfFavorite.clear()
             listOfFavorite.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
+            if (listOfFavorite.isEmpty()) {
+                recyclerView.background = ResourcesCompat.getDrawable(
+                    requireContext().resources,
+                    R.drawable.background_recycler_favorite,
+                    null
+                )
+            } else recyclerView.background = null
         }
     }
 
@@ -72,13 +79,13 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
                 listOfFavorite,
                 requireContext().getString(R.string.label_favorite),
                 viewModel,
+                false,
                 object : FilmAdapter.FilmClickListener() {
 
                     override fun onDetailClick(
                             filmItem: FilmItem,
                             position: Int,
-                            adapterPosition: Int,
-                            view: View
+                            adapterPosition: Int
                     ) {
                         //val extras = FragmentNavigatorExtras(view to "imageview_film_info")
                         (activity as? OnFavoriteListener)?.onFavoriteDetail(filmItem)
@@ -89,7 +96,6 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
                             position: Int,
                             adapterPosition: Int
                     ) {
-                        viewModel.delete(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
                         listOfFavorite.remove(filmItem)
                         filmItem.isLiked = false
                         (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem, TAG)
@@ -100,7 +106,7 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
                                     R.drawable.background_recycler_favorite,
                                     null
                             )
-                        }
+                        } else recyclerView.background = null
                         Toast.makeText(
                                 requireContext(),
                                 requireContext().getString(R.string.message_favorite_delete),
@@ -127,7 +133,11 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
 
     }
 
-    override fun onButtonRateClick(filmItem: FilmItem) {
+    override fun onResume() {
+        super.onResume()
+        view?.let {
+            (activity as? ActivityUpdater)?.setupBlur(requireView())
+        }
     }
 
     override fun onOnllineStatusChanged(isOnline: Boolean) {

@@ -1,18 +1,24 @@
 package com.pavelprojects.filmlibraryproject.ui
 
+import android.app.AlarmManager
 import android.app.Application
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import androidx.core.content.getSystemService
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.broadcast.ReminderBroadcast
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
@@ -29,7 +35,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     private val repository: FilmRepository = App.instance.repository
     private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
-    private val listOfWatchLaterFilmItem = MutableLiveData<List<FilmItem>>()
+    private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
     private val filmItemById = MutableLiveData<FilmItem?>()
     private val listOfDatabase = MutableLiveData<List<FilmItem>>()
     private val listOfFilmItem = MutableLiveData<List<FilmItem>>()
@@ -95,7 +101,9 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     fun updateChanged(changedFilmItem: ChangedFilmItem){
-        repository.updateChanged(changedFilmItem)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateChanged(changedFilmItem)
+        }
     }
 
     fun getAllFilms(): LiveData<List<FilmItem>> {
@@ -113,7 +121,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         return listOfFavoriteFilmItem
     }
 
-    fun getWatchLatter(): LiveData<List<FilmItem>> {
+    fun getWatchLatter(): LiveData<List<ChangedFilmItem>> {
         viewModelScope.launch(Dispatchers.IO) {
             listOfWatchLaterFilmItem.postValue(repository.getWatchLaterFilms())
         }
@@ -145,6 +153,11 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     fun deleteAll(code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteAll(code)
+        }
+    }
+    fun deleteAllIncorrect() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteAll(CODE_CHANGED_FILM_TABLE)
         }
     }
 
@@ -230,6 +243,8 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         Log.i(LOG_INTERNET, "Connection failed")
         return false
     }
+
+
 
     fun getNetworkLoadingStatus(): LiveData<Boolean> = isNetworkLoading
 

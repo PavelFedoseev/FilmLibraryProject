@@ -1,11 +1,13 @@
 package com.pavelprojects.filmlibraryproject.ui.watchlater
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.DatePicker
+import android.widget.TimePicker
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
@@ -15,12 +17,12 @@ import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class WatchLaterFragment : Fragment(), LibraryActivityChild {
@@ -33,7 +35,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
     private lateinit var viewModel: FilmLibraryViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
-    private lateinit var listOfWatchLater: ArrayList<FilmItem>
+    private lateinit var listOfWatchLater: ArrayList<ChangedFilmItem>
 
     private var position: Int = 0
 
@@ -42,7 +44,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
+        val view =  inflater.inflate(R.layout.fragment_favorite_films, container, false)
         listOfWatchLater = arrayListOf()
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
         position = App.instance.recFavPos
@@ -60,6 +62,14 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
             listOfWatchLater.clear()
             listOfWatchLater.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
+            (activity as? ActivityUpdater)?.updateNotificationChannel(requireContext(), it)
+            if (listOfWatchLater.isEmpty()) {
+                recyclerView.background = ResourcesCompat.getDrawable(
+                    requireContext().resources,
+                    R.drawable.background_recycler_favorite,
+                    null
+                )
+            } else recyclerView.background = null
         }
     }
 
@@ -97,11 +107,11 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                 }
 
                 override fun onReminderClick(
-                    filmItem: FilmItem,
+                    changedFilmItem: ChangedFilmItem,
                     position: Int,
                     adapterPosition: Int
                 ) {
-
+                    createDatePickerDialog(changedFilmItem)
                 }
             })
 
@@ -113,12 +123,19 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                 if (viewHolder.adapterPosition != 0) {
                     listOfWatchLater[viewHolder.adapterPosition - 1].isWatchLater = false
                     (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
-                        listOfWatchLater[viewHolder.adapterPosition - 1],
+                        listOfWatchLater[viewHolder.adapterPosition - 1].toFilmItem(),
                         TAG
                     )
                     listOfWatchLater.removeAt(viewHolder.adapterPosition - 1)
                     recyclerView.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
                 }
+                if (listOfWatchLater.isEmpty()) {
+                    recyclerView.background = ResourcesCompat.getDrawable(
+                        requireContext().resources,
+                        R.drawable.background_recycler_favorite,
+                        null
+                    )
+                } else recyclerView.background = null
             }
 
             override fun onMove(
@@ -135,24 +152,29 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     private fun createDatePickerDialog(changedFilmItem: ChangedFilmItem){
         val calendar = Calendar.getInstance()
-        val dialog = DatePickerDialog(
+        val position = listOfWatchLater.indexOf(changedFilmItem)
+        DatePickerDialog(
             requireContext(),
             { p0, p1, p2, p3 ->
                 calendar.set(Calendar.YEAR, p1)
                 calendar.set(Calendar.MONTH, p2)
                 calendar.set(Calendar.DAY_OF_MONTH, p3)
-                changedFilmItem.watchLatterDate = calendar.timeInMillis
-                viewModel.updateChanged(changedFilmItem)
+                TimePickerDialog(requireContext(), { timePicker: TimePicker, i: Int, i1: Int ->
+                    calendar.set(Calendar.HOUR_OF_DAY, i)
+                    calendar.set(Calendar.MINUTE, i1)
+                    calendar.add(Calendar.SECOND, 5)
+                    changedFilmItem.watchLaterDate = calendar.timeInMillis
+                    listOfWatchLater[position] = changedFilmItem
+                    recyclerView.adapter?.notifyItemChanged(position + 1) //+1 Header
+                    viewModel.updateChanged(changedFilmItem)
+                    (activity as? ActivityUpdater)?.updateNotificationChannel(requireContext(), listOfWatchLater)
+                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        ).apply { this.datePicker.minDate = calendar.timeInMillis }
+        ).apply { this.datePicker.minDate = calendar.timeInMillis }.show()
 
-
-    }
-
-    override fun onButtonRateClick(filmItem: FilmItem) {
     }
 
     override fun onOnllineStatusChanged(isOnline: Boolean) {

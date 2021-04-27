@@ -1,29 +1,34 @@
 package com.pavelprojects.filmlibraryproject.ui.watchlater
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
-import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
+import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
+import java.text.SimpleDateFormat
+import java.util.*
 
 class WatchLaterAdapter(
-    var list: List<FilmItem>,
+    var list: List<ChangedFilmItem>,
     var header: String,
     var listener: FilmClickListener
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val TAG = "WatchLaterAdapter"
+        const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
         const val VIEW_TYPE_HEADER = 2
-        const val VIEW_TYPE_NULL = -1
     }
 
 
@@ -39,39 +44,43 @@ class WatchLaterAdapter(
                 view = layoutInflater.inflate(R.layout.item_header, parent, false)
                 HeaderItemViewHolder(view, header)
             }
+            VIEW_TYPE_FOOTER -> {
+                view = layoutInflater.inflate(R.layout.item_footer, parent, false)
+                FooterItemViewHolder(view)
+            }
             else -> { //VIEW_TYPE_NULL
                 view = layoutInflater.inflate(R.layout.item_null, parent, false)
                 EmptyItemViewHolder(view)
             }
         }
 
-
     }
 
-    override fun getItemCount(): Int = list.size + 1 // + 2 = Header + Footer
+    override fun getItemCount(): Int = list.size + 2 // + 2 = Header + Footer
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is FilmItemViewHolder) {
             val item = list[position - 1]
             holder.bindView(item)
             holder.itemView.setOnClickListener {
-                listener.onItemClick(item, position, holder.adapterPosition)
-            }
-            holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position, holder.adapterPosition, holder.itemView)
-            }
-            holder.titleTv.setOnClickListener {
-                listener.onItemClick(item, position, holder.adapterPosition)
+                listener.onDetailClick(
+                    item.toFilmItem(),
+                    position,
+                    holder.adapterPosition,
+                    holder.itemView
+                )
             }
             holder.remindImageButton.setOnClickListener {
                 listener.onReminderClick(item, position, holder.adapterPosition)
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
+        } else if (holder is FooterItemViewHolder) {
+            holder.bindView()
         }
     }
 
-    fun setValue(list: List<FilmItem>) {
+    fun setValue(list: List<ChangedFilmItem>) {
         this.list = list
         notifyDataSetChanged()
     }
@@ -79,6 +88,7 @@ class WatchLaterAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (position) {
             0 -> VIEW_TYPE_HEADER
+            list.size + 1 -> VIEW_TYPE_FOOTER
             else -> VIEW_TYPE_FILM
         }
     }
@@ -86,12 +96,21 @@ class WatchLaterAdapter(
     class FilmItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val titleTv: TextView = itemView.findViewById(R.id.textView_name)
-        val detailButton: Button = itemView.findViewById(R.id.button_detail)
         val remindImageButton: ImageButton = itemView.findViewById(R.id.imagebtn_reminder)
-        var item: FilmItem? = null
-        fun bindView(item: FilmItem) {
+        val remindTextView: TextView = itemView.findViewById(R.id.textView_remind_date)
+        var item: ChangedFilmItem? = null
+        fun bindView(item: ChangedFilmItem) {
             this.item = item
             titleTv.text = item.name
+            if (item.watchLaterDate != -1L) {
+                val calendar = Calendar.getInstance().apply { timeInMillis = item.watchLaterDate }
+                remindTextView.text =
+                    SimpleDateFormat("HH:mm dd.MM.yyyy", Locale.ENGLISH).format(calendar.time)
+                if(calendar.timeInMillis < Calendar.getInstance().timeInMillis)
+                    remindTextView.setTextColor(itemView.resources.getColor(R.color.red, null))
+                else
+                    remindTextView.setTextColor(itemView.resources.getColor(android.R.color.darker_gray, null))
+            }
 
             Glide.with(itemView)
                 .load("https://image.tmdb.org/t/p/w342${item.posterPath}")
@@ -100,6 +119,13 @@ class WatchLaterAdapter(
         }
     }
 
+    class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
+        fun bindView() {
+            progressBar.visibility = View.GONE
+            Log.d(FilmAdapter.TAG, "FooterItemViewHolder: bindView")
+        }
+    }
 
     class HeaderItemViewHolder(itemView: View, var header: String) :
         RecyclerView.ViewHolder(itemView) {
@@ -114,7 +140,7 @@ class WatchLaterAdapter(
     interface FilmClickInterface {
         fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
         fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int, view: View)
-        fun onReminderClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
+        fun onReminderClick(changedFilmItem: ChangedFilmItem, position: Int, adapterPosition: Int)
     }
 
 

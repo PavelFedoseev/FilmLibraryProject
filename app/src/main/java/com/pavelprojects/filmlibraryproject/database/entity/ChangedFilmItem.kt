@@ -23,7 +23,7 @@ data class ChangedFilmItem(
     var userComment: String? = null,
     var isLiked: Boolean = false,
     @ColumnInfo(name ="isWatchLater")var isWatchLater: Boolean = false,
-    @ColumnInfo(name ="watchLatterDate")var watchLatterDate: Long = -1
+    @ColumnInfo(name ="watchLatterDate")var watchLaterDate: Long = -1
 ) : Parcelable
 
 fun ChangedFilmItem.toFilmItem() = FilmItem(

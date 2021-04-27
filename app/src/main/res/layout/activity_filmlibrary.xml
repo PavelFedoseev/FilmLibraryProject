@@ -4,7 +4,6 @@
     android:id="@+id/constraintLayoutParent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:background="@color/light_gray">
 
 
@@ -13,11 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/navigationView"/>
+        app:layout_constraintBottom_toBottomOf="parent"/>
     <no.danielzeller.blurbehindlib.BlurBehindLayout
         android:id="@+id/topBarBlurLayout"
         android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="70dp"
         app:blurRadius="30.0"
         app:updateMode="onScroll"
         app:useTextureView="false"
@@ -26,22 +25,56 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
+        <View
+            android:id="@+id/appBarDimmer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:background="@android:color/black" />
         <ImageButton
             android:id="@+id/imageButton_wl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_baseline_access_time_filled_40"
+            android:layout_marginTop="10dp"
             android:background="@null"
             android:layout_gravity="center_vertical|start"
             android:layout_marginStart="@dimen/film_spacing"
             android:contentDescription="@string/content_description_watch_latter_tab" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:text="@string/app_name"
+            android:textSize="@dimen/text_app_name"
+            android:textStyle="bold"
+            android:fontFamily="@font/appfont"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/film_spacing"/>
     </no.danielzeller.blurbehindlib.BlurBehindLayout>
+    <no.danielzeller.blurbehindlib.BlurBehindLayout
+        android:id="@+id/navigationBarBlurLayout"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        app:blurRadius="100.0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:updateMode="onScroll"
+        app:useTextureView="false">
+        <View
+            android:id="@+id/bottomNavDimmer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:background="@color/blur_dimmer" />
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_gravity="top"
+        android:background="#00000000"
+        app:elevation="0dp"
         app:menu="@menu/bottom_menu" />
+    </no.danielzeller.blurbehindlib.BlurBehindLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

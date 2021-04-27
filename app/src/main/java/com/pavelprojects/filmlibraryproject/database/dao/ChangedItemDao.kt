@@ -19,7 +19,7 @@ interface ChangedItemDao {
     @Delete(entity = ChangedFilmItem::class)
     fun delete(changedFilmItem: ChangedFilmItem)
 
-    @Query("DELETE FROM changed_film_table")
+    @Query("DELETE FROM changed_film_table WHERE isLiked!=1 AND isWatchLater!=1")
     fun deleteAllChangedFilms()
 
     @Query("SELECT * FROM changed_film_table")
@@ -29,6 +29,6 @@ interface ChangedItemDao {
     fun getAllFav(): List<FilmItem>
 
     @Query("SELECT * FROM changed_film_table WHERE isWatchLater = 1")
-    fun getAllWatchLater(): List<FilmItem>
+    fun getAllWatchLater(): List<ChangedFilmItem>
 
 }

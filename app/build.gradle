@@ -44,6 +44,7 @@ android {
 
 }
 
+
 dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -53,12 +54,13 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'no.danielzeller.blurbehindlib:blurbehindlib:1.0.0'
-    implementation 'androidx.room:room-runtime:2.2.6'
+    implementation 'androidx.room:room-runtime:2.3.0'
     implementation 'android.arch.persistence.room:rxjava2:1.1.1'
 
     // Google Firebase
     implementation platform('com.google.firebase:firebase-bom:27.0.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     // Extensions = ViewModel + LiveData

@@ -11,3 +11,5 @@ const val LINK_TMDB_POSTER = "https://image.tmdb.org/t/p/w780"
 const val FILTER_TMDB_POPUlAR = "popularity.desc"
 
 const val API_KEY_TMDB = "473d343bb4af4dc7e510821907ee4e99"
+
+const val REMINDER_CHANNEL_ID = "reminder channel"

@@ -7,10 +7,7 @@ import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -53,6 +50,8 @@ class FilmInfoFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var toolbarLayout: CollapsingToolbarLayout
     private lateinit var checkBoxWatchLater: CheckBox
+    private lateinit var progressBarRating: ProgressBar
+    private lateinit var textViewRating: TextView
 
     private lateinit var blurLayout: BlurBehindLayout
 
@@ -145,7 +144,23 @@ class FilmInfoFragment : Fragment() {
         })
         checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
             filmItem?.isWatchLater = compoundButton.isChecked
+            if(compoundButton.isChecked){
+                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_watchlater_added), Snackbar.LENGTH_SHORT)
+            }
+            else{
+                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_watchlater_removed), Snackbar.LENGTH_SHORT)
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val rating = filmItem?.rating ?: 0
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            progressBarRating.setProgress(rating.toInt()*10, true)
+        }
+        else progressBarRating.progress = rating.toInt()*10
+        textViewRating.text = rating.toString()
     }
 
     override fun onDestroy() {
@@ -164,6 +179,9 @@ class FilmInfoFragment : Fragment() {
         blurLayout.viewBehind = imageViewPreview
         toolbarLayout = view.findViewById(R.id.collapsing_toolbar)
         checkBoxWatchLater = view.findViewById(R.id.checkbox_watch_later)
+        progressBarRating = view.findViewById(R.id.progress_bar_rating)
+        textViewRating = view.findViewById(R.id.text_view_rating)
+
         if(filmItem?.isWatchLater == true){
             checkBoxWatchLater.isChecked = true
         }

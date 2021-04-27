@@ -64,7 +64,7 @@ class FilmRepository() {
         return changedItemDao?.getAllFav()
     }
 
-    fun getWatchLaterFilms(): List<FilmItem>? {
+    fun getWatchLaterFilms(): List<ChangedFilmItem>? {
         return changedItemDao?.getAllWatchLater()
     }
 
