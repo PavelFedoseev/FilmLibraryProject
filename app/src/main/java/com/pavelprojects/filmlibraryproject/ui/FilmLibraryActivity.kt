@@ -149,6 +149,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     }
 
+
+
     private fun checkAndRequestPermissions() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             Log.d(TAG, "Notification permission sending request...")

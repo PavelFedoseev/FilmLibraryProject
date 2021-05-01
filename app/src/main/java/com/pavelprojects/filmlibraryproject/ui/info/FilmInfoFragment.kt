@@ -98,11 +98,7 @@ class FilmInfoFragment : Fragment() {
     private fun initListeners() {
         buttonLike.setOnClickListener {
             if (filmItem?.isLiked != false) {
-                Snackbar.make(
-                        coordinatorLayout,
-                        getString(R.string.snackbar_dont_like),
-                        Snackbar.LENGTH_SHORT
-                ).show()
+                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_dont_like), Snackbar.LENGTH_SHORT)
                 filmItem?.isLiked = false
                 buttonLike.setBackgroundColor(
                         ResourcesCompat.getColor(
@@ -112,11 +108,7 @@ class FilmInfoFragment : Fragment() {
                         )
                 )
             } else {
-                Snackbar.make(
-                        coordinatorLayout,
-                        getString(R.string.snackbar_like),
-                        Snackbar.LENGTH_SHORT
-                ).show()
+                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_like), Snackbar.LENGTH_SHORT)
                 filmItem?.isLiked = true
                 buttonLike.setBackgroundColor(
                         ResourcesCompat.getColor(
@@ -126,6 +118,7 @@ class FilmInfoFragment : Fragment() {
                         )
                 )
             }
+            filmItem?.let { it1 -> (activity as? OnInfoFragmentListener)?.onRateButtonClicked(it1, callerFragmentTag) }
             thumbUpSelect(filmItem?.isLiked ?: true)
             //saveResults()
         }
