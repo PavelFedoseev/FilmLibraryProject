@@ -12,10 +12,9 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class FilmItem(
         @ColumnInfo(name = "id")
-        @SerializedName("current_id")
-        @PrimaryKey(autoGenerate = true)
-        var id: Int = -1,
-        @SerializedName("id") @ColumnInfo(name = "film_id") var filmId: Int?, //TMDB film id
+        @SerializedName("id")
+        @PrimaryKey(autoGenerate = false)
+        var id: Int, //TMDB film id
         @SerializedName("title") var name: String?,
         @SerializedName("overview") var description: String?,
         @SerializedName("poster_path") val posterPath: String?,
@@ -29,7 +28,6 @@ data class FilmItem(
 
 fun FilmItem.toChangedFilmItem() = ChangedFilmItem(
         id,
-        filmId,
         name,
         description,
         posterPath,

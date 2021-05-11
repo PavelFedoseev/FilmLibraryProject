@@ -177,7 +177,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     }
 
-    override fun onOnllineStatusChanged(isOnline: Boolean) {
+    override fun onOnlineStatusChanged(isOnline: Boolean) {
     }
 
     interface OnWatchLaterListener {

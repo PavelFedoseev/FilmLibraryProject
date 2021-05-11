@@ -7,6 +7,9 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
+import com.google.android.datatransport.runtime.dagger.internal.MapFactory.builder
+import com.pavelprojects.filmlibraryproject.di.AppComponent
+import com.pavelprojects.filmlibraryproject.di.AppModule
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import okhttp3.OkHttpClient
@@ -19,6 +22,7 @@ class App : Application() {
         const val TAG_APP = "App"
         lateinit var instance: App
         private set
+        lateinit var appComponent: AppComponent
     }
 
     lateinit var api: RetroApi
@@ -59,5 +63,16 @@ class App : Application() {
         }
 
     }
+    /*
+    private fun initializeDagger() {
+        appComponent = AppComponent.builder()
+            .appModule(AppModule(this))
+            .networkModule(NetworkModule())
+            .databaseModule(DatabaseModule())
+            .repositoryModule(RepositoryModule())
+            .build()
+    }
+
+     */
 
 }

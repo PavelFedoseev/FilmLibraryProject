@@ -11,9 +11,8 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class ChangedFilmItem(
     @ColumnInfo(name = "id")
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = -1,
-    @ColumnInfo(name = "film_id") var filmId: Int?, //TMDB film id
+    @PrimaryKey(autoGenerate = false)
+    var id: Int,
     var name: String?,
     var description: String?,
     val posterPath: String?,
@@ -27,8 +26,7 @@ data class ChangedFilmItem(
 ) : Parcelable
 
 fun ChangedFilmItem.toFilmItem() = FilmItem(
-    0,
-    filmId,
+    id,
     name,
     description,
     posterPath,

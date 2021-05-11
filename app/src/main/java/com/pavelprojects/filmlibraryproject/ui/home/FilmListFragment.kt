@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.*
+import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
 class FilmListFragment : Fragment(), LibraryActivityChild {
     companion object {
@@ -97,7 +98,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
             listOfFavFilms = it
             listOfFilms.iterator().forEach { item ->
                 it.iterator().forEach { item1 ->
-                    item.isLiked = item1.filmId == item.filmId
+                    item.isLiked = item1.id == item.id
                     //item.userComment = item1.userComment
                 }
             }
@@ -132,17 +133,10 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                             position: Int,
                             adapterPosition: Int
                     ) {
-                        if (filmItem.isLiked) {
-                            viewModel.delete(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-                            filmItem.isLiked = false
-                        } else {
-                            filmItem.isLiked = true
-                            viewModel.insert(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-                        }
-                        viewModel.update(filmItem, FilmLibraryViewModel.CODE_FILM_TABLE)
+                        filmItem.isLiked = !filmItem.isLiked
+                        (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem, TAG)
                         listOfFilms[position - 1] = filmItem
                         recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
-                        viewModel.deleteAllIncorrect()
                     }
                 })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -213,7 +207,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
         super.onDetach()
     }
 
-    override fun onOnllineStatusChanged(isOnline: Boolean) {
+    override fun onOnlineStatusChanged(isOnline: Boolean) {
         if(isOnline){
             viewModel.downloadPopularMovies()
         }

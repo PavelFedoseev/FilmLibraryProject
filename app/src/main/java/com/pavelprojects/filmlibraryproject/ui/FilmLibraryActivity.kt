@@ -99,7 +99,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
 
     }
-
     private fun initViews() {
         appBarDimmer.layoutParams = getStatusBarHeightParams()
 //        navigationBarBlurLayout.layoutParams = getNavigationBarHeightParams(this, resources.configuration.orientation)
@@ -192,7 +191,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 override fun onOnlineStatus(isOnline: Boolean) {
                     if (isOnline) {
                         if (supportFragmentManager.fragments.size > 0)
-                            (supportFragmentManager.fragments[0] as? LibraryActivityChild)?.onOnllineStatusChanged(
+                            (supportFragmentManager.fragments[0] as? LibraryActivityChild)?.onOnlineStatusChanged(
                                 isOnline
                             )
                         dismissSnackBar()
@@ -269,7 +268,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     override fun onRateButtonClicked(item: FilmItem, fragmentTag: String) {
         listOfFilms.forEach {
-            if (it.filmId == item.filmId)
+            if (it.id == item.id)
                 listOfFilms[listOfFilms.indexOf(it)] = item
         }
         viewModel.update(item, FilmLibraryViewModel.CODE_FILM_TABLE)
@@ -403,7 +402,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 intent.putExtra(ReminderBroadcast.INTENT_FILMITEM_BUNDLE, bundle)
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
-                    item.filmId ?: 1,
+                    item.id ?: 1,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
@@ -414,7 +413,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 }
 
 interface LibraryActivityChild {
-    fun onOnllineStatusChanged(isOnline: Boolean)
+    fun onOnlineStatusChanged(isOnline: Boolean)
 }
 
 interface ActivityUpdater {

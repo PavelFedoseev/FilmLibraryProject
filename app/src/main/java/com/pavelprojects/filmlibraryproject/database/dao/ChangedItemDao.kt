@@ -7,7 +7,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 @Dao
 interface ChangedItemDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(changedFilmItem: ChangedFilmItem)
 
     @Insert

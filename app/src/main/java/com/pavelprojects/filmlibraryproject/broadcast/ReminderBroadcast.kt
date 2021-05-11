@@ -29,12 +29,12 @@ class ReminderBroadcast : BroadcastReceiver() {
         outIntent.putExtra(BUNDLE_OUT, bundle)
         val activityIntent = PendingIntent.getActivity(
             context,
-            filmItem?.filmId ?: 1,
+            filmItem?.id ?: 1,
             outIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        if (filmItem?.filmId != null) {
+        if (filmItem?.id != null) {
             val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_baseline_local_movies_24)
                 .setContentTitle("Вы хотели посмотреть фильм: " + filmItem.name)
@@ -43,7 +43,7 @@ class ReminderBroadcast : BroadcastReceiver() {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(activityIntent)
             val notificationManagerCompat = NotificationManagerCompat.from(context)
-            notificationManagerCompat.notify(filmItem.filmId ?: 1, builder.build())
+            notificationManagerCompat.notify(filmItem.id, builder.build())
         }
 
     }

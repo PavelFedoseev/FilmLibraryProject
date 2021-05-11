@@ -7,10 +7,10 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 @Dao
 interface FilmItemDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(filmItem: FilmItem)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(filmList: List<FilmItem>)
 
     @Update

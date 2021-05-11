@@ -53,17 +53,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     fun insert(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             if (code == CODE_CHANGED_FILM_TABLE) {
-                var isRepeat = false
-                repository.getAllChanged()?.forEach {
-                    if (it.filmId == filmItem.filmId) {
-                        isRepeat = true
-                        filmItem.filmId = it.filmId
-                    }
-                }
-                if (!isRepeat)
-                    repository.insert(filmItem, CODE_CHANGED_FILM_TABLE)
-                else
-                    repository.update(filmItem, CODE_CHANGED_FILM_TABLE)
+                repository.insert(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
                 repository.insert(filmItem, CODE_FILM_TABLE)
         }
@@ -85,22 +75,14 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     fun update(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             if (code == CODE_FILM_TABLE) {
-                repository.getAllFilms()?.forEach {
-                    if (it.filmId == filmItem.filmId)
-                        filmItem.id = it.id
-                }
                 repository.update(filmItem, CODE_FILM_TABLE)
             } else {
-                repository.getAllChanged()?.forEach {
-                    if (it.filmId == filmItem.filmId)
-                        filmItem.id = it.id
-                }
                 repository.update(filmItem, CODE_CHANGED_FILM_TABLE)
             }
         }
     }
 
-    fun updateChanged(changedFilmItem: ChangedFilmItem){
+    fun updateChanged(changedFilmItem: ChangedFilmItem) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.updateChanged(changedFilmItem)
         }
@@ -137,13 +119,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun delete(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-
             if (code == CODE_CHANGED_FILM_TABLE) {
-                listOfFavoriteFilmItem.value?.forEach {
-                    if (it.filmId == filmItem.filmId) {
-                        filmItem.id = it.id
-                    }
-                }
                 repository.delete(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
                 repository.delete(filmItem, CODE_FILM_TABLE)
@@ -155,6 +131,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
             repository.deleteAll(code)
         }
     }
+
     fun deleteAllIncorrect() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteAll(CODE_CHANGED_FILM_TABLE)
@@ -178,7 +155,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun getLoadingStatus(): Boolean? = isNetworkLoading.value
 
-    fun getCachedFilmList(){
+    fun getCachedFilmList() {
         viewModelScope.launch(Dispatchers.IO) {
             listOfDatabase.postValue(repository.getAllFilms())
         }
@@ -202,7 +179,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
                             val movies = data.movies.map { it.toFilmItem() }
                             movies.forEach { item ->
                                 listOfFavoriteFilmItem.value?.forEach { item1 ->
-                                    if (item.filmId == item1.filmId) {
+                                    if (item.id == item1.id) {
                                         item.isLiked = item1.isLiked
                                         item.userComment = item1.userComment
                                     }
@@ -243,7 +220,6 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         Log.i(LOG_INTERNET, "Connection failed")
         return false
     }
-
 
 
     fun getNetworkLoadingStatus(): LiveData<Boolean> = isNetworkLoading
