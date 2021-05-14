@@ -33,9 +33,11 @@ import com.pavelprojects.filmlibraryproject.broadcast.ReminderBroadcast
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
+import com.pavelprojects.filmlibraryproject.firebase.NotificationFirebaseService
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.watchlater.WatchLaterFragment
 import kotlinx.android.synthetic.main.activity_filmlibrary.*
 import kotlinx.android.synthetic.main.fragment_film_info.*
@@ -59,7 +61,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
-    private val imageButtonWL: View by lazy { findViewById(R.id.imageButton_wl) }
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private var listOfFilms = arrayListOf<FilmItem>()
@@ -82,6 +83,15 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             if (bundle != null) {
                 val item = bundle?.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
                 item?.let { openFilmInfoFragment(item.toFilmItem()) }
+            } else {
+                val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
+                if (filmId != null) {
+                    viewModel.getFilmById(filmId.toLong()).observe(this) {
+                        if (it != null) {
+                            openFilmInfoFragment(it)
+                        }
+                    }
+                }
             }
         }
 
@@ -99,24 +109,28 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
 
     }
+
     private fun initViews() {
         appBarDimmer.layoutParams = getStatusBarHeightParams()
 //        navigationBarBlurLayout.layoutParams = getNavigationBarHeightParams(this, resources.configuration.orientation)
         val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
         bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
-            if (item.itemId == R.id.menu_home) {
-                if (supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) == null)
+            when (item.itemId) {
+                R.id.menu_home -> if (supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) == null)
                     openFilmListFragment()
-            } else {
-                if (supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) == null)
+                R.id.menu_favorite -> if (supportFragmentManager.findFragmentByTag(
+                        FavoriteFilmsFragment.TAG
+                    ) == null
+                )
                     openFavoriteFilmsFragment()
+                R.id.menu_watch_later -> if (supportFragmentManager.findFragmentByTag(
+                        WatchLaterFragment.TAG
+                    ) == null
+                )
+                    openWatchLatterFragment()
             }
 
             return@setOnNavigationItemSelectedListener true
-        }
-        imageButtonWL.setOnClickListener {
-            if (supportFragmentManager.findFragmentByTag(WatchLaterFragment.TAG) == null)
-                openWatchLatterFragment()
         }
     }
 
@@ -139,7 +153,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 }.show()
         }
         viewModel.getSnackBarString().observe(this) {
-            makeSnackBar(it,action =  this.getString(R.string.snackbar_network_error_action))
+            makeSnackBar(it, action = this.getString(R.string.snackbar_network_error_action))
         }
         viewModel.getWatchLatter().observe(this) {
             updateNotificationChannel(this, it)
@@ -147,8 +161,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
 
     }
-
-
 
     private fun checkAndRequestPermissions() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
@@ -214,6 +226,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
+
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -221,7 +234,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 R.id.fragmentContainer, WatchLaterFragment.newInstance(),
                 WatchLaterFragment.TAG
             )
-            .addToBackStack(WatchLaterFragment.TAG)
             .commit()
     }
 
@@ -266,7 +278,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         }
     }
 
-    override fun onRateButtonClicked(item: FilmItem, fragmentTag: String) {
+    override fun onRateButtonClicked(changedFilmItem: ChangedFilmItem, fragmentTag: String) {
+        val item = changedFilmItem.toFilmItem()
         listOfFilms.forEach {
             if (it.id == item.id)
                 listOfFilms[listOfFilms.indexOf(it)] = item
@@ -277,6 +290,10 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             viewModel.insert(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
         } else {
             viewModel.delete(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
+        }
+        if (changedFilmItem.watchLaterDate != -1L) {
+            updateNotificationChannel(this, listOf(changedFilmItem))
+            viewModel.updateChanged(changedFilmItem)
         }
     }
 

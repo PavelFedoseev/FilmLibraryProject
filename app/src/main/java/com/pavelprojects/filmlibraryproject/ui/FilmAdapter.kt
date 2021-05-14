@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 
 class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: FilmLibraryViewModel, var isAddRotation: Boolean = true, var listener: FilmClickListener) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {

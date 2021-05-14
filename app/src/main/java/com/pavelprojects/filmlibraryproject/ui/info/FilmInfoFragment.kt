@@ -1,5 +1,8 @@
 package com.pavelprojects.filmlibraryproject.ui.info
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -20,10 +23,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER
 import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
+import com.pavelprojects.filmlibraryproject.ui.ProgressBarAnimation
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import no.danielzeller.blurbehindlib.BlurBehindLayout
+import java.util.*
 
 
 class FilmInfoFragment : Fragment() {
@@ -39,7 +47,7 @@ class FilmInfoFragment : Fragment() {
         }
     }
 
-    var filmItem: FilmItem? = null
+    var changedFilmItem: ChangedFilmItem? = null
     private lateinit var callerFragmentTag: String
 
     private lateinit var textViewDescriprion: TextView
@@ -52,37 +60,54 @@ class FilmInfoFragment : Fragment() {
     private lateinit var checkBoxWatchLater: CheckBox
     private lateinit var progressBarRating: ProgressBar
     private lateinit var textViewRating: TextView
+    private lateinit var viewModel: FilmLibraryViewModel
 
     private lateinit var blurLayout: BlurBehindLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val animation =
-                TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.move)
+            TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.move)
         sharedElementEnterTransition = animation
         sharedElementReturnTransition = animation
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_film_info, container, false)
-        filmItem = arguments?.getParcelable(KEY_FILMITEM)
+        changedFilmItem = arguments?.getParcelable<FilmItem>(KEY_FILMITEM)?.toChangedFilmItem()
         callerFragmentTag = arguments?.getString(KEY_FRAGMENT_TAG, FilmListFragment.TAG)
-                ?: FilmListFragment.TAG
+            ?: FilmListFragment.TAG
+        viewModel = FilmLibraryViewModel(requireActivity().application)
         initViews(view)
         initListeners()
-        thumbUpSelect(filmItem?.isLiked ?: true)
-        toolbar.title = filmItem?.name
+        thumbUpSelect(changedFilmItem?.isLiked ?: true)
+        toolbar.title = changedFilmItem?.name
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
-        textViewDescriprion.text = filmItem?.description
-        editTextComment.setText(filmItem?.userComment)
+        textViewDescriprion.text = changedFilmItem?.description
+        editTextComment.setText(changedFilmItem?.userComment)
         Glide.with(this)
-                .load(LINK_TMDB_POSTER + filmItem?.backdropPath)
-                .transform(CenterCrop())
-                .into(imageViewPreview)
+            .load(LINK_TMDB_POSTER + changedFilmItem?.backdropPath)
+            .transform(CenterCrop())
+            .into(imageViewPreview)
+        progressBarRating.startAnimation(
+            ProgressBarAnimation(
+                progressBarRating,
+                0f,
+                changedFilmItem?.rating?.times(10f) ?: 0f
+            ).apply { duration = 1000L })
+        when (changedFilmItem?.rating?.toInt()?.times(10)) {
+            in 0..35 -> progressBarRating.progressTintList =
+                ColorStateList.valueOf(resources.getColor(R.color.red, null))
+            in 35..60 -> progressBarRating.progressTintList =
+                ColorStateList.valueOf(resources.getColor(R.color.yellow, null))
+            in 60..100 -> progressBarRating.progressTintList =
+                ColorStateList.valueOf(resources.getColor(R.color.green, null))
+        }
+
         (activity as? ActivityUpdater)?.hideAppBar()
         return view
     }
@@ -97,29 +122,40 @@ class FilmInfoFragment : Fragment() {
 
     private fun initListeners() {
         buttonLike.setOnClickListener {
-            if (filmItem?.isLiked != false) {
-                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_dont_like), Snackbar.LENGTH_SHORT)
-                filmItem?.isLiked = false
+            if (changedFilmItem?.isLiked != false) {
+                (activity as? ActivityUpdater)?.makeSnackBar(
+                    getString(R.string.snackbar_dont_like),
+                    Snackbar.LENGTH_SHORT
+                )
+                changedFilmItem?.isLiked = false
                 buttonLike.setBackgroundColor(
-                        ResourcesCompat.getColor(
-                                resources,
-                                R.color.orange_700,
-                                null
-                        )
+                    ResourcesCompat.getColor(
+                        resources,
+                        R.color.orange_700,
+                        null
+                    )
                 )
             } else {
-                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_like), Snackbar.LENGTH_SHORT)
-                filmItem?.isLiked = true
+                (activity as? ActivityUpdater)?.makeSnackBar(
+                    getString(R.string.snackbar_like),
+                    Snackbar.LENGTH_SHORT
+                )
+                changedFilmItem?.isLiked = true
                 buttonLike.setBackgroundColor(
-                        ResourcesCompat.getColor(
-                                resources,
-                                R.color.cyan,
-                                null
-                        )
+                    ResourcesCompat.getColor(
+                        resources,
+                        R.color.cyan,
+                        null
+                    )
                 )
             }
-            filmItem?.let { it1 -> (activity as? OnInfoFragmentListener)?.onRateButtonClicked(it1, callerFragmentTag) }
-            thumbUpSelect(filmItem?.isLiked ?: true)
+            changedFilmItem?.let { it1 ->
+                (activity as? OnInfoFragmentListener)?.onRateButtonClicked(
+                    it1,
+                    callerFragmentTag
+                )
+            }
+            thumbUpSelect(changedFilmItem?.isLiked ?: true)
             //saveResults()
         }
         editTextComment.addTextChangedListener(object : TextWatcher {
@@ -132,32 +168,42 @@ class FilmInfoFragment : Fragment() {
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                filmItem?.userComment = p0?.toString()
+                changedFilmItem?.userComment = p0?.toString()
             }
         })
         checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
-            filmItem?.isWatchLater = compoundButton.isChecked
-            if(compoundButton.isChecked){
-                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_watchlater_added), Snackbar.LENGTH_SHORT)
-            }
-            else{
-                (activity as? ActivityUpdater)?.makeSnackBar(getString(R.string.snackbar_watchlater_removed), Snackbar.LENGTH_SHORT)
+            changedFilmItem?.isWatchLater = compoundButton.isChecked
+            if (compoundButton.isChecked) {
+                (activity as? ActivityUpdater)?.makeSnackBar(
+                    getString(R.string.snackbar_watchlater_added),
+                    Snackbar.LENGTH_SHORT
+                )
+                createDatePickerDialog()
+            } else {
+                (activity as? ActivityUpdater)?.makeSnackBar(
+                    getString(R.string.snackbar_watchlater_removed),
+                    Snackbar.LENGTH_SHORT
+                )
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        val rating = filmItem?.rating ?: 0
+        val rating = changedFilmItem?.rating ?: 0
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            progressBarRating.setProgress(rating.toInt()*10, true)
-        }
-        else progressBarRating.progress = rating.toInt()*10
+            progressBarRating.setProgress(rating.toInt() * 10, true)
+        } else progressBarRating.progress = rating.toInt() * 10
         textViewRating.text = rating.toString()
     }
 
     override fun onDestroy() {
-        filmItem?.let { it1 -> (activity as? OnInfoFragmentListener)?.onRateButtonClicked(it1, callerFragmentTag) }
+        changedFilmItem?.let { it1 ->
+            (activity as? OnInfoFragmentListener)?.onRateButtonClicked(
+                it1,
+                callerFragmentTag
+            )
+        }
         super.onDestroy()
     }
 
@@ -175,13 +221,41 @@ class FilmInfoFragment : Fragment() {
         progressBarRating = view.findViewById(R.id.progress_bar_rating)
         textViewRating = view.findViewById(R.id.text_view_rating)
 
-        if(filmItem?.isWatchLater == true){
+        if (changedFilmItem?.isWatchLater == true) {
             checkBoxWatchLater.isChecked = true
         }
     }
 
+    private fun createDatePickerDialog() {
+        val calendar = Calendar.getInstance()
+        DatePickerDialog(
+            requireContext(),
+            { p0, p1, p2, p3 ->
+                calendar.set(Calendar.YEAR, p1)
+                calendar.set(Calendar.MONTH, p2)
+                calendar.set(Calendar.DAY_OF_MONTH, p3)
+                TimePickerDialog(requireContext(), { timePicker: TimePicker, i: Int, i1: Int ->
+                    calendar.set(Calendar.HOUR_OF_DAY, i)
+                    calendar.set(Calendar.MINUTE, i1)
+                    calendar.add(Calendar.SECOND, 5)
+                    changedFilmItem?.watchLaterDate = calendar.timeInMillis
+                    changedFilmItem?.let {
+                        (activity as? ActivityUpdater)?.updateNotificationChannel(
+                            requireContext(),
+                            listOf(it)
+                        )
+                    }
+                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply { this.datePicker.minDate = calendar.timeInMillis }.show()
+
+    }
+
     interface OnInfoFragmentListener {
-        fun onRateButtonClicked(item: FilmItem, fragmentTag: String)
+        fun onRateButtonClicked(changedFilmItem: ChangedFilmItem, fragmentTag: String)
     }
 
 

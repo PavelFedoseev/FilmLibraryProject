@@ -31,16 +31,7 @@
             android:layout_height="match_parent"
             android:alpha="0.4"
             android:background="@android:color/black" />
-        <ImageButton
-            android:id="@+id/imageButton_wl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_access_time_filled_40"
-            android:layout_marginTop="10dp"
-            android:background="@null"
-            android:layout_gravity="center_vertical|start"
-            android:layout_marginStart="@dimen/film_spacing"
-            android:contentDescription="@string/content_description_watch_latter_tab" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1,24 +1,18 @@
-package com.pavelprojects.filmlibraryproject.ui
+package com.pavelprojects.filmlibraryproject.ui.vm
 
-import android.app.AlarmManager
 import android.app.Application
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
-import androidx.core.content.getSystemService
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
-import com.pavelprojects.filmlibraryproject.broadcast.ReminderBroadcast
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
-import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
@@ -65,13 +59,6 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun insertAllGetFilms(list: List<FilmItem>): List<FilmItem>? {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.insertAllGetFilms(list)
-        }
-        return repository.getAllFilms()
-    }
-
     fun update(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             if (code == CODE_FILM_TABLE) {
@@ -110,7 +97,7 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         return listOfWatchLaterFilmItem
     }
 
-    fun getFilmById(id: Long, code: Int): LiveData<FilmItem?> {
+    fun getFilmById(id: Long): LiveData<FilmItem?> {
         viewModelScope.launch(Dispatchers.IO) {
             filmItemById.postValue(repository.getFilmById(id))
         }

@@ -19,7 +19,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
-import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import java.util.*
@@ -123,7 +123,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                 if (viewHolder.adapterPosition != 0) {
                     listOfWatchLater[viewHolder.adapterPosition - 1].isWatchLater = false
                     (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
-                        listOfWatchLater[viewHolder.adapterPosition - 1].toFilmItem(),
+                        listOfWatchLater[viewHolder.adapterPosition - 1],
                         TAG
                     )
                     listOfWatchLater.removeAt(viewHolder.adapterPosition - 1)

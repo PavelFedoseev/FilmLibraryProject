@@ -13,9 +13,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
-import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 
@@ -98,7 +99,7 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
                     ) {
                         listOfFavorite.remove(filmItem)
                         filmItem.isLiked = false
-                        (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem, TAG)
+                        (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem.toChangedFilmItem(), TAG)
                         recyclerView.adapter?.notifyItemRemoved(adapterPosition)
                         if (listOfFavorite.isEmpty()) {
                             recyclerView.background = ResourcesCompat.getDrawable(

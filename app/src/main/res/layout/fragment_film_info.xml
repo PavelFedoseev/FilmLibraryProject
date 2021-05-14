@@ -32,6 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="false"
+            android:textAlignment="center"
             app:contentScrim="?attr/colorPrimary"
             app:expandedTitleTextAppearance="@style/ToolBarTextStyle"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">

@@ -11,6 +11,7 @@
 
     <string name="menu_home">Домашняя страница</string>
     <string name="menu_favorite">Избранное</string>
+    <string name="menu_watch_later">Посмотреть позже</string>
 
     <string name="label_library">Библиотека</string>
     <string name="label_favorite">Избраное</string>

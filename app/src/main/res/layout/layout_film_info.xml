@@ -47,12 +47,13 @@
 
                 <ProgressBar
                     android:id="@+id/progress_bar_rating"
+                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="@dimen/progress_bar_size"
                     android:layout_height="@dimen/progress_bar_size"
                     android:indeterminate="false"
                     android:max="100"
-                    android:progress="80"
-                    android:progressDrawable="@drawable/shape_rounded_progress" />
+                    android:progress="0"
+                    android:progressDrawable="@drawable/progress_bar_circle" />
 
                 <TextView
                     android:id="@+id/text_view_rating"
