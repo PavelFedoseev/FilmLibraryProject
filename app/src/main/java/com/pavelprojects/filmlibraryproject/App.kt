@@ -8,8 +8,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.datatransport.runtime.dagger.internal.MapFactory.builder
-import com.pavelprojects.filmlibraryproject.di.AppComponent
-import com.pavelprojects.filmlibraryproject.di.AppModule
+import com.pavelprojects.filmlibraryproject.di.*
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import okhttp3.OkHttpClient
@@ -20,34 +19,24 @@ import java.util.concurrent.TimeUnit
 class App : Application() {
     companion object{
         const val TAG_APP = "App"
-        lateinit var instance: App
-        private set
         lateinit var appComponent: AppComponent
     }
 
-    lateinit var api: RetroApi
-    lateinit var repository: FilmRepository
     var loadedPage: Int = 1
     var recFilmListPos: Int = 0
     var recFavPos: Int = 0
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG_APP, "$TAG_APP onCreate")
-        instance = this
-        initRetrofit()
+        initDagger()
     }
 
-    private fun initRetrofit() {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(RetroApi.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient().newBuilder().connectTimeout(20, TimeUnit.SECONDS)
-                    .readTimeout(10, TimeUnit.SECONDS).build()
-            )
+    private fun initDagger(){
+        appComponent = DaggerAppComponent.builder()
+            .appModule(AppModule(this))
+            .roomModule(RoomModule(this))
+            .networkModule(NetworkModule())
             .build()
-        api = retrofit.create(RetroApi::class.java)
-        repository = FilmRepository()
     }
 
     fun createNotificationChannel(){

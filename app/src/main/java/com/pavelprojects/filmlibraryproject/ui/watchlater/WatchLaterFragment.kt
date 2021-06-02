@@ -1,7 +1,9 @@
 package com.pavelprojects.filmlibraryproject.ui.watchlater
 
+import android.app.Application
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,11 +20,13 @@ import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
+import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import java.util.*
+import javax.inject.Inject
 
 
 class WatchLaterFragment : Fragment(), LibraryActivityChild {
@@ -31,14 +35,24 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
         const val TAG = "WatchLatter Tag"
         fun newInstance() = WatchLaterFragment()
     }
+    @Inject
+    lateinit var application: App
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
 
-    private lateinit var viewModel: FilmLibraryViewModel
+    private val viewModel: FilmLibraryViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
+    }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var listOfWatchLater: ArrayList<ChangedFilmItem>
 
     private var position: Int = 0
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        App.appComponent.inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +61,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
         val view =  inflater.inflate(R.layout.fragment_favorite_films, container, false)
         listOfWatchLater = arrayListOf()
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
-        position = App.instance.recFavPos
+        position = application.recFavPos
         initModel()
         initRecycler(position)
         (activity as? ActivityUpdater)?.setupBlur(view)
@@ -55,8 +69,6 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
     }
 
     private fun initModel() {
-        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
-            .create(FilmLibraryViewModel::class.java)
 
         viewModel.getWatchLatter().observe(this.viewLifecycleOwner) {
             listOfWatchLater.clear()
@@ -186,11 +198,11 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        App.instance.recFavPos = layoutManager.findLastVisibleItemPosition()
+        application.recFavPos = layoutManager.findLastVisibleItemPosition()
     }
 
     override fun onDestroy() {
-        App.instance.recFavPos = layoutManager.findLastVisibleItemPosition()
+        application.recFavPos = layoutManager.findLastVisibleItemPosition()
         super.onDestroy()
     }
 }

@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui.home
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +14,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
+import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.*
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import javax.inject.Inject
 
 class FilmListFragment : Fragment(), LibraryActivityChild {
     companion object {
@@ -29,6 +32,14 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
             return FilmListFragment().apply { arguments = bundle }
         }
     }
+    @Inject
+    lateinit var application: App
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel: FilmLibraryViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
+    }
 
     lateinit var listOfFilms: ArrayList<FilmItem>
     var listOfFavFilms = listOf<FilmItem>()
@@ -37,8 +48,11 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
 
     lateinit var layoutManager: GridLayoutManager
     private lateinit var recyclerView: RecyclerView
-    private lateinit var viewModel: FilmLibraryViewModel
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        App.appComponent.inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,11 +61,9 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
     ): View? {
         Log.d(TAG, "onCreateView")
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
-        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
-            .create(FilmLibraryViewModel::class.java)
 
         listOfFilms = arguments?.getParcelableArrayList(KEY_LIST) ?: arrayListOf()
-        position = App.instance.recFilmListPos
+        position = application.recFilmListPos
         orientation = resources.configuration.orientation
 
         layoutManager = if (orientation == Configuration.ORIENTATION_PORTRAIT)
@@ -71,7 +83,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
         var position: Int
 
         viewModel.getAllFilms().observe(this.viewLifecycleOwner) {
-            if (it != null && App.instance.loadedPage == 1) {
+            if (it != null && application.loadedPage == 1) {
                 position = listOfFilms.size
                 if (!listOfFilms.containsAll(it)) {
                     listOfFilms.addAll(it)
@@ -84,7 +96,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
         }
         viewModel.getPopularMovies().observe(this.viewLifecycleOwner) {
             if (it != null) {
-                if (App.instance.loadedPage == 2) {
+                if (application.loadedPage == 2) {
                     listOfFilms.clear()
                     recyclerView.adapter?.notifyDataSetChanged()
                 }
@@ -171,9 +183,9 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                 val visibleItemCount = layoutManager.childCount
                 val pastVisibleItem = layoutManager.findFirstVisibleItemPosition()
                 this@FilmListFragment.position = pastVisibleItem
-                App.instance.recFilmListPos = pastVisibleItem
+                application.recFilmListPos = pastVisibleItem
                 val viewCount = adapter.itemCount - 2 // - 2 Header + Footer
-                if (viewModel.getLoadingStatus() != true && App.instance.loadedPage < viewModel.allPages)
+                if (viewModel.getLoadingStatus() != true && application.loadedPage < viewModel.allPages)
                     if (visibleItemCount + pastVisibleItem >= viewCount) {
                         viewModel.getPopularMovies()
                     }

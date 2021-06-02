@@ -3,6 +3,7 @@ package com.pavelprojects.filmlibraryproject.database.dao
 import androidx.room.*
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import io.reactivex.Maybe
 
 @Dao
 interface FilmItemDao {
@@ -23,7 +24,7 @@ interface FilmItemDao {
     fun deleteAllFilms()
 
     @Query("SELECT * FROM film_table")
-    fun getAll(): List<FilmItem>
+    fun getAll(): Maybe<List<FilmItem>>
 
     @Query("SELECT * FROM film_table WHERE id = :id")
     fun getById(id: Long): FilmItem?

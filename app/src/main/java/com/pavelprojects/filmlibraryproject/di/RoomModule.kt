@@ -1,15 +1,17 @@
 package com.pavelprojects.filmlibraryproject.di
 
-import android.app.Application
 import androidx.room.Room
+import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.database.FilmDatabase
 import com.pavelprojects.filmlibraryproject.database.FilmDatabaseCallback
+import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import dagger.Module
 import dagger.Provides
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Module
-class RoomModule(application: Application) {
+class RoomModule constructor(val application: App) {
     private val filmDatabase: FilmDatabase = Room.databaseBuilder(
         application,
         FilmDatabase::class.java, "filmDatabase.db"
@@ -28,4 +30,10 @@ class RoomModule(application: Application) {
     @Singleton
     @Provides
     fun providesChangedItemDao() = filmDatabase.getChangedItemDao()
+
+    @Singleton
+    @Provides
+    fun providesFilmRepository() = FilmRepository(application)
+
+
 }

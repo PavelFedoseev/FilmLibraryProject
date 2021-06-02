@@ -1,7 +1,9 @@
 package com.pavelprojects.filmlibraryproject.ui.info
 
+import android.app.Application
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
@@ -16,22 +18,26 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
+import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.ProgressBarAnimation
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 import java.util.*
+import javax.inject.Inject
 
 
 class FilmInfoFragment : Fragment() {
@@ -46,6 +52,8 @@ class FilmInfoFragment : Fragment() {
             }
         }
     }
+    @Inject
+    lateinit var application: App
 
     var changedFilmItem: ChangedFilmItem? = null
     private lateinit var callerFragmentTag: String
@@ -60,9 +68,13 @@ class FilmInfoFragment : Fragment() {
     private lateinit var checkBoxWatchLater: CheckBox
     private lateinit var progressBarRating: ProgressBar
     private lateinit var textViewRating: TextView
-    private lateinit var viewModel: FilmLibraryViewModel
 
     private lateinit var blurLayout: BlurBehindLayout
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        App.appComponent.inject(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +93,6 @@ class FilmInfoFragment : Fragment() {
         changedFilmItem = arguments?.getParcelable<FilmItem>(KEY_FILMITEM)?.toChangedFilmItem()
         callerFragmentTag = arguments?.getString(KEY_FRAGMENT_TAG, FilmListFragment.TAG)
             ?: FilmListFragment.TAG
-        viewModel = FilmLibraryViewModel(requireActivity().application)
         initViews(view)
         initListeners()
         thumbUpSelect(changedFilmItem?.isLiked ?: true)

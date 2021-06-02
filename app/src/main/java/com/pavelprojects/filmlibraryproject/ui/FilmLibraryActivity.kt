@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -33,6 +34,7 @@ import com.pavelprojects.filmlibraryproject.broadcast.ReminderBroadcast
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
+import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.firebase.NotificationFirebaseService
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
@@ -43,6 +45,7 @@ import kotlinx.android.synthetic.main.activity_filmlibrary.*
 import kotlinx.android.synthetic.main.fragment_film_info.*
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 import java.util.*
+import javax.inject.Inject
 
 
 class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
@@ -55,10 +58,16 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         const val TAG = "FilmLibraryActivity"
         const val NOTIF_REQUEST_PERM = 1111
     }
+    @Inject
+    lateinit var application: App
 
-    val viewModel by lazy { ViewModelProvider(this).get(FilmLibraryViewModel::class.java) }
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel by lazy { ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java) }
 
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
+
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
@@ -71,13 +80,14 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         setContentView(R.layout.activity_filmlibrary)
+        App.appComponent.inject(this)
         checkAndRequestPermissions()
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         initViews()
         initModel()
 
         if (savedInstanceState == null) {
-            App.instance.loadedPage = 1
+            application.loadedPage = 1
             openFilmListFragment()
             bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
             if (bundle != null) {
@@ -172,23 +182,31 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             )
         } else {
             Log.d(TAG, "Notification permission granted")
-            App.instance.createNotificationChannel()
+                this.application.createNotificationChannel()
         }
     }
+
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == NOTIF_REQUEST_PERM) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Notification permission granted")
-                App.instance.createNotificationChannel()
+                application.createNotificationChannel()
             } else {
                 Log.d(TAG, "Notification permission denied")
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+        super.onCreate(savedInstanceState, persistentState)
+
     }
 
     override fun onStart() {

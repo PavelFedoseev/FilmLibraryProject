@@ -1,14 +1,15 @@
 package com.pavelprojects.filmlibraryproject.di
 
-import android.app.Application
+import com.pavelprojects.filmlibraryproject.App
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-class AppModule(val application: Application) {
+class AppModule(val application: App) {
 
     @Singleton
     @Provides
     fun provideApplication() = application
+
 }

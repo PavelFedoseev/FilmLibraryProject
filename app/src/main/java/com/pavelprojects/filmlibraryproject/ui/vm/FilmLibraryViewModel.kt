@@ -1,6 +1,5 @@
 package com.pavelprojects.filmlibraryproject.ui.vm
 
-import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -18,8 +17,10 @@ import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
+class FilmLibraryViewModel @Inject constructor(val app: App, val repository: FilmRepository) :
+    AndroidViewModel(app) {
     companion object {
         const val TAG = "FilmLibraryViewModel"
         const val LOG_INTERNET = "Network Status"
@@ -27,7 +28,6 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
         const val CODE_CHANGED_FILM_TABLE = 2
     }
 
-    private val repository: FilmRepository = App.instance.repository
     private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
     private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
     private val filmItemById = MutableLiveData<FilmItem?>()
@@ -76,24 +76,35 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     fun getAllFilms(): LiveData<List<FilmItem>> {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (App.instance.loadedPage != 1)
-                listOfDatabase.postValue(repository.getAllFilms())
-        }
+            if (app.loadedPage != 1) {
+                repository.getAllFilms(object : FilmRepository.FilmListResponseCallback {
+                    override fun onSuccess(list: List<FilmItem>) {
+                        listOfDatabase.postValue(list)
+                    }
+
+                })
+
+            }
         return listOfDatabase
     }
 
     fun getFavFilms(): LiveData<List<FilmItem>> {
-        viewModelScope.launch(Dispatchers.IO) {
-            listOfFavoriteFilmItem.postValue(repository.getFavFilms())
-        }
+            repository.getFavFilms(object : FilmRepository.FilmListResponseCallback {
+                override fun onSuccess(list: List<FilmItem>) {
+                    listOfFavoriteFilmItem.postValue(list)
+                }
+
+            })
         return listOfFavoriteFilmItem
     }
 
     fun getWatchLatter(): LiveData<List<ChangedFilmItem>> {
-        viewModelScope.launch(Dispatchers.IO) {
-            listOfWatchLaterFilmItem.postValue(repository.getWatchLaterFilms())
-        }
+            repository.getWatchLaterFilms(object : FilmRepository.ChangedFilmListResponseCallback {
+                override fun onSuccess(list: List<ChangedFilmItem>) {
+                    listOfWatchLaterFilmItem.postValue(list)
+                }
+
+            })
         return listOfWatchLaterFilmItem
     }
 
@@ -144,24 +155,29 @@ class FilmLibraryViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun getCachedFilmList() {
         viewModelScope.launch(Dispatchers.IO) {
-            listOfDatabase.postValue(repository.getAllFilms())
+            repository.getAllFilms(object : FilmRepository.FilmListResponseCallback {
+                override fun onSuccess(list: List<FilmItem>) {
+                    listOfDatabase.postValue(list)
+                }
+            })
+
         }
     }
 
 
     fun initFilmDownloading() {
-        Log.d(TAG, "initFilmDownloading: loadedPage = ${App.instance.loadedPage}")
+        Log.d(TAG, "initFilmDownloading: loadedPage = ${app.loadedPage}")
         isNetworkLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             repository.getPopularMovies(
-                App.instance.loadedPage,
+                app.loadedPage,
                 object : FilmRepository.PopularMoviesResponseListener {
                     override fun onSuccess(data: FilmDataResponse?) {
                         allPages = data?.pages ?: 1
-                        if (App.instance.loadedPage == 1) {
+                        if (app.loadedPage == 1) {
                             deleteAll(CODE_FILM_TABLE)
                         }
-                        App.instance.loadedPage++
+                        app.loadedPage++
                         if (data != null) {
                             val movies = data.movies.map { it.toFilmItem() }
                             movies.forEach { item ->

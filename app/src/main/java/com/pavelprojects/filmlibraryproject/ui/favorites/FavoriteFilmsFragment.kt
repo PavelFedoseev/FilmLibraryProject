@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui.favorites
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,11 +15,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
+import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import javax.inject.Inject
 
 
 class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
@@ -27,14 +30,24 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
         const val TAG = "Favorite Fragment"
         fun newInstance() = FavoriteFilmsFragment()
     }
+    @Inject
+    lateinit var application: App
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
 
-    private lateinit var viewModel: FilmLibraryViewModel
+    private val viewModel: FilmLibraryViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
+    }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var listOfFavorite: ArrayList<FilmItem>
 
     private var position: Int = 0
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        App.appComponent.inject(this)
+    }
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -43,7 +56,7 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
         val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
         listOfFavorite = arrayListOf()
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
-        position = App.instance.recFavPos
+        position = application.recFavPos
         initModel()
         initRecycler(position)
         (activity as? ActivityUpdater)?.setupBlur(view)
@@ -51,8 +64,6 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
     }
 
     private fun initModel() {
-        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
-                    .create(FilmLibraryViewModel::class.java)
 
         viewModel.getFavFilms().observe(this.viewLifecycleOwner) {
             listOfFavorite.clear()
@@ -150,11 +161,11 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        App.instance.recFavPos = layoutManager.findLastVisibleItemPosition()
+        application.recFavPos = layoutManager.findLastVisibleItemPosition()
     }
 
     override fun onDestroy() {
-        App.instance.recFavPos = layoutManager.findLastVisibleItemPosition()
+        application.recFavPos = layoutManager.findLastVisibleItemPosition()
         super.onDestroy()
     }
 }
