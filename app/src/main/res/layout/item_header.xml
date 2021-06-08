@@ -2,7 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/view_spacing"
+    android:layout_marginTop="@dimen/recycler_header_margin"
+    android:layout_marginStart="@dimen/view_spacing"
+    android:layout_marginEnd="@dimen/view_spacing"
+    android:layout_marginBottom="@dimen/view_spacing"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
@@ -11,7 +14,6 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/text_labels"
         android:textStyle="bold"
-        android:background="@drawable/stroke_category"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

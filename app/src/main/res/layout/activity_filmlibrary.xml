@@ -1,46 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/constraintLayout_parent"
+    android:id="@+id/constraintLayoutParent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_gray">
-    <!--
-        <FrameLayout
-            android:id="@+id/frameLayout_control"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/layout_borders_margin"
-            android:background="@drawable/shape_rounded"
-            android:elevation="@dimen/element_box_elevation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_invite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/layout_borders_margin"
-                android:elevation="@dimen/element_elevation"
-                android:text="@string/button_share"
-                app:cornerRadius="@dimen/element_radius" />
-
-        </FrameLayout>
-        -->
 
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/navigationView"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    <no.danielzeller.blurbehindlib.BlurBehindLayout
+        android:id="@+id/topBarBlurLayout"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        app:blurRadius="30.0"
+        app:updateMode="onScroll"
+        app:useTextureView="false"
+        app:blurTextureScale="0.5"
+        app:useChildAlphaAsMask="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <View
+            android:id="@+id/appBarDimmer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:background="@android:color/black" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:text="@string/app_name"
+            android:textSize="@dimen/text_app_name"
+            android:textStyle="bold"
+            android:fontFamily="@font/appfont"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/film_spacing"/>
+    </no.danielzeller.blurbehindlib.BlurBehindLayout>
+    <no.danielzeller.blurbehindlib.BlurBehindLayout
+        android:id="@+id/navigationBarBlurLayout"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        app:blurRadius="100.0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:updateMode="onScroll"
+        app:useTextureView="false">
+        <View
+            android:id="@+id/bottomNavDimmer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:background="@color/blur_dimmer" />
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_gravity="top"
+        android:background="#00000000"
+        app:elevation="0dp"
         app:menu="@menu/bottom_menu" />
+    </no.danielzeller.blurbehindlib.BlurBehindLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

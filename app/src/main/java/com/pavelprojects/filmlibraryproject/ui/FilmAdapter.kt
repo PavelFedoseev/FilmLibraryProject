@@ -1,20 +1,36 @@
-package com.pavelprojects.filmlibraryproject
+package com.pavelprojects.filmlibraryproject.ui
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER_PREVIEW
+import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 
-class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: FilmClickListener) :
+class FilmAdapter(
+    var list: List<FilmItem>,
+    var header: String,
+    var viewModel: FilmLibraryViewModel,
+    var isAddRotation: Boolean = true,
+    var listener: FilmClickListener
+) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
+        const val TAG = "FilmAdapter"
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
         const val VIEW_TYPE_HEADER = 2
+        const val VIEW_TYPE_NULL = -1
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -28,9 +44,13 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
                 view = layoutInflater.inflate(R.layout.item_footer, parent, false)
                 FooterItemViewHolder(view)
             }
-            else -> {
+            VIEW_TYPE_HEADER -> {
                 view = layoutInflater.inflate(R.layout.item_header, parent, false)
                 HeaderItemViewHolder(view, header)
+            }
+            else -> { //VIEW_TYPE_NULL
+                view = layoutInflater.inflate(R.layout.item_null, parent, false)
+                EmptyItemViewHolder(view)
             }
         }
 
@@ -42,22 +62,24 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is FilmItemViewHolder) {
             val item = list[position - 1]
-            holder.bindView(item)
+            holder.bindView(item, holder.layoutPosition, isAddRotation)
             holder.itemView.setOnClickListener {
                 listener.onItemClick(item, position, holder.adapterPosition)
             }
             holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position, holder.adapterPosition, holder.itemView)
+                listener.onDetailClick(item, position, holder.adapterPosition)
             }
             holder.titleTv.setOnClickListener {
                 listener.onItemClick(item, position, holder.adapterPosition)
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
+        } else if (holder is FooterItemViewHolder) {
+            holder.bindView(viewModel.getLoadingStatus())
         }
     }
 
-    fun setValue(list: List<FilmItem>){
+    fun setValue(list: List<FilmItem>) {
         this.list = list
         notifyDataSetChanged()
     }
@@ -76,29 +98,52 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
         val titleTv: TextView = itemView.findViewById(R.id.textView_name)
         val detailButton: Button = itemView.findViewById(R.id.button_detail)
         var item: FilmItem? = null
-        fun bindView(item: FilmItem) {
+
+        fun bindView(item: FilmItem, position: Int, isAddRotation: Boolean) {
             this.item = item
             titleTv.text = item.name
+            if (isAddRotation)
+                if (position % 2 != 0)
+                    itemView.rotationY =
+                        itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
+                else
+                    itemView.rotationY =
+                        -itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
+            Glide.with(itemView)
+                .load(LINK_TMDB_POSTER_PREVIEW + item.posterPath)
+                .transform()
+                .into(imageView)
         }
     }
 
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //TODO Footer
-        fun bindView() {}
+        private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
+        fun bindView(isLoading: Boolean?) {
+            Log.d(TAG, "FooterItemViewHolder: bindView")
+            if (isLoading == true) {
+                progressBar.visibility = View.VISIBLE
+            } else {
+                progressBar.visibility = View.GONE
+            }
+        }
     }
+
 
     class HeaderItemViewHolder(itemView: View, var header: String) :
         RecyclerView.ViewHolder(itemView) {
-        val textView: TextView = itemView.findViewById(R.id.textview_header)
+        private val textView: TextView = itemView.findViewById(R.id.textview_header)
         fun bindView() {
             textView.text = header
         }
     }
 
+    class EmptyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
     interface FilmClickInterface {
         fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
-        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int, view: View)
+        fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int)
     }
+
 
     abstract class FilmClickListener : FilmClickInterface {
         companion object {
@@ -111,6 +156,8 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var listener: Fi
             if (currentTime - lastClickTime < DOUBLE_CLICK_DELTA) {
                 onDoubleClick(filmItem, position, adapterPosition)
             }
+
+
             lastClickTime = currentTime
         }
 
