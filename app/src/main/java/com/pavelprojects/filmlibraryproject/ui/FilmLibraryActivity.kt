@@ -162,9 +162,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                     viewModel.initFilmDownloading()
                 }.show()
         }
-        viewModel.getSnackBarString().observe(this) {
-            makeSnackBar(it, action = this.getString(R.string.snackbar_network_error_action))
-        }
+
         viewModel.getWatchLatter().observe(this) {
             updateNotificationChannel(this, it)
         }
@@ -202,11 +200,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 Log.d(TAG, "Notification permission denied")
             }
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-
     }
 
     override fun onStart() {

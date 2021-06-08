@@ -10,11 +10,18 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER_PREVIEW
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 
-class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: FilmLibraryViewModel, var isAddRotation: Boolean = true, var listener: FilmClickListener) :
+class FilmAdapter(
+    var list: List<FilmItem>,
+    var header: String,
+    var viewModel: FilmLibraryViewModel,
+    var isAddRotation: Boolean = true,
+    var listener: FilmClickListener
+) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val TAG = "FilmAdapter"
@@ -67,12 +74,12 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
-        } else if(holder is FooterItemViewHolder) {
+        } else if (holder is FooterItemViewHolder) {
             holder.bindView(viewModel.getLoadingStatus())
         }
     }
 
-    fun setValue(list: List<FilmItem>){
+    fun setValue(list: List<FilmItem>) {
         this.list = list
         notifyDataSetChanged()
     }
@@ -95,13 +102,15 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
         fun bindView(item: FilmItem, position: Int, isAddRotation: Boolean) {
             this.item = item
             titleTv.text = item.name
-            if(isAddRotation)
-            if(position % 2 != 0)
-                itemView.rotationY = itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
-            else
-                itemView.rotationY = -itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
+            if (isAddRotation)
+                if (position % 2 != 0)
+                    itemView.rotationY =
+                        itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
+                else
+                    itemView.rotationY =
+                        -itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
             Glide.with(itemView)
-                .load("https://image.tmdb.org/t/p/w342${item.posterPath}")
+                .load(LINK_TMDB_POSTER_PREVIEW + item.posterPath)
                 .transform()
                 .into(imageView)
         }
@@ -109,15 +118,13 @@ class FilmAdapter(var list: List<FilmItem>, var header: String, var viewModel: F
 
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
-        fun bindView(isLoading : Boolean?) {
-            Log.d(TAG, "FooterItemViewHolder: bindView" )
-            if(isLoading == true){
+        fun bindView(isLoading: Boolean?) {
+            Log.d(TAG, "FooterItemViewHolder: bindView")
+            if (isLoading == true) {
                 progressBar.visibility = View.VISIBLE
-            }
-            else {
+            } else {
                 progressBar.visibility = View.GONE
             }
-
         }
     }
 

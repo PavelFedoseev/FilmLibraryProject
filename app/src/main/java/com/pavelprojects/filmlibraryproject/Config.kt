@@ -7,6 +7,7 @@ const val TAG_LIKE_ANIM = "likeAnim"
 const val LINK_TMDB = "https://api.themoviedb.org/3/"
 const val LINK_TMDB_DISCOVER = "discover/movie"
 const val LINK_TMDB_POSTER = "https://image.tmdb.org/t/p/w780"
+const val LINK_TMDB_POSTER_PREVIEW = "https://image.tmdb.org/t/p/w342"
 
 const val FILTER_TMDB_POPUlAR = "popularity.desc"
 
