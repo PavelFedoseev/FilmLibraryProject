@@ -64,13 +64,13 @@ class FilmAdapter(
             val item = list[position - 1]
             holder.bindView(item, holder.layoutPosition, isAddRotation)
             holder.itemView.setOnClickListener {
-                listener.onItemClick(item, position, holder.adapterPosition)
+                listener.onItemClick(item, position, holder.absoluteAdapterPosition)
             }
             holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position, holder.adapterPosition)
+                listener.onDetailClick(item, position, holder.absoluteAdapterPosition)
             }
             holder.titleTv.setOnClickListener {
-                listener.onItemClick(item, position, holder.adapterPosition)
+                listener.onItemClick(item, position, holder.absoluteAdapterPosition)
             }
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()

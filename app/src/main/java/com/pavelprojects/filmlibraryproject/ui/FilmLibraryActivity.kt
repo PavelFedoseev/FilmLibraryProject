@@ -96,7 +96,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             } else {
                 val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
                 if (filmId != null) {
-                    viewModel.getFilmById(filmId.toLong()).observe(this) {
+                    viewModel.getFilmById(filmId.toInt()).observe(this) {
                         if (it != null) {
                             openFilmInfoFragment(it)
                         }
@@ -237,7 +237,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
-
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -348,6 +347,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     override fun setupBlur(view: View) {
+        blurAppBar.disable()
+        blurNavigationView.disable()
         blurAppBar.viewBehind = view
         blurNavigationView.viewBehind = view
         if (blurAppBar.visibility == View.GONE) {
@@ -359,6 +360,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
                     override fun onAnimationEnd(p0: Animation?) {
                         blurAppBar.visibility = View.VISIBLE
+                        blurAppBar.enable()
+                        blurNavigationView.enable()
                     }
 
                     override fun onAnimationRepeat(p0: Animation?) {
@@ -368,6 +371,15 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             }
             blurAppBar.startAnimation(animation)
         }
+        else {
+            blurAppBar.enable()
+            blurNavigationView.enable()
+        }
+    }
+
+    override fun disableBlur() {
+        blurAppBar.disable()
+        blurNavigationView.disable()
     }
 
     override fun hideAppBar() {
@@ -446,6 +458,7 @@ interface LibraryActivityChild {
 
 interface ActivityUpdater {
     fun setupBlur(view: View)
+    fun disableBlur()
     fun hideAppBar()
     fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)

@@ -118,7 +118,7 @@ class FilmInfoFragment : Fragment() {
             in 60..100 -> progressBarRating.progressTintList =
                 ColorStateList.valueOf(resources.getColor(R.color.green, null))
         }
-
+        (activity as? ActivityUpdater)?.disableBlur()
         (activity as? ActivityUpdater)?.hideAppBar()
         return view
     }

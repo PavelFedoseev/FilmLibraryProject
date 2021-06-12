@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui.vm
 
+import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -19,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class FilmLibraryViewModel @Inject constructor(val app: App, val repository: FilmRepository) :
+class FilmLibraryViewModel @Inject constructor(var app: Application, val repository: FilmRepository) :
     AndroidViewModel(app) {
     companion object {
         const val TAG = "FilmLibraryViewModel"
@@ -76,7 +77,7 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
     }
 
     fun getAllFilms(): LiveData<List<FilmItem>> {
-            if (app.loadedPage != 1) {
+            //if ((app as App).loadedPage != 1) {
                 repository.getAllFilms(object : FilmRepository.FilmListResponseCallback {
                     override fun onSuccess(list: List<FilmItem>) {
                         listOfDatabase.postValue(list)
@@ -84,7 +85,7 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
 
                 })
 
-            }
+            //}
         return listOfDatabase
     }
 
@@ -108,10 +109,12 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
         return listOfWatchLaterFilmItem
     }
 
-    fun getFilmById(id: Long): LiveData<FilmItem?> {
-        viewModelScope.launch(Dispatchers.IO) {
-            filmItemById.postValue(repository.getFilmById(id))
-        }
+    fun getFilmById(id: Int): LiveData<FilmItem?> {
+            repository.getFilmById(id, object : FilmRepository.FilmResponseCallback{
+                override fun onSuccess(filmItem: FilmItem) {
+                    filmItemById.postValue(filmItem)
+                }
+            })
         return filmItemById
     }
 
@@ -166,18 +169,18 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
 
 
     fun initFilmDownloading() {
-        Log.d(TAG, "initFilmDownloading: loadedPage = ${app.loadedPage}")
+        Log.d(TAG, "initFilmDownloading: loadedPage = ${(app as? App)?.loadedPage}")
         isNetworkLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             repository.getPopularMovies(
-                app.loadedPage,
+                (app as? App)?.loadedPage?: 1,
                 object : FilmRepository.PopularMoviesResponseListener {
                     override fun onSuccess(data: FilmDataResponse?) {
                         allPages = data?.pages ?: 1
-                        if (app.loadedPage == 1) {
+                        if ((app as App).loadedPage == 1) {
                             deleteAll(CODE_FILM_TABLE)
                         }
-                        app.loadedPage++
+                        (app as App).loadedPage++
                         if (data != null) {
                             val movies = data.movies.map { it.toFilmItem() }
                             movies.forEach { item ->

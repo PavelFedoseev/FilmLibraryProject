@@ -27,5 +27,5 @@ interface FilmItemDao {
     fun getAll(): Maybe<List<FilmItem>>
 
     @Query("SELECT * FROM film_table WHERE id = :id")
-    fun getById(id: Long): FilmItem?
+    fun getById(id: Int): Maybe<FilmItem>
 }
