@@ -3,5 +3,5 @@
     android:innerRadiusRatio="2.5"
     android:thickness="10dp"
     android:useLevel="true">
-    <stroke android:color="@color/orange_200"/>
+    <stroke android:color="@color/clr_200"/>
 </shape>

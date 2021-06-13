@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="deep_200">#FFAB91</color>
-    <color name="deep_500">#FF5722</color>
-    <color name="deep_700">#E64A19</color>
-    <color name="clr_200">#FFCC80</color>
-    <color name="clr_700">#F57C00</color>
+    <color name="deep_200">#A5D6A7</color>
+    <color name="deep_500">#4CAF50</color>
+    <color name="deep_700">#388E3C</color>
+    <color name="clr_200">#80CBC4</color>
+    <color name="clr_700">#00796B</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#838383</color>

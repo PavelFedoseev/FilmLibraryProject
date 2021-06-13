@@ -1,10 +1,11 @@
 package com.pavelprojects.filmlibraryproject.ui
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -14,6 +15,7 @@ import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER_PREVIEW
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+
 
 class FilmAdapter(
     var list: List<FilmItem>,
@@ -64,14 +66,9 @@ class FilmAdapter(
             val item = list[position - 1]
             holder.bindView(item, holder.layoutPosition, isAddRotation)
             holder.itemView.setOnClickListener {
-                listener.onItemClick(item, position, holder.absoluteAdapterPosition)
+                listener.onItemClick(item, position, holder.bindingAdapterPosition)
             }
-            holder.detailButton.setOnClickListener {
-                listener.onDetailClick(item, position, holder.absoluteAdapterPosition)
-            }
-            holder.titleTv.setOnClickListener {
-                listener.onItemClick(item, position, holder.absoluteAdapterPosition)
-            }
+
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
         } else if (holder is FooterItemViewHolder) {
@@ -96,7 +93,6 @@ class FilmAdapter(
         val imageViewLike: ImageView = itemView.findViewById(R.id.imageView_like)
         private val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val titleTv: TextView = itemView.findViewById(R.id.textView_name)
-        val detailButton: Button = itemView.findViewById(R.id.button_detail)
         var item: FilmItem? = null
 
         fun bindView(item: FilmItem, position: Int, isAddRotation: Boolean) {
@@ -147,18 +143,27 @@ class FilmAdapter(
 
     abstract class FilmClickListener : FilmClickInterface {
         companion object {
-            private const val DOUBLE_CLICK_DELTA = 300 //milleseconds interaval between clicks
+            private const val DOUBLE_CLICK_DELTA = 200 //milleseconds interaval between clicks
         }
 
         private var lastClickTime: Long = 0
+        private var handler = Handler(Looper.getMainLooper())
         override fun onItemClick(filmItem: FilmItem, position: Int, adapterPosition: Int) {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastClickTime < DOUBLE_CLICK_DELTA) {
+                handler.removeCallbacksAndMessages(null)
                 onDoubleClick(filmItem, position, adapterPosition)
+            } else {
+                handler.postDelayed(
+                    { onDetailClick(filmItem, position, adapterPosition) },
+                    DOUBLE_CLICK_DELTA.toLong()
+                )
             }
-
-
             lastClickTime = currentTime
+        }
+
+        override fun onDetailClick(filmItem: FilmItem, position: Int, adapterPosition: Int) {
+
         }
 
         abstract fun onDoubleClick(filmItem: FilmItem, position: Int, adapterPosition: Int)

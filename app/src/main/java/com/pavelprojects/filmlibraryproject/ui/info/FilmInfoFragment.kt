@@ -1,6 +1,5 @@
 package com.pavelprojects.filmlibraryproject.ui.info
 
-import android.app.Application
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -18,7 +17,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.android.material.appbar.CollapsingToolbarLayout
@@ -30,11 +28,9 @@ import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
-import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.ProgressBarAnimation
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 import java.util.*
 import javax.inject.Inject
@@ -142,7 +138,7 @@ class FilmInfoFragment : Fragment() {
                 buttonLike.setBackgroundColor(
                     ResourcesCompat.getColor(
                         resources,
-                        R.color.orange_700,
+                        R.color.clr_700,
                         null
                     )
                 )

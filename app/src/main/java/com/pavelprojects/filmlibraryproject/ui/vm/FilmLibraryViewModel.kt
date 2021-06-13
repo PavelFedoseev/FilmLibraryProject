@@ -203,7 +203,7 @@ class FilmLibraryViewModel @Inject constructor(var app: Application, val reposit
                         getCachedFilmList()
                     }
                 })
-        }
+       }
     }
 
     private fun isOnline(context: Context): Boolean {
