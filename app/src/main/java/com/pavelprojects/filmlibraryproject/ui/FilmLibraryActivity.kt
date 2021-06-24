@@ -9,7 +9,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -58,13 +57,18 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         const val TAG = "FilmLibraryActivity"
         const val NOTIF_REQUEST_PERM = 1111
     }
+
     @Inject
     lateinit var application: App
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel by lazy { ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java) }
+    private val viewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(
+            FilmLibraryViewModel::class.java
+        )
+    }
 
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
 
@@ -82,12 +86,12 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         setContentView(R.layout.activity_filmlibrary)
         App.appComponent.inject(this)
         checkAndRequestPermissions()
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         initViews()
         initModel()
 
         if (savedInstanceState == null) {
-            application.loadedPage = 1
+            viewModel.setLoadedPage(1)
             openFilmListFragment()
             bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
             if (bundle != null) {
@@ -122,7 +126,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     private fun initViews() {
         appBarDimmer.layoutParams = getStatusBarHeightParams()
-//        navigationBarBlurLayout.layoutParams = getNavigationBarHeightParams(this, resources.configuration.orientation)
         val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
         bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
@@ -151,7 +154,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        listOfFilms = savedInstanceState.getParcelableArrayList<FilmItem>(KEY_LIST_OF_FILMS)
+        listOfFilms = savedInstanceState.getParcelableArrayList(KEY_LIST_OF_FILMS)
             ?: arrayListOf()
     }
 
@@ -180,10 +183,9 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             )
         } else {
             Log.d(TAG, "Notification permission granted")
-                this.application.createNotificationChannel()
+            this.application.createNotificationChannel()
         }
     }
-
 
 
     override fun onRequestPermissionsResult(
@@ -225,6 +227,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFilmListFragment() {
+        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -237,6 +240,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
+        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -248,6 +252,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFilmInfoFragment(filmItem: FilmItem) {
+        disableBlur()
         val callerFragmentTag = when {
             supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null -> FilmListFragment.TAG
             supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) != null -> FavoriteFilmsFragment.TAG
@@ -264,6 +269,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFavoriteFilmsFragment() {
+        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -370,8 +376,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 })
             }
             blurAppBar.startAnimation(animation)
-        }
-        else {
+        } else {
             blurAppBar.enable()
             blurNavigationView.enable()
         }
@@ -413,23 +418,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         return layoutParams
     }
 
-//    private fun getNavigationBarHeightParams(context: Context, orientation: Int): ConstraintLayout.LayoutParams {
-//        val resources = context.resources
-//        var id: Int = resources.getIdentifier(
-//            if (orientation == Configuration.ORIENTATION_PORTRAIT) "navigation_bar_height" else "navigation_bar_height_landscape",
-//            "dimen",
-//            "android"
-//        )
-//        id = if (id > 0) {
-//            resources.getDimensionPixelSize(id)
-//        } else 0
-//        return ConstraintLayout.LayoutParams(
-//            ViewGroup.LayoutParams.MATCH_PARENT,
-//            resources.getDimensionPixelSize(R.dimen.nav_bar_size)
-//        ).apply { topMargin = id
-//        bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID}
-//    }
-
 
     override fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>) {
 
@@ -442,7 +430,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 intent.putExtra(ReminderBroadcast.INTENT_FILMITEM_BUNDLE, bundle)
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
-                    item.id ?: 1,
+                    item.id,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )

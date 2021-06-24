@@ -31,10 +31,11 @@
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="false"
+            android:fitsSystemWindows="true"
             android:textAlignment="center"
-            app:contentScrim="?attr/colorPrimary"
-            app:expandedTitleTextAppearance="@style/ToolBarTextStyle"
+            app:contentScrim="@android:color/transparent"
+            app:expandedTitleTextAppearance="@style/ExpandedToolBarTextStyle"
+            app:collapsedTitleTextAppearance="@style/CollapsedToolBarTextStyle"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <ImageView
@@ -63,6 +64,8 @@
                 android:layout_marginTop="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
+                app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                 tools:title="FilmName"
                 >
             </androidx.appcompat.widget.Toolbar>

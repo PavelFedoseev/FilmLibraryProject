@@ -25,6 +25,10 @@ class FilmRepository @Inject constructor(val application: Application) {
         const val CODE_FILM_TABLE = 1
     }
 
+    var loadedPage: Int = 1
+    var recFilmListPos: Int = 0
+    var recChangedPos: Int = 0
+
     init {
         App.appComponent.inject(this)
     }

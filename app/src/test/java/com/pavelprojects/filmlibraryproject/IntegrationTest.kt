@@ -50,7 +50,7 @@ class IntegrationTest {
                 isGetFilmsChecked = true
                 Any()
             }
-        Mockito.`when`(repository.getFavFilms(any(FilmRepository.FilmListResponseCallback::class.java)))
+        Mockito.`when`(repository.getAllChanged(any(FilmRepository.ChangedFilmListResponseCallback::class.java)))
             .then {
                 isGetFavFilmsChecked = true
                 Any()
@@ -71,7 +71,7 @@ class IntegrationTest {
         }
 
         filmLibViewModel.getAllFilms()
-        filmLibViewModel.getFavFilms()
+        filmLibViewModel.getAllChanged()
         filmLibViewModel.getWatchLatter()
         filmLibViewModel.getFilmById(0)
         filmLibViewModel.initFilmDownloading()

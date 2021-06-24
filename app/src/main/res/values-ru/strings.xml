@@ -29,6 +29,8 @@
 
     <string name="checkbox_watch_later">Смотреть позже</string>
     <string name="progress_bar_rating">Рейтинг:</string>
+    <string name="textview_date">Дата выхода:</string>
+    <string name="textview_date_unknown">Неизвестно</string>
 
     <string name="snackbar_download_error">Не удалось получить фильмы</string>
     <string name="snackbar_network_error">Ошибка подключения</string>

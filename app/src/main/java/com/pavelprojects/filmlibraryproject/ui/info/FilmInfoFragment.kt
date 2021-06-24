@@ -48,6 +48,7 @@ class FilmInfoFragment : Fragment() {
             }
         }
     }
+
     @Inject
     lateinit var application: App
 
@@ -55,6 +56,7 @@ class FilmInfoFragment : Fragment() {
     private lateinit var callerFragmentTag: String
 
     private lateinit var textViewDescriprion: TextView
+    private lateinit var textViewDate: TextView
     private lateinit var editTextComment: EditText
     private lateinit var buttonLike: FloatingActionButton
     private lateinit var coordinatorLayout: CoordinatorLayout
@@ -114,6 +116,9 @@ class FilmInfoFragment : Fragment() {
             in 60..100 -> progressBarRating.progressTintList =
                 ColorStateList.valueOf(resources.getColor(R.color.green, null))
         }
+        textViewDate.text = "${resources.getString(R.string.textview_date)} ${
+            changedFilmItem?.releaseDate ?: resources.getString(R.string.textview_date_unknown)
+        }"
         (activity as? ActivityUpdater)?.disableBlur()
         (activity as? ActivityUpdater)?.hideAppBar()
         return view
@@ -181,10 +186,6 @@ class FilmInfoFragment : Fragment() {
         checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
             changedFilmItem?.isWatchLater = compoundButton.isChecked
             if (compoundButton.isChecked) {
-                (activity as? ActivityUpdater)?.makeSnackBar(
-                    getString(R.string.snackbar_watchlater_added),
-                    Snackbar.LENGTH_SHORT
-                )
                 createDatePickerDialog()
             } else {
                 (activity as? ActivityUpdater)?.makeSnackBar(
@@ -216,6 +217,7 @@ class FilmInfoFragment : Fragment() {
 
     private fun initViews(view: View) {
         textViewDescriprion = view.findViewById(R.id.textView_description)
+        textViewDate = view.findViewById(R.id.text_view_date)
         buttonLike = view.findViewById(R.id.button_like)
         coordinatorLayout = view.findViewById(R.id.coordinator)
         editTextComment = view.findViewById(R.id.editText_comment)
@@ -250,6 +252,10 @@ class FilmInfoFragment : Fragment() {
                         (activity as? ActivityUpdater)?.updateNotificationChannel(
                             requireContext(),
                             listOf(it)
+                        )
+                        (activity as? ActivityUpdater)?.makeSnackBar(
+                            getString(R.string.snackbar_watchlater_added),
+                            Snackbar.LENGTH_SHORT
                         )
                     }
                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()

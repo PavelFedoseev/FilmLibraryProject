@@ -17,21 +17,19 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 class App : Application() {
-    companion object{
+    companion object {
         const val TAG_APP = "App"
         lateinit var appComponent: AppComponent
     }
 
-    var loadedPage: Int = 1
-    var recFilmListPos: Int = 0
-    var recFavPos: Int = 0
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG_APP, "$TAG_APP onCreate")
         initDagger()
     }
 
-    private fun initDagger(){
+    private fun initDagger() {
         appComponent = DaggerAppComponent.builder()
             .appModule(AppModule(this))
             .roomModule(RoomModule(this))
@@ -39,7 +37,7 @@ class App : Application() {
             .build()
     }
 
-    fun createNotificationChannel(){
+    fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.notification_channel_name)
             val descriptionText = getString(R.string.notification_channel_description)

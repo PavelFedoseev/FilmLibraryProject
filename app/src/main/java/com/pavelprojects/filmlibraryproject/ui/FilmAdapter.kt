@@ -14,13 +14,13 @@ import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER_PREVIEW
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 
 
 class FilmAdapter(
     var list: List<FilmItem>,
     var header: String,
-    var viewModel: FilmLibraryViewModel,
+    var networkLoadChecker: NetworkLoadChecker,
     var isAddRotation: Boolean = true,
     var listener: FilmClickListener
 ) :
@@ -30,7 +30,6 @@ class FilmAdapter(
         const val VIEW_TYPE_FOOTER = 0
         const val VIEW_TYPE_FILM = 1
         const val VIEW_TYPE_HEADER = 2
-        const val VIEW_TYPE_NULL = -1
     }
 
 
@@ -72,7 +71,7 @@ class FilmAdapter(
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
         } else if (holder is FooterItemViewHolder) {
-            holder.bindView(viewModel.getLoadingStatus())
+            holder.bindView(networkLoadChecker.getLoadingStatus())
         }
     }
 
