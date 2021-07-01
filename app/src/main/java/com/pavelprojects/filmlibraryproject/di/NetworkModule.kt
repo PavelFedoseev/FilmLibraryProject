@@ -16,13 +16,13 @@ import javax.inject.Singleton
 class NetworkModule {
     @Singleton
     @Provides
-    fun providesRetroApi(): RetroApi{
+    fun providesRetroApi(client: OkHttpClient): RetroApi{
         val retrofit = Retrofit.Builder()
             .baseUrl(RetroApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(
-                provideOkHttpClient(provideLoggingInterceptor()).newBuilder().connectTimeout(20, TimeUnit.SECONDS)
+                client.newBuilder().connectTimeout(20, TimeUnit.SECONDS)
                     .readTimeout(10, TimeUnit.SECONDS).build()
             )
             .build()
@@ -31,7 +31,7 @@ class NetworkModule {
     @Provides
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         val logging = HttpLoggingInterceptor()
-        if (BuildConfig.BUILD_TYPE == "debug") {
+        if (BuildConfig.DEBUG) {
             logging.level = HttpLoggingInterceptor.Level.BODY
         } else {
             logging.level = HttpLoggingInterceptor.Level.NONE

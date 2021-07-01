@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.repository
 
+import android.app.Application
 import android.os.Build
 import android.util.Log
 import com.pavelprojects.filmlibraryproject.App
@@ -17,12 +18,18 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-class FilmRepository @Inject constructor(val application: App) {
+class FilmRepository @Inject constructor(val application: Application) {
 
     companion object {
+        const val LINK_TMDB_POSTER = "https://image.tmdb.org/t/p/w780"
+        const val LINK_TMDB_POSTER_PREVIEW = "https://image.tmdb.org/t/p/w342"
         const val TAG_FILM_REPO = "FilmRepository"
         const val CODE_FILM_TABLE = 1
     }
+
+    var loadedPage: Int = 1
+    var recFilmListPos: Int = 0
+    var recChangedPos: Int = 0
 
     init {
         App.appComponent.inject(this)
@@ -87,20 +94,21 @@ class FilmRepository @Inject constructor(val application: App) {
             .subscribe(maybeObserver(callback))
     }
 
-    private fun maybeObserver(callback: FilmListResponseCallback) = object : MaybeObserver<List<FilmItem>> {
-        override fun onSubscribe(d: Disposable) {
-        }
+    private fun maybeObserver(callback: FilmListResponseCallback) =
+        object : MaybeObserver<List<FilmItem>> {
+            override fun onSubscribe(d: Disposable) {
+            }
 
-        override fun onSuccess(t: List<FilmItem>) {
-            callback.onSuccess(t)
-        }
+            override fun onSuccess(t: List<FilmItem>) {
+                callback.onSuccess(t)
+            }
 
-        override fun onError(e: Throwable) {
-        }
+            override fun onError(e: Throwable) {
+            }
 
-        override fun onComplete() {
+            override fun onComplete() {
+            }
         }
-    }
 
     private fun maybeObserver(callback: ChangedFilmListResponseCallback) =
         object : MaybeObserver<List<ChangedFilmItem>> {
@@ -119,8 +127,29 @@ class FilmRepository @Inject constructor(val application: App) {
 
         }
 
-    fun getFilmById(id: Long): FilmItem? {
-        return filmItemDao.getById(id)
+    private fun maybeObserver(callback: FilmResponseCallback) =
+        object : MaybeObserver<FilmItem> {
+            override fun onSubscribe(d: Disposable) {
+            }
+
+            override fun onSuccess(t: FilmItem) {
+                callback.onSuccess(t)
+            }
+
+            override fun onError(e: Throwable) {
+            }
+
+            override fun onComplete() {
+            }
+
+        }
+
+    fun getFilmById(id: Int, callback: FilmResponseCallback) {
+        filmItemDao
+            .getById(id)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(maybeObserver(callback))
     }
 
     fun delete(filmItem: FilmItem, code: Int) {
@@ -144,7 +173,7 @@ class FilmRepository @Inject constructor(val application: App) {
         retroApi.getPopularMovies(page = page, language = languageCode)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : SingleObserver<FilmDataResponse>{
+            .subscribe(object : SingleObserver<FilmDataResponse> {
                 override fun onSubscribe(d: Disposable) {
 
                 }
@@ -163,6 +192,10 @@ class FilmRepository @Inject constructor(val application: App) {
 
     interface FilmListResponseCallback {
         fun onSuccess(list: List<FilmItem>)
+    }
+
+    interface FilmResponseCallback {
+        fun onSuccess(filmItem: FilmItem)
     }
 
     interface ChangedFilmListResponseCallback {

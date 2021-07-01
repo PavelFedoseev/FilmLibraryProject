@@ -34,6 +34,8 @@
 
     <string name="checkbox_watch_later">Watch later</string>
     <string name="progress_bar_rating">Rating:</string>
+    <string name="textview_date">Release date:</string>
+    <string name="textview_date_unknown">Unknown</string>
 
     <string name="snackbar_watchlater_added">The movie was added to "Watch later"</string>
     <string name="snackbar_watchlater_removed">The movie was removed from "Watch later"</string>
@@ -43,4 +45,7 @@
     <string name="message_share">I use this app to watch movie ratings: https://github.com/PavelFedoseev/FilmLibraryProject</string>
 
     <string name="content_description_watch_latter_tab">Go to watch later tab</string>
+
+    <string name="reminder_titile">You wanted to watch: </string>
+    <string name="reminder_text">Press on the notification to open description</string>
 </resources>

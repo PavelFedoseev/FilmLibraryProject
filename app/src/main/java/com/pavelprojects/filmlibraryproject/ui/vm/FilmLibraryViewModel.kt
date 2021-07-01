@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui.vm
 
+import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -8,7 +9,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
@@ -19,8 +19,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class FilmLibraryViewModel @Inject constructor(val app: App, val repository: FilmRepository) :
-    AndroidViewModel(app) {
+class FilmLibraryViewModel @Inject constructor(
+    var app: Application,
+    val repository: FilmRepository
+) :
+    AndroidViewModel(app), NetworkLoadChecker {
     companion object {
         const val TAG = "FilmLibraryViewModel"
         const val LOG_INTERNET = "Network Status"
@@ -28,20 +31,24 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
         const val CODE_CHANGED_FILM_TABLE = 2
     }
 
-    private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
+    private val listOfChangedFilmItem = MutableLiveData<List<ChangedFilmItem>>()
     private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
     private val filmItemById = MutableLiveData<FilmItem?>()
     private val listOfDatabase = MutableLiveData<List<FilmItem>>()
     private val listOfFilmItem = MutableLiveData<List<FilmItem>>()
     private val snackBarText = MutableLiveData<String>()
-    private val isNetworkLoading = MutableLiveData<Boolean>()
+    override val isNetworkLoading = MutableLiveData<Boolean>()
 
     var allPages = 1
 
     init {
         Log.d(TAG, this.toString())
-        if (listOfFavoriteFilmItem.value == null)
-            listOfFavoriteFilmItem.postValue(listOf())
+        if (listOfChangedFilmItem.value == null)
+            listOfChangedFilmItem.postValue(listOf())
+    }
+
+    fun onArgsReceived(list: List<FilmItem>){
+
     }
 
     fun insert(filmItem: FilmItem, code: Int) {
@@ -75,43 +82,32 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
         }
     }
 
-    fun getAllFilms(): LiveData<List<FilmItem>> {
-            if (app.loadedPage != 1) {
-                repository.getAllFilms(object : FilmRepository.FilmListResponseCallback {
-                    override fun onSuccess(list: List<FilmItem>) {
-                        listOfDatabase.postValue(list)
-                    }
 
-                })
-
+    fun getAllChanged(): LiveData<List<ChangedFilmItem>>{
+        repository.getAllChanged(object : FilmRepository.ChangedFilmListResponseCallback {
+            override fun onSuccess(list: List<ChangedFilmItem>) {
+                listOfChangedFilmItem.postValue(list)
             }
-        return listOfDatabase
+
+        })
+        return listOfChangedFilmItem
     }
 
-    fun getFavFilms(): LiveData<List<FilmItem>> {
-            repository.getFavFilms(object : FilmRepository.FilmListResponseCallback {
-                override fun onSuccess(list: List<FilmItem>) {
-                    listOfFavoriteFilmItem.postValue(list)
-                }
-
-            })
-        return listOfFavoriteFilmItem
-    }
-
-    fun getWatchLatter(): LiveData<List<ChangedFilmItem>> {
-            repository.getWatchLaterFilms(object : FilmRepository.ChangedFilmListResponseCallback {
-                override fun onSuccess(list: List<ChangedFilmItem>) {
-                    listOfWatchLaterFilmItem.postValue(list)
-                }
-
-            })
+    fun getNotificationList(): LiveData<List<ChangedFilmItem>> {
+        repository.getWatchLaterFilms(object : FilmRepository.ChangedFilmListResponseCallback {
+            override fun onSuccess(list: List<ChangedFilmItem>) {
+                listOfWatchLaterFilmItem.postValue(list)
+            }
+        })
         return listOfWatchLaterFilmItem
     }
 
-    fun getFilmById(id: Long): LiveData<FilmItem?> {
-        viewModelScope.launch(Dispatchers.IO) {
-            filmItemById.postValue(repository.getFilmById(id))
-        }
+    fun getFilmById(id: Int): LiveData<FilmItem?> {
+        repository.getFilmById(id, object : FilmRepository.FilmResponseCallback {
+            override fun onSuccess(filmItem: FilmItem) {
+                filmItemById.postValue(filmItem)
+            }
+        })
         return filmItemById
     }
 
@@ -136,13 +132,6 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
         }
     }
 
-    fun getPopularMovies(): LiveData<List<FilmItem>> {
-        if (isOnline(app))
-            initFilmDownloading()
-        else
-            getCachedFilmList()
-        return listOfFilmItem
-    }
 
     fun downloadPopularMovies() {
         if (isOnline(app))
@@ -150,8 +139,6 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
         else
             getCachedFilmList()
     }
-
-    fun getLoadingStatus(): Boolean? = isNetworkLoading.value
 
     fun getCachedFilmList() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -165,26 +152,70 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
     }
 
 
+    fun subscribeToDatabase(): LiveData<List<FilmItem>> {
+        repository.getAllFilms(object : FilmRepository.FilmListResponseCallback {
+            override fun onSuccess(list: List<FilmItem>) {
+                listOfDatabase.postValue(list)
+            }
+
+        })
+        return listOfDatabase
+    }
+
+    fun subscribeToMovies(): LiveData<List<FilmItem>> {
+        if (isOnline(app))
+            initFilmDownloading()
+        else
+            getCachedFilmList()
+        return listOfFilmItem
+    }
+
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        if (capabilities != null) {
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        Log.i(LOG_INTERNET, "Connection failed")
+        return false
+    }
+
     fun initFilmDownloading() {
-        Log.d(TAG, "initFilmDownloading: loadedPage = ${app.loadedPage}")
+        Log.d(TAG, "initFilmDownloading: loadedPage = ${repository.loadedPage}")
         isNetworkLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             repository.getPopularMovies(
-                app.loadedPage,
+                repository.loadedPage,
                 object : FilmRepository.PopularMoviesResponseListener {
                     override fun onSuccess(data: FilmDataResponse?) {
                         allPages = data?.pages ?: 1
-                        if (app.loadedPage == 1) {
+                        if (repository.loadedPage == 1) {
                             deleteAll(CODE_FILM_TABLE)
                         }
-                        app.loadedPage++
+                        repository.loadedPage++
                         if (data != null) {
                             val movies = data.movies.map { it.toFilmItem() }
                             movies.forEach { item ->
-                                listOfFavoriteFilmItem.value?.forEach { item1 ->
+                                listOfChangedFilmItem.value?.forEach { item1 ->
                                     if (item.id == item1.id) {
                                         item.isLiked = item1.isLiked
                                         item.userComment = item1.userComment
+                                        item.isWatchLater = item1.isWatchLater
                                     }
                                 }
                             }
@@ -203,25 +234,14 @@ class FilmLibraryViewModel @Inject constructor(val app: App, val repository: Fil
         }
     }
 
-    private fun isOnline(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val capabilities =
-            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-        if (capabilities != null) {
-            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
-                return true
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_WIFI")
-                return true
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_ETHERNET")
-                return true
-            }
-        }
-        Log.i(LOG_INTERNET, "Connection failed")
-        return false
+    fun getRecyclerSavedPos() = repository.recFilmListPos
+    fun setRecyclerSavedPos(pos: Int) {
+        repository.recFilmListPos = pos
+    }
+
+    fun getLoadedPage() = repository.loadedPage
+    fun setLoadedPage(page: Int) {
+        repository.loadedPage = page
     }
 
 

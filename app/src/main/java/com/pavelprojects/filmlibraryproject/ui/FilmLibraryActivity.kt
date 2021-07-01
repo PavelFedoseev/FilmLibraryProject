@@ -9,7 +9,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -48,7 +47,7 @@ import java.util.*
 import javax.inject.Inject
 
 
-class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
+class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUpdater,
     FilmListFragment.OnFilmListFragmentAdapter,
     FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener,
     WatchLaterFragment.OnWatchLaterListener {
@@ -58,13 +57,18 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         const val TAG = "FilmLibraryActivity"
         const val NOTIF_REQUEST_PERM = 1111
     }
+
     @Inject
     lateinit var application: App
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel by lazy { ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java) }
+    private val viewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(
+            FilmLibraryViewModel::class.java
+        )
+    }
 
     private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
 
@@ -74,7 +78,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private var listOfFilms = arrayListOf<FilmItem>()
 
-    private var bundle: Bundle? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,27 +86,14 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         setContentView(R.layout.activity_filmlibrary)
         App.appComponent.inject(this)
         checkAndRequestPermissions()
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         initViews()
         initModel()
 
         if (savedInstanceState == null) {
-            application.loadedPage = 1
+            viewModel.setLoadedPage(1)
             openFilmListFragment()
-            bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
-            if (bundle != null) {
-                val item = bundle?.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
-                item?.let { openFilmInfoFragment(item.toFilmItem()) }
-            } else {
-                val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
-                if (filmId != null) {
-                    viewModel.getFilmById(filmId.toLong()).observe(this) {
-                        if (it != null) {
-                            openFilmInfoFragment(it)
-                        }
-                    }
-                }
-            }
+            processIntent(intent)
         }
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
@@ -120,9 +111,25 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     }
 
+    private fun processIntent(intent: Intent){
+        val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
+        if (bundle != null) {
+            val item = bundle.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
+            item?.let { openFilmInfoFragment(item.toFilmItem()) }
+        } else {
+            val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
+            if (filmId != null) {
+                viewModel.getFilmById(filmId.toInt()).observe(this) {
+                    if (it != null) {
+                        openFilmInfoFragment(it)
+                    }
+                }
+            }
+        }
+    }
+
     private fun initViews() {
         appBarDimmer.layoutParams = getStatusBarHeightParams()
-//        navigationBarBlurLayout.layoutParams = getNavigationBarHeightParams(this, resources.configuration.orientation)
         val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
         bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
@@ -151,7 +158,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        listOfFilms = savedInstanceState.getParcelableArrayList<FilmItem>(KEY_LIST_OF_FILMS)
+        listOfFilms = savedInstanceState.getParcelableArrayList(KEY_LIST_OF_FILMS)
             ?: arrayListOf()
     }
 
@@ -163,7 +170,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 }.show()
         }
 
-        viewModel.getWatchLatter().observe(this) {
+        viewModel.getNotificationList().observe(this) {
             updateNotificationChannel(this, it)
         }
 
@@ -180,10 +187,9 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             )
         } else {
             Log.d(TAG, "Notification permission granted")
-                this.application.createNotificationChannel()
+            this.application.createNotificationChannel()
         }
     }
-
 
 
     override fun onRequestPermissionsResult(
@@ -204,6 +210,10 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     override fun onStart() {
         super.onStart()
+        initInternetBroadcast()
+    }
+
+    private fun initInternetBroadcast(){
         val filter = IntentFilter("com.pavelprojects.BroadcastReceiver").apply {
             addAction(
                 ConnectivityManager.CONNECTIVITY_ACTION
@@ -225,6 +235,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFilmListFragment() {
+        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -237,7 +248,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
-
+        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -249,6 +260,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFilmInfoFragment(filmItem: FilmItem) {
+        disableBlur()
         val callerFragmentTag = when {
             supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null -> FilmListFragment.TAG
             supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) != null -> FavoriteFilmsFragment.TAG
@@ -265,6 +277,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFavoriteFilmsFragment() {
+        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -348,6 +361,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     override fun setupBlur(view: View) {
+        blurAppBar.disable()
+        blurNavigationView.disable()
         blurAppBar.viewBehind = view
         blurNavigationView.viewBehind = view
         if (blurAppBar.visibility == View.GONE) {
@@ -359,6 +374,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
                     override fun onAnimationEnd(p0: Animation?) {
                         blurAppBar.visibility = View.VISIBLE
+                        blurAppBar.enable()
+                        blurNavigationView.enable()
                     }
 
                     override fun onAnimationRepeat(p0: Animation?) {
@@ -367,7 +384,15 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 })
             }
             blurAppBar.startAnimation(animation)
+        } else {
+            blurAppBar.enable()
+            blurNavigationView.enable()
         }
+    }
+
+    override fun disableBlur() {
+        blurAppBar.disable()
+        blurNavigationView.disable()
     }
 
     override fun hideAppBar() {
@@ -401,23 +426,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         return layoutParams
     }
 
-//    private fun getNavigationBarHeightParams(context: Context, orientation: Int): ConstraintLayout.LayoutParams {
-//        val resources = context.resources
-//        var id: Int = resources.getIdentifier(
-//            if (orientation == Configuration.ORIENTATION_PORTRAIT) "navigation_bar_height" else "navigation_bar_height_landscape",
-//            "dimen",
-//            "android"
-//        )
-//        id = if (id > 0) {
-//            resources.getDimensionPixelSize(id)
-//        } else 0
-//        return ConstraintLayout.LayoutParams(
-//            ViewGroup.LayoutParams.MATCH_PARENT,
-//            resources.getDimensionPixelSize(R.dimen.nav_bar_size)
-//        ).apply { topMargin = id
-//        bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID}
-//    }
-
 
     override fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>) {
 
@@ -430,7 +438,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 intent.putExtra(ReminderBroadcast.INTENT_FILMITEM_BUNDLE, bundle)
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
-                    item.id ?: 1,
+                    item.id,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
@@ -446,7 +454,11 @@ interface LibraryActivityChild {
 
 interface ActivityUpdater {
     fun setupBlur(view: View)
+    fun disableBlur()
     fun hideAppBar()
-    fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)
+}
+
+interface NotificationUpdater {
+    fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
 }

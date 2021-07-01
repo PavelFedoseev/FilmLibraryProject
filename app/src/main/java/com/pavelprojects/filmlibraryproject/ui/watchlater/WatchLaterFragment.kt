@@ -1,6 +1,5 @@
 package com.pavelprojects.filmlibraryproject.ui.watchlater
 
-import android.app.Application
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -19,12 +18,12 @@ import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
-import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
+import com.pavelprojects.filmlibraryproject.ui.NotificationUpdater
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
+import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
 import java.util.*
 import javax.inject.Inject
 
@@ -35,13 +34,15 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
         const val TAG = "WatchLatter Tag"
         fun newInstance() = WatchLaterFragment()
     }
+
     @Inject
     lateinit var application: App
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: FilmLibraryViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
+    private val viewModel: ChangedViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(ChangedViewModel::class.java)
     }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
@@ -58,10 +59,10 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view =  inflater.inflate(R.layout.fragment_favorite_films, container, false)
+        val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
         listOfWatchLater = arrayListOf()
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
-        position = application.recFavPos
+        position = viewModel.getRecyclerSavedPos()
         initModel()
         initRecycler(position)
         (activity as? ActivityUpdater)?.setupBlur(view)
@@ -74,7 +75,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
             listOfWatchLater.clear()
             listOfWatchLater.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
-            (activity as? ActivityUpdater)?.updateNotificationChannel(requireContext(), it)
+            (activity as? NotificationUpdater)?.updateNotificationChannel(requireContext(), it)
             if (listOfWatchLater.isEmpty()) {
                 recyclerView.background = ResourcesCompat.getDrawable(
                     requireContext().resources,
@@ -87,7 +88,6 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
 
     private fun initRecycler(position: Int = 0) {
-        val orientation = resources.configuration.orientation
         layoutManager = GridLayoutManager(requireContext(), 2)
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
@@ -132,14 +132,14 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
             recyclerView.scrollToPosition(position)
         val simpleCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                if (viewHolder.adapterPosition != 0) {
-                    listOfWatchLater[viewHolder.adapterPosition - 1].isWatchLater = false
+                if (viewHolder.absoluteAdapterPosition != 0) {
+                    listOfWatchLater[viewHolder.absoluteAdapterPosition - 1].isWatchLater = false
                     (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
-                        listOfWatchLater[viewHolder.adapterPosition - 1],
+                        listOfWatchLater[viewHolder.absoluteAdapterPosition - 1],
                         TAG
                     )
-                    listOfWatchLater.removeAt(viewHolder.adapterPosition - 1)
-                    recyclerView.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
+                    listOfWatchLater.removeAt(viewHolder.absoluteAdapterPosition - 1)
+                    recyclerView.adapter?.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
                 }
                 if (listOfWatchLater.isEmpty()) {
                     recyclerView.background = ResourcesCompat.getDrawable(
@@ -162,7 +162,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     }
 
-    private fun createDatePickerDialog(changedFilmItem: ChangedFilmItem){
+    private fun createDatePickerDialog(changedFilmItem: ChangedFilmItem) {
         val calendar = Calendar.getInstance()
         val position = listOfWatchLater.indexOf(changedFilmItem)
         DatePickerDialog(
@@ -179,7 +179,10 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                     listOfWatchLater[position] = changedFilmItem
                     recyclerView.adapter?.notifyItemChanged(position + 1) //+1 Header
                     viewModel.updateChanged(changedFilmItem)
-                    (activity as? ActivityUpdater)?.updateNotificationChannel(requireContext(), listOfWatchLater)
+                    (activity as? NotificationUpdater)?.updateNotificationChannel(
+                        requireContext(),
+                        listOfWatchLater
+                    )
                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
             },
             calendar.get(Calendar.YEAR),
@@ -198,11 +201,11 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        application.recFavPos = layoutManager.findLastVisibleItemPosition()
+        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
     }
 
     override fun onDestroy() {
-        application.recFavPos = layoutManager.findLastVisibleItemPosition()
+        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
         super.onDestroy()
     }
 }

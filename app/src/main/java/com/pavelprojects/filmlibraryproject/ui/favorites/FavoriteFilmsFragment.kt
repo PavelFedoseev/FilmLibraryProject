@@ -12,7 +12,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.pavelprojects.filmlibraryproject.*
+import com.pavelprojects.filmlibraryproject.App
+import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
@@ -20,7 +21,8 @@ import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 import javax.inject.Inject
 
 
@@ -30,13 +32,15 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
         const val TAG = "Favorite Fragment"
         fun newInstance() = FavoriteFilmsFragment()
     }
+
     @Inject
     lateinit var application: App
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: FilmLibraryViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
+    private val viewModel: ChangedViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(ChangedViewModel::class.java)
     }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
@@ -50,13 +54,13 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_favorite_films, container, false)
         listOfFavorite = arrayListOf()
         recyclerView = view.findViewById(R.id.recyclerView_favorite)
-        position = application.recFavPos
+        position = viewModel.getRecyclerSavedPos()
         initModel()
         initRecycler(position)
         (activity as? ActivityUpdater)?.setupBlur(view)
@@ -88,44 +92,47 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
             GridLayoutManager(requireContext(), 4)
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = FilmAdapter(
-                listOfFavorite,
-                requireContext().getString(R.string.label_favorite),
-                viewModel,
-                false,
-                object : FilmAdapter.FilmClickListener() {
+            listOfFavorite,
+            requireContext().getString(R.string.label_favorite),
+            viewModel as NetworkLoadChecker,
+            false,
+            object : FilmAdapter.FilmClickListener() {
 
-                    override fun onDetailClick(
-                            filmItem: FilmItem,
-                            position: Int,
-                            adapterPosition: Int
-                    ) {
-                        //val extras = FragmentNavigatorExtras(view to "imageview_film_info")
-                        (activity as? OnFavoriteListener)?.onFavoriteDetail(filmItem)
-                    }
+                override fun onDetailClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    //val extras = FragmentNavigatorExtras(view to "imageview_film_info")
+                    (activity as? OnFavoriteListener)?.onFavoriteDetail(filmItem)
+                }
 
-                    override fun onDoubleClick(
-                            filmItem: FilmItem,
-                            position: Int,
-                            adapterPosition: Int
-                    ) {
-                        listOfFavorite.remove(filmItem)
-                        filmItem.isLiked = false
-                        (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(filmItem.toChangedFilmItem(), TAG)
-                        recyclerView.adapter?.notifyItemRemoved(adapterPosition)
-                        if (listOfFavorite.isEmpty()) {
-                            recyclerView.background = ResourcesCompat.getDrawable(
-                                    requireContext().resources,
-                                    R.drawable.background_recycler_favorite,
-                                    null
-                            )
-                        } else recyclerView.background = null
-                        Toast.makeText(
-                                requireContext(),
-                                requireContext().getString(R.string.message_favorite_delete),
-                                Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                })
+                override fun onDoubleClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    listOfFavorite.remove(filmItem)
+                    filmItem.isLiked = false
+                    (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
+                        filmItem.toChangedFilmItem(),
+                        TAG
+                    )
+                    if (listOfFavorite.isEmpty()) {
+                        recyclerView.background = ResourcesCompat.getDrawable(
+                            requireContext().resources,
+                            R.drawable.background_recycler_favorite,
+                            null
+                        )
+                    } else recyclerView.background = null
+                    Toast.makeText(
+                        requireContext(),
+                        requireContext().getString(R.string.message_favorite_delete),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    recyclerView.adapter?.notifyItemRemoved(adapterPosition)
+                }
+            })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (recyclerView.adapter?.getItemViewType(position)) {
@@ -161,11 +168,11 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        application.recFavPos = layoutManager.findLastVisibleItemPosition()
+        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
     }
 
     override fun onDestroy() {
-        application.recFavPos = layoutManager.findLastVisibleItemPosition()
+        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
         super.onDestroy()
     }
 }

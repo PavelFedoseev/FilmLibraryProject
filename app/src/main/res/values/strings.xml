@@ -1,45 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FilmLibraryProject</string>
     <string name="app_name_short">FLP</string>
-    <string name="button_share">Пригласить друга</string>
-    <string name="button_info">Детали</string>
-    <string name="edittext_comment_hint">Ваш комментарий</string>
-    <string name="text_exit_dialog">Завершить работу?</string>
-    <string name="button_exit_accept">Выйти</string>
-    <string name="button_exit_dismiss">Отмена</string>
-    <string name="button_favorite">Избранное</string>
+    <string name="button_share">Invite friend</string>
+    <string name="button_info">Detail</string>
+    <string name="edittext_comment_hint">Your comment</string>
+    <string name="text_exit_dialog">Exit the application?</string>
+    <string name="button_exit_accept">Exit</string>
+    <string name="button_exit_dismiss">Cancel</string>
+    <string name="button_favorite">Favorite</string>
 
-    <string name="menu_home">Домашняя страница</string>
-    <string name="menu_favorite">Избранное</string>
-    <string name="menu_watch_later">Посмотреть позже</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_favorite">Favorite</string>
+    <string name="menu_watch_later">Watch later</string>
 
-    <string name="label_library">Библиотека</string>
-    <string name="label_favorite">Избраное</string>
-    <string name="label_watch_later">Смотреть позже</string>
+    <string name="label_library">Library</string>
+    <string name="label_favorite">Favorite</string>
+    <string name="label_watch_later">Watch later</string>
 
-    <string name="notification_channel_name">Посмотреть позже</string>
-    <string name="notification_channel_description">Напоминания для просмотра фильмов</string>
+    <string name="notification_channel_name">Watch later</string>
+    <string name="notification_channel_description">Reminder for marked films</string>
 
-    <string name="firebase_channel_name">Рекомендации</string>
+    <string name="firebase_channel_name">Recomendation</string>
 
-    <string name="snackbar_cancel">Отмена</string>
-    <string name="snackbar_repeat">Повторить</string>
-    <string name="snackbar_like">Нравится</string>
-    <string name="snackbar_dont_like">Не нравится</string>
+    <string name="snackbar_cancel">Cancel</string>
+    <string name="snackbar_repeat">Repeat</string>
 
-    <string name="checkbox_watch_later">Смотреть позже</string>
-    <string name="progress_bar_rating">Рейтинг:</string>
+    <string name="snackbar_download_error">Failed to get movies</string>
+    <string name="snackbar_network_error">Connection lost</string>
+    <string name="snackbar_network_error_action">Repeat</string>
+    <string name="snackbar_like">I like</string>
+    <string name="snackbar_dont_like">I dont like</string>
 
-    <string name="snackbar_download_error">Не удалось получить фильмы</string>
-    <string name="snackbar_network_error">Ошибка подключения</string>
-    <string name="snackbar_network_error_action">Повторить</string>
+    <string name="checkbox_watch_later">Watch later</string>
+    <string name="progress_bar_rating">Rating:</string>
+    <string name="textview_date">Release date:</string>
+    <string name="textview_date_unknown">Unknown</string>
 
-    <string name="message_favorite_delete">Фильм убран из избраного</string>
+    <string name="snackbar_watchlater_added">The movie was added to "Watch later"</string>
+    <string name="snackbar_watchlater_removed">The movie was removed from "Watch later"</string>
 
-    <string name="snackbar_watchlater_added">Фильм добавлен в "Посмотреть позже"</string>
-    <string name="snackbar_watchlater_removed">Фильм убран из "Посмотреть позже"</string>
+    <string name="message_favorite_delete">Item deleted</string>
 
-    <string name="message_share">Я пользуюсь этим приложением для просмотров рейтинга фильмов: https://github.com/PavelFedoseev/FilmLibraryProject</string>
+    <string name="message_share">I use this app to watch movie ratings: https://github.com/PavelFedoseev/FilmLibraryProject</string>
 
-    <string name="content_description_watch_latter_tab">Вкладка посмотреть позже</string>
+    <string name="content_description_watch_latter_tab">Go to watch later tab</string>
+
+    <string name="reminder_titile">You wanted to watch: </string>
+    <string name="reminder_text">Press on the notification to open description</string>
 </resources>
