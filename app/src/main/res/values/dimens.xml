@@ -42,5 +42,5 @@
     <dimen name="text_exit_dialog">16sp</dimen>
     <dimen name="text_app_name">22sp</dimen>
     <dimen name="toolbar_title_expanded">20sp</dimen>
-    <dimen name="toolbar_title_collapsed">17sp</dimen>
+    <dimen name="toolbar_title_collapsed">16sp</dimen>
 </resources>

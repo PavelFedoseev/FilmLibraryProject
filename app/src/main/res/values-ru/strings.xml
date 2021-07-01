@@ -44,4 +44,7 @@
     <string name="message_share">Я пользуюсь этим приложением для просмотров рейтинга фильмов: https://github.com/PavelFedoseev/FilmLibraryProject</string>
 
     <string name="content_description_watch_latter_tab">Вкладка посмотреть позже</string>
+
+    <string name="reminder_titile">Вы хотели посмотреть фильм: </string>
+    <string name="reminder_text">Нажмите на уведомление чтобы перейти к описанию</string>
 </resources>

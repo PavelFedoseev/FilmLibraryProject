@@ -47,6 +47,10 @@ class FilmLibraryViewModel @Inject constructor(
             listOfChangedFilmItem.postValue(listOf())
     }
 
+    fun onArgsReceived(list: List<FilmItem>){
+
+    }
+
     fun insert(filmItem: FilmItem, code: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             if (code == CODE_CHANGED_FILM_TABLE) {
@@ -89,7 +93,7 @@ class FilmLibraryViewModel @Inject constructor(
         return listOfChangedFilmItem
     }
 
-    fun getWatchLatter(): LiveData<List<ChangedFilmItem>> {
+    fun getNotificationList(): LiveData<List<ChangedFilmItem>> {
         repository.getWatchLaterFilms(object : FilmRepository.ChangedFilmListResponseCallback {
             override fun onSuccess(list: List<ChangedFilmItem>) {
                 listOfWatchLaterFilmItem.postValue(list)
@@ -148,7 +152,7 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
 
-    fun getAllFilms(): LiveData<List<FilmItem>> {
+    fun subscribeToDatabase(): LiveData<List<FilmItem>> {
         repository.getAllFilms(object : FilmRepository.FilmListResponseCallback {
             override fun onSuccess(list: List<FilmItem>) {
                 listOfDatabase.postValue(list)
@@ -158,7 +162,7 @@ class FilmLibraryViewModel @Inject constructor(
         return listOfDatabase
     }
 
-    fun getPopularMovies(): LiveData<List<FilmItem>> {
+    fun subscribeToMovies(): LiveData<List<FilmItem>> {
         if (isOnline(app))
             initFilmDownloading()
         else

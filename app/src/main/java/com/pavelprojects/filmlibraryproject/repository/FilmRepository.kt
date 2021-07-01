@@ -21,6 +21,8 @@ import javax.inject.Inject
 class FilmRepository @Inject constructor(val application: Application) {
 
     companion object {
+        const val LINK_TMDB_POSTER = "https://image.tmdb.org/t/p/w780"
+        const val LINK_TMDB_POSTER_PREVIEW = "https://image.tmdb.org/t/p/w342"
         const val TAG_FILM_REPO = "FilmRepository"
         const val CODE_FILM_TABLE = 1
     }

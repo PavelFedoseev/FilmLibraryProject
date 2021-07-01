@@ -29,6 +29,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
+import com.pavelprojects.filmlibraryproject.ui.NotificationUpdater
 import com.pavelprojects.filmlibraryproject.ui.ProgressBarAnimation
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import no.danielzeller.blurbehindlib.BlurBehindLayout
@@ -249,7 +250,7 @@ class FilmInfoFragment : Fragment() {
                     calendar.add(Calendar.SECOND, 5)
                     changedFilmItem?.watchLaterDate = calendar.timeInMillis
                     changedFilmItem?.let {
-                        (activity as? ActivityUpdater)?.updateNotificationChannel(
+                        (activity as? NotificationUpdater)?.updateNotificationChannel(
                             requireContext(),
                             listOf(it)
                         )

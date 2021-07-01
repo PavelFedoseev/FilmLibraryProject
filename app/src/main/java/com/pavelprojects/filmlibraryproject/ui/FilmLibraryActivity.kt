@@ -47,7 +47,7 @@ import java.util.*
 import javax.inject.Inject
 
 
-class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
+class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUpdater,
     FilmListFragment.OnFilmListFragmentAdapter,
     FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener,
     WatchLaterFragment.OnWatchLaterListener {
@@ -78,7 +78,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private var listOfFilms = arrayListOf<FilmItem>()
 
-    private var bundle: Bundle? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,20 +93,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         if (savedInstanceState == null) {
             viewModel.setLoadedPage(1)
             openFilmListFragment()
-            bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
-            if (bundle != null) {
-                val item = bundle?.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
-                item?.let { openFilmInfoFragment(item.toFilmItem()) }
-            } else {
-                val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
-                if (filmId != null) {
-                    viewModel.getFilmById(filmId.toInt()).observe(this) {
-                        if (it != null) {
-                            openFilmInfoFragment(it)
-                        }
-                    }
-                }
-            }
+            processIntent(intent)
         }
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
@@ -122,6 +109,23 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         })
 
 
+    }
+
+    private fun processIntent(intent: Intent){
+        val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
+        if (bundle != null) {
+            val item = bundle.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
+            item?.let { openFilmInfoFragment(item.toFilmItem()) }
+        } else {
+            val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
+            if (filmId != null) {
+                viewModel.getFilmById(filmId.toInt()).observe(this) {
+                    if (it != null) {
+                        openFilmInfoFragment(it)
+                    }
+                }
+            }
+        }
     }
 
     private fun initViews() {
@@ -166,7 +170,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 }.show()
         }
 
-        viewModel.getWatchLatter().observe(this) {
+        viewModel.getNotificationList().observe(this) {
             updateNotificationChannel(this, it)
         }
 
@@ -206,6 +210,10 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     override fun onStart() {
         super.onStart()
+        initInternetBroadcast()
+    }
+
+    private fun initInternetBroadcast(){
         val filter = IntentFilter("com.pavelprojects.BroadcastReceiver").apply {
             addAction(
                 ConnectivityManager.CONNECTIVITY_ACTION
@@ -448,6 +456,9 @@ interface ActivityUpdater {
     fun setupBlur(view: View)
     fun disableBlur()
     fun hideAppBar()
-    fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)
+}
+
+interface NotificationUpdater {
+    fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
 }

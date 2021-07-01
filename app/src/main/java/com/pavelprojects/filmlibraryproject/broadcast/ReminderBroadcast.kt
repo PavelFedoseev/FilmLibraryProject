@@ -6,9 +6,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.bumptech.glide.Glide
+import com.pavelprojects.filmlibraryproject.App.Companion.REMINDER_CHANNEL_ID
 import com.pavelprojects.filmlibraryproject.R
-import com.pavelprojects.filmlibraryproject.REMINDER_CHANNEL_ID
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.ui.FilmLibraryActivity
 
@@ -17,6 +16,7 @@ class ReminderBroadcast : BroadcastReceiver() {
         const val INTENT_FILMITEM_BUNDLE = "intent filmitem"
         const val BUNDLE_FILMITEM = "bundle filmitem"
         const val BUNDLE_OUT = "bundle out"
+
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -37,8 +37,8 @@ class ReminderBroadcast : BroadcastReceiver() {
         if (filmItem?.id != null) {
             val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_baseline_local_movies_24)
-                .setContentTitle("Вы хотели посмотреть фильм: " + filmItem.name)
-                .setContentText("Нажмите на уведомление чтобы перейти к описанию")
+                .setContentTitle(context.getString(R.string.reminder_titile) + filmItem.name)
+                .setContentText(context.getString(R.string.reminder_text))
 //                .setLargeIcon(Glide.with(context).asBitmap().load("https://image.tmdb.org/t/p/w92${filmItem.posterPath}").submit().get())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(activityIntent)

@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit
 
 class App : Application() {
     companion object {
+
+        const val REMINDER_CHANNEL_ID = "reminder channel"
         const val TAG_APP = "App"
         lateinit var appComponent: AppComponent
     }
@@ -50,16 +52,5 @@ class App : Application() {
         }
 
     }
-    /*
-    private fun initializeDagger() {
-        appComponent = AppComponent.builder()
-            .appModule(AppModule(this))
-            .networkModule(NetworkModule())
-            .databaseModule(DatabaseModule())
-            .repositoryModule(RepositoryModule())
-            .build()
-    }
-
-     */
 
 }

@@ -16,6 +16,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.*
+import com.pavelprojects.filmlibraryproject.ui.FilmItemAnimator.Companion.TAG_LIKE_ANIM
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import javax.inject.Inject
@@ -83,7 +84,8 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
         Log.d(TAG, "initModel")
         var position: Int
 
-        viewModel.getAllFilms().observe(this.viewLifecycleOwner) {
+        viewModel.onArgsReceived(listOfFilms)
+        viewModel.subscribeToDatabase().observe(this.viewLifecycleOwner) {
             if (it != null && viewModel.getLoadedPage() == 1) {
                 position = listOfFilms.size
                 if (!listOfFilms.containsAll(it)) {
@@ -95,7 +97,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                 }
             }
         }
-        viewModel.getPopularMovies().observe(this.viewLifecycleOwner) {
+        viewModel.subscribeToMovies().observe(this.viewLifecycleOwner) {
             if (it != null) {
                 if (viewModel.getLoadedPage() == 2) {
                     listOfFilms.clear()
@@ -125,6 +127,9 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                 }
             }
             recyclerView.adapter?.notifyDataSetChanged()
+        }
+        viewModel.getSnackBarString().observe(this.viewLifecycleOwner) {
+            (activity as? FilmLibraryActivity)?.makeSnackBar(it, action = resources.getString(R.string.snackbar_repeat))
         }
 
     }
@@ -189,7 +194,7 @@ class FilmListFragment : Fragment(), LibraryActivityChild {
                 val viewCount = adapter.itemCount - 2 // - 2 Header + Footer
                 if (viewModel.getLoadingStatus() != true && viewModel.getLoadedPage() < viewModel.allPages)
                     if (visibleItemCount + pastVisibleItem >= viewCount) {
-                        viewModel.getPopularMovies()
+                        viewModel.subscribeToMovies()
                     }
                 super.onScrolled(recyclerView, dx, dy)
             }

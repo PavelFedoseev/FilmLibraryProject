@@ -7,9 +7,13 @@ import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.R
-import com.pavelprojects.filmlibraryproject.TAG_LIKE_ANIM
+
 
 class FilmItemAnimator(val context: Context) : DefaultItemAnimator() {
+    companion object{
+        const val TAG_LIKE_ANIM = "likeAnim"
+    }
+
     override fun animateChange(oldHolder: RecyclerView.ViewHolder, newHolder: RecyclerView.ViewHolder, preInfo: ItemHolderInfo, postInfo: ItemHolderInfo): Boolean {
 
         val holder = newHolder as FilmAdapter.FilmItemViewHolder

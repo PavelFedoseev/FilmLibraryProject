@@ -21,6 +21,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
+import com.pavelprojects.filmlibraryproject.ui.NotificationUpdater
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
 import java.util.*
@@ -74,7 +75,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
             listOfWatchLater.clear()
             listOfWatchLater.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
-            (activity as? ActivityUpdater)?.updateNotificationChannel(requireContext(), it)
+            (activity as? NotificationUpdater)?.updateNotificationChannel(requireContext(), it)
             if (listOfWatchLater.isEmpty()) {
                 recyclerView.background = ResourcesCompat.getDrawable(
                     requireContext().resources,
@@ -178,7 +179,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                     listOfWatchLater[position] = changedFilmItem
                     recyclerView.adapter?.notifyItemChanged(position + 1) //+1 Header
                     viewModel.updateChanged(changedFilmItem)
-                    (activity as? ActivityUpdater)?.updateNotificationChannel(
+                    (activity as? NotificationUpdater)?.updateNotificationChannel(
                         requireContext(),
                         listOfWatchLater
                     )

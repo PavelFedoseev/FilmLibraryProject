@@ -70,9 +70,9 @@ class IntegrationTest {
             Any()
         }
 
-        filmLibViewModel.getAllFilms()
+        filmLibViewModel.subscribeToDatabase()
         filmLibViewModel.getAllChanged()
-        filmLibViewModel.getWatchLatter()
+        filmLibViewModel.getNotificationList()
         filmLibViewModel.getFilmById(0)
         filmLibViewModel.initFilmDownloading()
 

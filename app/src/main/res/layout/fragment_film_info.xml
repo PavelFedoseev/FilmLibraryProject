@@ -34,6 +34,7 @@
             android:fitsSystemWindows="true"
             android:textAlignment="center"
             app:contentScrim="@android:color/transparent"
+            app:autoSizeTextType="uniform"
             app:expandedTitleTextAppearance="@style/ExpandedToolBarTextStyle"
             app:collapsedTitleTextAppearance="@style/CollapsedToolBarTextStyle"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
