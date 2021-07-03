@@ -7,8 +7,8 @@
     android:id="@+id/coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:elevation="@dimen/info_fragment_elevation"
     android:background="@color/light_gray"
+    android:elevation="@dimen/info_fragment_elevation"
     tools:context=".ui.info.FilmInfoFragment">
 
     <androidx.core.widget.NestedScrollView
@@ -33,10 +33,10 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             android:textAlignment="center"
-            app:contentScrim="@android:color/transparent"
             app:autoSizeTextType="uniform"
-            app:expandedTitleTextAppearance="@style/ExpandedToolBarTextStyle"
             app:collapsedTitleTextAppearance="@style/CollapsedToolBarTextStyle"
+            app:contentScrim="@android:color/transparent"
+            app:expandedTitleTextAppearance="@style/ExpandedToolBarTextStyle"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <ImageView
@@ -44,11 +44,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:scaleType="centerCrop"
+                android:src="@drawable/film_prew_splash_screen"
                 android:transitionName="imageview_film_info"
                 app:layout_collapseMode="parallax"
-                android:src="@drawable/film_prew_splash_screen"
-                tools:src="@drawable/joker"
-                />
+                tools:src="@drawable/joker" />
+
             <no.danielzeller.blurbehindlib.BlurBehindLayout
                 android:id="@+id/blurBehindLayout"
                 android:layout_width="match_parent"
@@ -56,21 +56,19 @@
                 android:layout_gravity="bottom"
                 android:layout_marginTop="20dp"
                 app:blurRadius="30.0"
-                app:updateMode="continuously"
-                app:useTextureView="false"
                 app:blurTextureScale="0.5"
-                app:useChildAlphaAsMask="false"/>
+                app:updateMode="continuously"
+                app:useChildAlphaAsMask="false"
+                app:useTextureView="false" />
+
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
-                android:layout_marginTop="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                android:layout_marginTop="20dp"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
                 app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                tools:title="FilmName"
-                >
-            </androidx.appcompat.widget.Toolbar>
-
+                tools:title="FilmName"></androidx.appcompat.widget.Toolbar>
 
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

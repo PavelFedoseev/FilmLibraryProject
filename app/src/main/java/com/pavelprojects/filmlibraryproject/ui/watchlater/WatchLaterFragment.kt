@@ -20,7 +20,6 @@ import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
-import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.NotificationUpdater
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
@@ -28,7 +27,7 @@ import java.util.*
 import javax.inject.Inject
 
 
-class WatchLaterFragment : Fragment(), LibraryActivityChild {
+class WatchLaterFragment : Fragment() {
 
     companion object {
         const val TAG = "WatchLatter Tag"
@@ -71,7 +70,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     private fun initModel() {
 
-        viewModel.getWatchLatter().observe(this.viewLifecycleOwner) {
+        viewModel.observeWatchLater().observe(this.viewLifecycleOwner) {
             listOfWatchLater.clear()
             listOfWatchLater.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
@@ -192,20 +191,17 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     }
 
-    override fun onOnlineStatusChanged(isOnline: Boolean) {
-    }
-
     interface OnWatchLaterListener {
         fun onWatchLaterDetail(item: FilmItem)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
+        viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
     }
 
     override fun onDestroy() {
-        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
+        viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
         super.onDestroy()
     }
 }

@@ -78,8 +78,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private var listOfFilms = arrayListOf<FilmItem>()
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -91,7 +89,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         initModel()
 
         if (savedInstanceState == null) {
-            viewModel.setLoadedPage(1)
+            viewModel.onActivityCreated()
             openFilmListFragment()
             processIntent(intent)
         }
@@ -115,15 +113,11 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
         if (bundle != null) {
             val item = bundle.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
-            item?.let { openFilmInfoFragment(item.toFilmItem()) }
+            item?.let { openFilmInfoFragment(item.id) }
         } else {
             val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
             if (filmId != null) {
-                viewModel.getFilmById(filmId.toInt()).observe(this) {
-                    if (it != null) {
-                        openFilmInfoFragment(it)
-                    }
-                }
+                openFilmInfoFragment(Integer.parseInt(filmId))
             }
         }
     }
@@ -163,14 +157,14 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     }
 
     private fun initModel() {
-        viewModel.getSnackBarString().observe(this) {
+        viewModel.observeSnackBarString().observe(this) {
             Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
                 .setAction(R.string.snackbar_repeat) {
                     viewModel.initFilmDownloading()
                 }.show()
         }
 
-        viewModel.getNotificationList().observe(this) {
+        viewModel.observeNotificationList().observe(this) {
             updateNotificationChannel(this, it)
         }
 
@@ -224,9 +218,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
                 override fun onOnlineStatus(isOnline: Boolean) {
                     if (isOnline) {
                         if (supportFragmentManager.fragments.size > 0)
-                            (supportFragmentManager.fragments[0] as? LibraryActivityChild)?.onOnlineStatusChanged(
-                                isOnline
-                            )
+                            (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged()
                         dismissSnackBar()
                     } else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
                 }
@@ -259,7 +251,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
             .commit()
     }
 
-    private fun openFilmInfoFragment(filmItem: FilmItem) {
+    private fun openFilmInfoFragment(filmId: Int) {
         disableBlur()
         val callerFragmentTag = when {
             supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null -> FilmListFragment.TAG
@@ -269,7 +261,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         supportFragmentManager
             .beginTransaction()
             .replace(
-                R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, callerFragmentTag),
+                R.id.fragmentContainer, FilmInfoFragment.newInstance(filmId, callerFragmentTag),
                 FilmInfoFragment.TAG
             )
             .addToBackStack(FilmInfoFragment.TAG)
@@ -292,7 +284,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     override fun makeSnackBar(text: String, length: Int, action: String?) {
         snackbar = Snackbar.make(fragmentContainer, text, length)
             .setAction(action) {
-                viewModel.initFilmDownloading()
+                viewModel.initModelDownloads()
             }.setAnchorView(navigationView).also { it.show() }
     }
 
@@ -308,29 +300,22 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
             if (it.id == item.id)
                 listOfFilms[listOfFilms.indexOf(it)] = item
         }
-        viewModel.update(item, FilmLibraryViewModel.CODE_FILM_TABLE)
-        viewModel.update(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        if (item.isLiked || item.isWatchLater) {
-            viewModel.insert(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        } else {
-            viewModel.delete(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        }
+        viewModel.onRateButtonClicked(item, changedFilmItem)
         if (changedFilmItem.watchLaterDate != -1L) {
             updateNotificationChannel(this, listOf(changedFilmItem))
-            viewModel.updateChanged(changedFilmItem)
         }
     }
 
     override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
-        openFilmInfoFragment(filmItem)
+        openFilmInfoFragment(filmItem.id)
     }
 
     override fun onFavoriteDetail(item: FilmItem) {
-        openFilmInfoFragment(item)
+        openFilmInfoFragment(item.id)
     }
 
     override fun onWatchLaterDetail(item: FilmItem) {
-        openFilmInfoFragment(item)
+        openFilmInfoFragment(item.id)
     }
 
     override fun onBackPressed() {
@@ -356,7 +341,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
 
     override fun onStop() {
         unregisterReceiver(broadcast)
-        viewModel.deleteAllIncorrect()
+        viewModel.onActivityStop()
         super.onStop()
     }
 
@@ -448,8 +433,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     }
 }
 
-interface LibraryActivityChild {
-    fun onOnlineStatusChanged(isOnline: Boolean)
+interface OnlineStatusUpdater {
+    fun onOnlineStatusChanged()
 }
 
 interface ActivityUpdater {

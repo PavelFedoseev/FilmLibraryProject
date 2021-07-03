@@ -11,9 +11,9 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER_PREVIEW
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 
 
@@ -105,7 +105,7 @@ class FilmAdapter(
                     itemView.rotationY =
                         -itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
             Glide.with(itemView)
-                .load(LINK_TMDB_POSTER_PREVIEW + item.posterPath)
+                .load(RetroApi.BASE_URL_POSTER + item.posterPath)
                 .transform()
                 .into(imageView)
         }

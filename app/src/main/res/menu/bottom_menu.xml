@@ -11,5 +11,5 @@
     <item
         android:id="@+id/menu_watch_later"
         android:icon="@drawable/ic_baseline_access_time_filled_24"
-        android:title="@string/menu_watch_later"/>
+        android:title="@string/menu_watch_later" />
 </menu>

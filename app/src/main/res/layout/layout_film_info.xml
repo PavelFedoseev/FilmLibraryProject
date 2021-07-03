@@ -21,12 +21,11 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|start"
-            android:button="@drawable/checkbox_selector"
             android:layout_margin="@dimen/view_spacing"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/linear_rating"
+            android:button="@drawable/checkbox_selector"
             app:layout_constraintBottom_toBottomOf="@id/linear_rating"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/linear_rating" />
 
         <LinearLayout
             android:id="@+id/linear_rating"
@@ -35,16 +34,16 @@
             android:layout_gravity="center_vertical|end"
             android:layout_margin="@dimen/view_spacing"
             android:orientation="horizontal"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="@dimen/view_spacing"
-                android:textSize="@dimen/progress_bar_text"
-                android:text="@string/progress_bar_rating" />
+                android:text="@string/progress_bar_rating"
+                android:textSize="@dimen/progress_bar_text" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -65,8 +64,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:textSize="@dimen/progress_bar_rating_text"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textSize="@dimen/progress_bar_rating_text" />
 
             </FrameLayout>
         </LinearLayout>
@@ -76,12 +75,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/view_spacing"
             android:layout_marginEnd="@dimen/view_spacing"
             android:textSize="@dimen/progress_bar_text"
-            android:layout_margin="@dimen/view_spacing"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linear_rating"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/linear_rating" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -89,8 +88,8 @@
         android:id="@+id/textView_description"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/element_radius"
         android:layout_marginStart="@dimen/view_spacing"
+        android:layout_marginTop="@dimen/element_radius"
         android:layout_marginEnd="@dimen/view_spacing"
         android:textSize="@dimen/text_film_info"
         app:layout_constraintEnd_toEndOf="parent"

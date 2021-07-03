@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
+import io.reactivex.MaybeObserver
+import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,19 +20,37 @@ class ChangedViewModel @Inject constructor(app: Application, val repository: Fil
     override val isNetworkLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
 
-    fun getFavFilms(): LiveData<List<FilmItem>> {
-        repository.getFavFilms(object : FilmRepository.FilmListResponseCallback {
+    fun observeFavFilms(): LiveData<List<FilmItem>> {
+        repository.getFavFilms(object : MaybeObserver<List<FilmItem>> {
             override fun onSuccess(list: List<FilmItem>) {
                 listOfFavoriteFilmItem.postValue(list)
+            }
+
+            override fun onSubscribe(d: Disposable) {
+            }
+
+            override fun onError(e: Throwable) {
+            }
+
+            override fun onComplete() {
             }
         })
         return listOfFavoriteFilmItem
     }
 
-    fun getWatchLatter(): LiveData<List<ChangedFilmItem>> {
-        repository.getWatchLaterFilms(object : FilmRepository.ChangedFilmListResponseCallback {
+    fun observeWatchLater(): LiveData<List<ChangedFilmItem>> {
+        repository.getWatchLaterFilms(object : MaybeObserver<List<ChangedFilmItem>> {
             override fun onSuccess(list: List<ChangedFilmItem>) {
                 listOfWatchLaterFilmItem.postValue(list)
+            }
+
+            override fun onSubscribe(d: Disposable) {
+            }
+
+            override fun onError(e: Throwable) {
+            }
+
+            override fun onComplete() {
             }
         })
         return listOfWatchLaterFilmItem
@@ -43,7 +63,7 @@ class ChangedViewModel @Inject constructor(app: Application, val repository: Fil
     }
 
     fun getRecyclerSavedPos() = repository.recChangedPos
-    fun setRecyclerPos(pos: Int) {
+    fun onRecyclerScrolled(pos: Int) {
         repository.recChangedPos = pos
     }
 }

@@ -8,6 +8,8 @@ interface RetroApi {
     companion object{
         const val FILTER_TMDB_POPUlAR = "popularity.desc"
         const val BASE_URL = "https://api.themoviedb.org/3/"
+        const val BASE_URL_POSTER = "https://image.tmdb.org/t/p/w342"
+        const val BASE_URL_POSTER_HIGH = "https://image.tmdb.org/t/p/w780"
         const val API_KEY_TMDB = "473d343bb4af4dc7e510821907ee4e99"
     }
 

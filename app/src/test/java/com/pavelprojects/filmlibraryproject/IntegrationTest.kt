@@ -71,8 +71,8 @@ class IntegrationTest {
         }
 
         filmLibViewModel.subscribeToDatabase()
-        filmLibViewModel.getAllChanged()
-        filmLibViewModel.getNotificationList()
+        filmLibViewModel.observeAllChanged()
+        filmLibViewModel.observeNotificationList()
         filmLibViewModel.getFilmById(0)
         filmLibViewModel.initFilmDownloading()
 

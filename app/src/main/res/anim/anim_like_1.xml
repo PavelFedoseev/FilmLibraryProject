@@ -7,9 +7,10 @@
         android:pivotX="50%"
         android:pivotY="50%"
         android:toXScale="@dimen/like_anim_scale"
-        android:toYScale="@dimen/like_anim_scale"/>
-    <rotate android:fromDegrees="-40"
-        android:toDegrees="0"/>
+        android:toYScale="@dimen/like_anim_scale" />
+    <rotate
+        android:fromDegrees="-40"
+        android:toDegrees="0" />
 
 
 </set>

@@ -27,9 +27,9 @@
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/imageview_size_height"
+                android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:scaleType="fitXY"
-                android:layout_gravity="center"
                 android:src="@drawable/joker"
 
                 android:transitionName="imageview_film_item"
@@ -39,8 +39,8 @@
                 android:id="@+id/imageView_like"
                 android:layout_width="@dimen/like_anim_scale"
                 android:layout_height="@dimen/like_anim_scale"
-                android:elevation="30dp"
                 android:layout_gravity="center"
+                android:elevation="30dp"
                 android:visibility="gone" />
 
         </FrameLayout>
@@ -50,11 +50,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/layout_borders_margin"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:textAlignment="center"
             android:textSize="@dimen/text_film_name"
             android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/frameLayout_image"

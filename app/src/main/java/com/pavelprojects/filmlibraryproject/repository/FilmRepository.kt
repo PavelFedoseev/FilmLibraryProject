@@ -12,6 +12,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import io.reactivex.MaybeObserver
+import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -66,90 +67,42 @@ class FilmRepository @Inject constructor(val application: Application) {
         else changedItemDao.update(filmItem.toChangedFilmItem())
     }
 
-    fun getAllFilms(callback: FilmListResponseCallback) {
+    fun getAllFilms(callback: MaybeObserver<List<FilmItem>>) {
         filmItemDao.getAll()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(maybeObserver(callback))
+            .subscribe(callback)
     }
 
-    fun getFavFilms(callback: FilmListResponseCallback) {
+    fun getFavFilms(callback: MaybeObserver<List<FilmItem>>) {
         changedItemDao.getAllFav()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(maybeObserver(callback))
+            .subscribe(callback)
     }
 
-    fun getWatchLaterFilms(callback: ChangedFilmListResponseCallback) {
+    fun getWatchLaterFilms(callback: MaybeObserver<List<ChangedFilmItem>>) {
         changedItemDao.getAllWatchLater()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(maybeObserver(callback))
+            .subscribe(callback)
     }
 
-    fun getAllChanged(callback: ChangedFilmListResponseCallback) {
+    fun getAllChanged(callback: MaybeObserver<List<ChangedFilmItem>>) {
         changedItemDao.getAllChanged()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(maybeObserver(callback))
+            .subscribe(callback)
     }
 
-    private fun maybeObserver(callback: FilmListResponseCallback) =
-        object : MaybeObserver<List<FilmItem>> {
-            override fun onSubscribe(d: Disposable) {
-            }
 
-            override fun onSuccess(t: List<FilmItem>) {
-                callback.onSuccess(t)
-            }
 
-            override fun onError(e: Throwable) {
-            }
-
-            override fun onComplete() {
-            }
-        }
-
-    private fun maybeObserver(callback: ChangedFilmListResponseCallback) =
-        object : MaybeObserver<List<ChangedFilmItem>> {
-            override fun onSubscribe(d: Disposable) {
-            }
-
-            override fun onSuccess(t: List<ChangedFilmItem>) {
-                callback.onSuccess(t)
-            }
-
-            override fun onError(e: Throwable) {
-            }
-
-            override fun onComplete() {
-            }
-
-        }
-
-    private fun maybeObserver(callback: FilmResponseCallback) =
-        object : MaybeObserver<FilmItem> {
-            override fun onSubscribe(d: Disposable) {
-            }
-
-            override fun onSuccess(t: FilmItem) {
-                callback.onSuccess(t)
-            }
-
-            override fun onError(e: Throwable) {
-            }
-
-            override fun onComplete() {
-            }
-
-        }
-
-    fun getFilmById(id: Int, callback: FilmResponseCallback) {
+    fun getFilmById(id: Int, callback: MaybeObserver<FilmItem>) {
         filmItemDao
             .getById(id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(maybeObserver(callback))
+            .subscribe(callback)
     }
 
     fun delete(filmItem: FilmItem, code: Int) {
@@ -164,7 +117,7 @@ class FilmRepository @Inject constructor(val application: Application) {
         else changedItemDao.deleteAllChangedFilms()
     }
 
-    fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener) {
+    fun getPopularMovies(page: Int, listener: SingleObserver<FilmDataResponse>) {
         val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             application.applicationContext.resources.configuration.locales[0].language
         } else {
@@ -173,38 +126,8 @@ class FilmRepository @Inject constructor(val application: Application) {
         retroApi.getPopularMovies(page = page, language = languageCode)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : SingleObserver<FilmDataResponse> {
-                override fun onSubscribe(d: Disposable) {
+            .subscribe(listener)
 
-                }
-
-                override fun onSuccess(t: FilmDataResponse) {
-                    listener.onSuccess(t)
-                    Log.d(TAG_FILM_REPO, "Movies: ${t.movies}")
-                }
-
-                override fun onError(e: Throwable) {
-                    Log.d(TAG_FILM_REPO, "Failed to get response")
-                }
-            })
-
-    }
-
-    interface FilmListResponseCallback {
-        fun onSuccess(list: List<FilmItem>)
-    }
-
-    interface FilmResponseCallback {
-        fun onSuccess(filmItem: FilmItem)
-    }
-
-    interface ChangedFilmListResponseCallback {
-        fun onSuccess(list: List<ChangedFilmItem>)
-    }
-
-    interface PopularMoviesResponseListener {
-        fun onSuccess(data: FilmDataResponse?)
-        fun onFailure()
     }
 
 }
