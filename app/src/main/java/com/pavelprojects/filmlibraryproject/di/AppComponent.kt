@@ -5,6 +5,7 @@ import com.pavelprojects.filmlibraryproject.database.FilmDatabase
 import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
+import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import com.pavelprojects.filmlibraryproject.ui.FilmLibraryActivity
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
@@ -26,5 +27,6 @@ interface AppComponent {
     fun filmDatabase(): FilmDatabase
     fun filmRepository(): FilmRepository
     fun application(): App
+    fun notificationRepo(): NotificationRepository
     fun retroApi(): RetroApi
 }

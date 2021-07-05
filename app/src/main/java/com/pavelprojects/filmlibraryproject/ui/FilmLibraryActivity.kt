@@ -47,7 +47,7 @@ import java.util.*
 import javax.inject.Inject
 
 
-class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUpdater,
+class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     FilmListFragment.OnFilmListFragmentAdapter,
     FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener,
     WatchLaterFragment.OnWatchLaterListener {
@@ -109,7 +109,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
 
     }
 
-    private fun processIntent(intent: Intent){
+    private fun processIntent(intent: Intent) {
         val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
         if (bundle != null) {
             val item = bundle.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
@@ -164,11 +164,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
                 }.show()
         }
 
-        viewModel.observeNotificationList().observe(this) {
-            updateNotificationChannel(this, it)
-        }
-
-
     }
 
     private fun checkAndRequestPermissions() {
@@ -207,7 +202,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         initInternetBroadcast()
     }
 
-    private fun initInternetBroadcast(){
+    private fun initInternetBroadcast() {
         val filter = IntentFilter("com.pavelprojects.BroadcastReceiver").apply {
             addAction(
                 ConnectivityManager.CONNECTIVITY_ACTION
@@ -301,9 +296,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
                 listOfFilms[listOfFilms.indexOf(it)] = item
         }
         viewModel.onRateButtonClicked(item, changedFilmItem)
-        if (changedFilmItem.watchLaterDate != -1L) {
-            updateNotificationChannel(this, listOf(changedFilmItem))
-        }
     }
 
     override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
@@ -410,27 +402,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         layoutParams.topMargin = margin
         return layoutParams
     }
-
-
-    override fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>) {
-
-        val alarmManager = getSystemService(ALARM_SERVICE) as? AlarmManager
-        for (item in list) {
-            if (item.watchLaterDate != -1L && item.watchLaterDate >= Calendar.getInstance().timeInMillis) {
-                val intent = Intent(context, ReminderBroadcast::class.java)
-                val bundle =
-                    Bundle().apply { putParcelable(ReminderBroadcast.BUNDLE_FILMITEM, item) }
-                intent.putExtra(ReminderBroadcast.INTENT_FILMITEM_BUNDLE, bundle)
-                val pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    item.id,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
-                alarmManager?.set(AlarmManager.RTC_WAKEUP, item.watchLaterDate, pendingIntent)
-            }
-        }
-    }
 }
 
 interface OnlineStatusUpdater {
@@ -444,6 +415,3 @@ interface ActivityUpdater {
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)
 }
 
-interface NotificationUpdater {
-    fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
-}

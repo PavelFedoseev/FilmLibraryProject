@@ -121,11 +121,14 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
             }
             recyclerView.adapter?.notifyDataSetChanged()
         }
-        viewModel.initModelDownloads()
-        viewModel.observeSnackBarString().observe(this.viewLifecycleOwner) {
-            (activity as? FilmLibraryActivity)?.makeSnackBar(it, action = resources.getString(R.string.snackbar_repeat))
-        }
 
+        viewModel.observeSnackBarString().observe(this.viewLifecycleOwner) {
+            (activity as? FilmLibraryActivity)?.makeSnackBar(
+                it,
+                action = resources.getString(R.string.snackbar_repeat)
+            )
+        }
+        viewModel.onObserversInitialized()
     }
 
 
@@ -226,7 +229,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     }
 
     override fun onOnlineStatusChanged() {
-            viewModel.onOnlineStatusChanged()
+        viewModel.onOnlineStatusChanged()
     }
 
     interface OnFilmListFragmentAdapter {

@@ -15,6 +15,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
+import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import io.reactivex.MaybeObserver
 import io.reactivex.SingleObserver
 import io.reactivex.disposables.Disposable
@@ -24,7 +25,8 @@ import javax.inject.Inject
 
 class FilmLibraryViewModel @Inject constructor(
     var app: Application,
-    val repository: FilmRepository
+    val repository: FilmRepository,
+    val notificationRepository: NotificationRepository
 ) :
     AndroidViewModel(app), NetworkLoadChecker {
     companion object {
@@ -121,12 +123,12 @@ class FilmLibraryViewModel @Inject constructor(
     fun observeSnackBarString(): LiveData<String> = snackBarText
 
     fun getFilmById(id: Int): LiveData<FilmItem?> {
-        repository.getFilmById(id, object : MaybeObserver<FilmItem>{
+        repository.getFilmById(id, object : MaybeObserver<FilmItem> {
             override fun onSubscribe(d: Disposable) {
             }
 
             override fun onSuccess(t: FilmItem) {
-               filmItemById.postValue(t)
+                filmItemById.postValue(t)
             }
 
             override fun onError(e: Throwable) {
@@ -158,8 +160,6 @@ class FilmLibraryViewModel @Inject constructor(
             repository.deleteAll(CODE_CHANGED_FILM_TABLE)
         }
     }
-
-
 
 
     fun getCachedFilmList() {
@@ -246,8 +246,10 @@ class FilmLibraryViewModel @Inject constructor(
                         listOfDownloads.postValue(movies)
                         isNetworkLoading.postValue(false)
                     }
+
                     override fun onSubscribe(d: Disposable) {
                     }
+
                     override fun onError(e: Throwable) {
                         snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
                         isNetworkLoading.postValue(false)
@@ -281,10 +283,15 @@ class FilmLibraryViewModel @Inject constructor(
         }
         if (changedFilmItem.watchLaterDate != -1L) {
             updateChanged(changedFilmItem)
+            notificationRepository.updateNotificationChannel(changedFilmItem)
         }
     }
 
     fun onOnlineStatusChanged() {
+        initModelDownloads()
+    }
+
+    fun onObserversInitialized() {
         initModelDownloads()
     }
 }

@@ -8,13 +8,18 @@ import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
+import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import io.reactivex.MaybeObserver
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ChangedViewModel @Inject constructor(app: Application, val repository: FilmRepository) :
+class ChangedViewModel @Inject constructor(
+    app: Application,
+    val repository: FilmRepository,
+    val notificationRepository: NotificationRepository
+) :
     AndroidViewModel(app), NetworkLoadChecker {
     private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
     override val isNetworkLoading: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -42,6 +47,7 @@ class ChangedViewModel @Inject constructor(app: Application, val repository: Fil
         repository.getWatchLaterFilms(object : MaybeObserver<List<ChangedFilmItem>> {
             override fun onSuccess(list: List<ChangedFilmItem>) {
                 listOfWatchLaterFilmItem.postValue(list)
+                updateNotificationChannel(list)
             }
 
             override fun onSubscribe(d: Disposable) {
@@ -56,14 +62,23 @@ class ChangedViewModel @Inject constructor(app: Application, val repository: Fil
         return listOfWatchLaterFilmItem
     }
 
-    fun updateChanged(changedFilmItem: ChangedFilmItem) {
+    private fun updateChanged(changedFilmItem: ChangedFilmItem) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.updateChanged(changedFilmItem)
         }
     }
 
+    fun onDatePicked(item: ChangedFilmItem) {
+        updateChanged(item)
+        listOfWatchLaterFilmItem.value?.let { updateNotificationChannel(it) }
+    }
+
     fun getRecyclerSavedPos() = repository.recChangedPos
     fun onRecyclerScrolled(pos: Int) {
         repository.recChangedPos = pos
+    }
+
+    private fun updateNotificationChannel(list: List<ChangedFilmItem>) {
+        notificationRepository.updateNotificationChannel(list)
     }
 }
