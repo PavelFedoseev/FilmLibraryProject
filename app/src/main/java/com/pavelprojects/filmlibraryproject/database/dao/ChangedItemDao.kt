@@ -3,6 +3,7 @@ package com.pavelprojects.filmlibraryproject.database.dao
 import androidx.room.*
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import io.reactivex.Completable
 import io.reactivex.Maybe
 
 @Dao
