@@ -2,37 +2,116 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/childConstraintLayout"
-    android:layout_marginTop="@dimen/view_spacing"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginTop="@dimen/view_spacing">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/frame_rating"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/layout_rating_margin"
+        android:background="@drawable/shape_rounded"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <CheckBox
+            android:id="@+id/checkbox_watch_later"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="@dimen/view_spacing"
+            android:button="@drawable/checkbox_selector"
+            app:layout_constraintBottom_toBottomOf="@id/linear_rating"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/linear_rating" />
+
+        <LinearLayout
+            android:id="@+id/linear_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_margin="@dimen/view_spacing"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="@dimen/view_spacing"
+                android:text="@string/progress_bar_rating"
+                android:textSize="@dimen/progress_bar_text" />
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ProgressBar
+                    android:id="@+id/progress_bar_rating"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="@dimen/progress_bar_size"
+                    android:layout_height="@dimen/progress_bar_size"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/progress_bar_circle" />
+
+                <TextView
+                    android:id="@+id/text_view_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/progress_bar_rating_text" />
+
+            </FrameLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_view_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/view_spacing"
+            android:layout_marginEnd="@dimen/view_spacing"
+            android:textSize="@dimen/progress_bar_text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linear_rating" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/textView_description"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="@dimen/view_spacing"
+        android:layout_marginTop="@dimen/element_radius"
         android:layout_marginEnd="@dimen/view_spacing"
         android:textSize="@dimen/text_film_info"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/frame_rating" />
 
     <EditText
         android:id="@+id/editText_comment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/element_radius"
         android:layout_marginStart="@dimen/edittext_margin"
+        android:layout_marginTop="@dimen/element_radius"
         android:layout_marginEnd="@dimen/edittext_margin"
         android:layout_marginBottom="@dimen/edittext_margin_bottom"
         android:hint="@string/edittext_comment_hint"
         android:importantForAutofill="no"
         android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@id/button_like"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView_description"
-        app:layout_constraintBottom_toTopOf="@id/button_like"
-        />
+        app:layout_constraintTop_toBottomOf="@id/textView_description" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_like"
@@ -41,7 +120,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/view_spacing"
         android:src="@drawable/ic_baseline_thumb_up_alt_24"
-        app:layout_constraintTop_toBottomOf="@id/textView_description"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/textView_description" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

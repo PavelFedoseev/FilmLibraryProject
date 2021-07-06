@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="deep_200">#A5D6A7</color>
+    <color name="deep_500">#4CAF50</color>
+    <color name="deep_700">#388E3C</color>
+    <color name="clr_200">#80CBC4</color>
+    <color name="clr_700">#00796B</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray">#838383</color>
+    <color name="red">#B50000</color>
+    <color name="yellow">#FFE600</color>
+    <color name="green">#4AC300</color>
+    <color name="light_gray">#E8E8E8</color>
+    <color name="ultra_light_gray">#EFEFEF</color>
+    <color name="cyan">#03A9F4</color>
+    <color name="blur_dimmer">#DFDFDF</color>
+
+    <color name="layout_rating">#EFEFEF</color>
+    <color name="vector_shadow">#94000000</color>
+
+
+</resources>
