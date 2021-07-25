@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
-import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.FavoriteViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.WatchLaterViewModel
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmInfoViewModel
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
 import javax.inject.Inject
@@ -20,11 +21,14 @@ class ViewModelFactory @Inject constructor(
             modelClass.isAssignableFrom(FilmLibraryViewModel::class.java) -> {
                 FilmLibraryViewModel(app, repository, notificationRepository) as T
             }
-            modelClass.isAssignableFrom(ChangedViewModel::class.java) -> {
-                ChangedViewModel(app, repository, notificationRepository) as T
+            modelClass.isAssignableFrom(WatchLaterViewModel::class.java) -> {
+                WatchLaterViewModel(app, repository, notificationRepository) as T
             }
             modelClass.isAssignableFrom(FilmInfoViewModel::class.java) -> {
                 FilmInfoViewModel(app, repository, notificationRepository) as T
+            }
+            modelClass.isAssignableFrom(FavoriteViewModel::class.java) -> {
+                FavoriteViewModel(app, repository) as T
             }
             else -> {
                 throw IllegalArgumentException("Unknown ViewModel class")

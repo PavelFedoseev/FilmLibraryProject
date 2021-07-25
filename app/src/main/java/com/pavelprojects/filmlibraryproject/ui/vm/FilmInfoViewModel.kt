@@ -9,35 +9,40 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import io.reactivex.MaybeObserver
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 class FilmInfoViewModel @Inject constructor(
     var app: Application,
     val repository: FilmRepository,
-    val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository
 ) :
     AndroidViewModel(app) {
     private val filmById = MutableLiveData<FilmItem>()
 
     fun onArgsReceived(filmId: Int) {
-        repository.getFilmById(filmId, object : MaybeObserver<FilmItem> {
-            override fun onSubscribe(d: Disposable) {
-            }
+        repository.getFilmById(filmId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MaybeObserver<FilmItem> {
+                override fun onSubscribe(d: Disposable) {
+                }
 
-            override fun onSuccess(t: FilmItem) {
-                filmById.postValue(t)
-            }
+                override fun onSuccess(t: FilmItem) {
+                    filmById.postValue(t)
+                }
 
-            override fun onError(e: Throwable) {
-            }
+                override fun onError(e: Throwable) {
+                }
 
-            override fun onComplete() {
-            }
-        })
+                override fun onComplete() {
+                }
+            })
     }
 
-    fun onWatchLaterDateAdded(item: ChangedFilmItem) {
+    fun onWatchLaterDateAdded(item: ChangedFilmItem, timeInMillis: Long) {
         notificationRepository.updateNotificationChannel(item)
     }
 

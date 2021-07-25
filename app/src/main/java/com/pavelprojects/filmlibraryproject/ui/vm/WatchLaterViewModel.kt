@@ -6,59 +6,45 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
-import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import io.reactivex.MaybeObserver
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ChangedViewModel @Inject constructor(
+class WatchLaterViewModel @Inject constructor(
     app: Application,
     val repository: FilmRepository,
     val notificationRepository: NotificationRepository
 ) :
     AndroidViewModel(app), NetworkLoadChecker {
-    private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
+
     override val isNetworkLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
 
-    fun observeFavFilms(): LiveData<List<FilmItem>> {
-        repository.getFavFilms(object : MaybeObserver<List<FilmItem>> {
-            override fun onSuccess(list: List<FilmItem>) {
-                listOfFavoriteFilmItem.postValue(list)
-            }
-
-            override fun onSubscribe(d: Disposable) {
-            }
-
-            override fun onError(e: Throwable) {
-            }
-
-            override fun onComplete() {
-            }
-        })
-        return listOfFavoriteFilmItem
-    }
-
     fun observeWatchLater(): LiveData<List<ChangedFilmItem>> {
-        repository.getWatchLaterFilms(object : MaybeObserver<List<ChangedFilmItem>> {
-            override fun onSuccess(list: List<ChangedFilmItem>) {
-                listOfWatchLaterFilmItem.postValue(list)
-                updateNotificationChannel(list)
-            }
+        repository.getWatchLaterFilms()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MaybeObserver<List<ChangedFilmItem>> {
+                override fun onSuccess(list: List<ChangedFilmItem>) {
+                    listOfWatchLaterFilmItem.postValue(list)
+                    updateNotificationChannel(list)
+                }
 
-            override fun onSubscribe(d: Disposable) {
-            }
+                override fun onSubscribe(d: Disposable) {
+                }
 
-            override fun onError(e: Throwable) {
-            }
+                override fun onError(e: Throwable) {
+                }
 
-            override fun onComplete() {
-            }
-        })
+                override fun onComplete() {
+                }
+            })
         return listOfWatchLaterFilmItem
     }
 
@@ -73,9 +59,9 @@ class ChangedViewModel @Inject constructor(
         listOfWatchLaterFilmItem.value?.let { updateNotificationChannel(it) }
     }
 
-    fun getRecyclerSavedPos() = repository.recChangedPos
+    fun getRecyclerSavedPos() = repository.recWatchLaterPos
     fun onRecyclerScrolled(pos: Int) {
-        repository.recChangedPos = pos
+        repository.recWatchLaterPos = pos
     }
 
     private fun updateNotificationChannel(list: List<ChangedFilmItem>) {

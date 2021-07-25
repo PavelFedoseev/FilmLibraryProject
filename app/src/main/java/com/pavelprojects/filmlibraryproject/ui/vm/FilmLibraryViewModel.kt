@@ -4,11 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
@@ -16,17 +16,18 @@ import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
 import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
+import io.reactivex.Completable
 import io.reactivex.MaybeObserver
 import io.reactivex.SingleObserver
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 class FilmLibraryViewModel @Inject constructor(
     var app: Application,
     val repository: FilmRepository,
-    val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository
 ) :
     AndroidViewModel(app), NetworkLoadChecker {
     companion object {
@@ -53,118 +54,140 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
     fun insert(filmItem: FilmItem, code: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        Completable.fromRunnable {
             if (code == CODE_CHANGED_FILM_TABLE) {
                 repository.insert(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
                 repository.insert(filmItem, CODE_FILM_TABLE)
         }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
     fun insertAll(list: List<FilmItem>, code: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        Completable.fromRunnable {
             repository.insertAll(list, code)
         }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
     fun update(filmItem: FilmItem, code: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        Completable.fromRunnable {
             if (code == CODE_FILM_TABLE) {
                 repository.update(filmItem, CODE_FILM_TABLE)
             } else {
                 repository.update(filmItem, CODE_CHANGED_FILM_TABLE)
             }
         }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
     private fun updateChanged(changedFilmItem: ChangedFilmItem) {
-        viewModelScope.launch(Dispatchers.IO) {
+        Completable.fromRunnable {
             repository.updateChanged(changedFilmItem)
         }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
 
     fun observeAllChanged(): LiveData<List<ChangedFilmItem>> {
-        repository.getAllChanged(object : MaybeObserver<List<ChangedFilmItem>> {
-            override fun onSuccess(list: List<ChangedFilmItem>) {
-                listOfChangedFilmItem.postValue(list)
-            }
+        repository.getAllChanged()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MaybeObserver<List<ChangedFilmItem>> {
+                override fun onSuccess(list: List<ChangedFilmItem>) {
+                    listOfChangedFilmItem.postValue(list)
+                }
 
-            override fun onSubscribe(d: Disposable) {
-            }
+                override fun onSubscribe(d: Disposable) {
+                }
 
-            override fun onError(e: Throwable) {
-            }
+                override fun onError(e: Throwable) {
+                }
 
-            override fun onComplete() {
-            }
-        })
+                override fun onComplete() {
+                }
+            })
         return listOfChangedFilmItem
     }
 
     fun observeNotificationList(): LiveData<List<ChangedFilmItem>> {
-        repository.getWatchLaterFilms(object : MaybeObserver<List<ChangedFilmItem>> {
-            override fun onSuccess(list: List<ChangedFilmItem>) {
-                listOfWatchLaterFilmItem.postValue(list)
-            }
+        repository.getWatchLaterFilms()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MaybeObserver<List<ChangedFilmItem>> {
+                override fun onSuccess(list: List<ChangedFilmItem>) {
+                    listOfWatchLaterFilmItem.postValue(list)
+                }
 
-            override fun onSubscribe(d: Disposable) {
-            }
+                override fun onSubscribe(d: Disposable) {
+                }
 
-            override fun onError(e: Throwable) {
-            }
+                override fun onError(e: Throwable) {
+                }
 
-            override fun onComplete() {
-            }
-        })
+                override fun onComplete() {
+                }
+            })
         return listOfWatchLaterFilmItem
     }
 
     fun observeSnackBarString(): LiveData<String> = snackBarText
 
     fun getFilmById(id: Int): LiveData<FilmItem?> {
-        repository.getFilmById(id, object : MaybeObserver<FilmItem> {
-            override fun onSubscribe(d: Disposable) {
-            }
+        repository.getFilmById(id)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MaybeObserver<FilmItem> {
+                override fun onSubscribe(d: Disposable) {
+                }
 
-            override fun onSuccess(t: FilmItem) {
-                filmItemById.postValue(t)
-            }
+                override fun onSuccess(t: FilmItem) {
+                    filmItemById.postValue(t)
+                }
 
-            override fun onError(e: Throwable) {
-            }
+                override fun onError(e: Throwable) {
+                }
 
-            override fun onComplete() {
-            }
-        })
+                override fun onComplete() {
+                }
+            })
         return filmItemById
     }
 
     fun delete(filmItem: FilmItem, code: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        Completable.fromRunnable {
             if (code == CODE_CHANGED_FILM_TABLE) {
                 repository.delete(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
                 repository.delete(filmItem, CODE_FILM_TABLE)
         }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
     fun deleteAll(code: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        Completable.fromRunnable {
             repository.deleteAll(code)
         }
-    }
-
-    fun onActivityStop() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteAll(CODE_CHANGED_FILM_TABLE)
-        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
     }
 
 
     fun getCachedFilmList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getAllFilms(object : MaybeObserver<List<FilmItem>> {
+        repository.getAllFilms().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MaybeObserver<List<FilmItem>> {
                 override fun onSuccess(list: List<FilmItem>) {
                     listOfDatabase.postValue(list)
                 }
@@ -179,7 +202,6 @@ class FilmLibraryViewModel @Inject constructor(
                 }
             })
 
-        }
     }
 
 
@@ -222,9 +244,18 @@ class FilmLibraryViewModel @Inject constructor(
     fun initFilmDownloading() {
         Log.d(TAG, "initFilmDownloading: loadedPage = ${repository.loadedPage}")
         isNetworkLoading.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getPopularMovies(
-                repository.loadedPage,
+        val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            app.applicationContext.resources.configuration.locales[0].language
+        } else {
+            app.applicationContext.resources.configuration.locale.language
+        }
+        repository.getPopularMovies(
+            repository.loadedPage,
+            languageCode
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
                 object : SingleObserver<FilmDataResponse> {
                     override fun onSuccess(t: FilmDataResponse) {
                         allPages = t.pages
@@ -241,6 +272,8 @@ class FilmLibraryViewModel @Inject constructor(
                                     item.isWatchLater = item1.isWatchLater
                                 }
                             }
+                            item.posterPath = item.posterPath?.let { repository.toImageUrl(it) }
+                            item.backdropPath = item.backdropPath?.let { repository.toImageUrl(it) }
                         }
                         insertAll(movies, CODE_FILM_TABLE)
                         listOfDownloads.postValue(movies)
@@ -256,7 +289,6 @@ class FilmLibraryViewModel @Inject constructor(
                         getCachedFilmList()
                     }
                 })
-        }
     }
 
     fun getRecyclerSavedPos() = repository.recFilmListPos

@@ -78,6 +78,8 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     }
 
 
+
+
     private fun initModel() {
         Log.d(TAG, "initModel")
         var position: Int
@@ -221,6 +223,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         view?.let {
             (activity as? ActivityUpdater)?.setupBlur(requireView())
         }
+        viewModel.onOnlineStatusChanged()
     }
 
     override fun onDetach() {

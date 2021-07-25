@@ -83,7 +83,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         checkAndRequestPermissions()
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         initViews()
-        initModel()
 
         if (savedInstanceState == null) {
             viewModel.onActivityCreated()
@@ -153,7 +152,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             ?: arrayListOf()
     }
 
-    private fun initModel() {
+    /*private fun initModel() {
         viewModel.observeSnackBarString().observe(this) {
             Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
                 .setAction(R.string.snackbar_repeat) {
@@ -162,6 +161,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         }
 
     }
+
+     */
 
     private fun checkAndRequestPermissions() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
@@ -219,7 +220,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFilmListFragment() {
-        disableBlur()
+        //disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -232,7 +233,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
-        disableBlur()
+        //disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -244,7 +245,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFilmInfoFragment(filmId: Int) {
-        disableBlur()
         val callerFragmentTag = when {
             supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null -> FilmListFragment.TAG
             supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) != null -> FavoriteFilmsFragment.TAG
@@ -261,7 +261,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFavoriteFilmsFragment() {
-        disableBlur()
+        //disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -330,43 +330,50 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     override fun onStop() {
         unregisterReceiver(broadcast)
-        viewModel.onActivityStop()
         super.onStop()
     }
 
-    override fun setupBlur(view: View) {
-        blurAppBar.disable()
-        blurNavigationView.disable()
-        blurAppBar.viewBehind = view
-        blurNavigationView.viewBehind = view
-        if (blurAppBar.visibility == View.GONE) {
-            val animation = AnimationUtils.loadAnimation(this, R.anim.anim_show_bar).apply {
-                setAnimationListener(object : Animation.AnimationListener {
-                    override fun onAnimationStart(p0: Animation?) {
+    override fun setupBlur(view: View, setupBar: Boolean) {
+        try {
+            if (setupBar) {
+                //blurAppBar.disable()
+                blurAppBar.viewBehind = view
+                if (blurAppBar.visibility == View.GONE) {
+                    val animation = AnimationUtils.loadAnimation(this, R.anim.anim_show_bar).apply {
+                        setAnimationListener(object : Animation.AnimationListener {
+                            override fun onAnimationStart(p0: Animation?) {
 
+                            }
+
+                            override fun onAnimationEnd(p0: Animation?) {
+                                blurAppBar.visibility = View.VISIBLE
+                                blurAppBar.enable()
+                                blurNavigationView.enable()
+                            }
+
+                            override fun onAnimationRepeat(p0: Animation?) {
+
+                            }
+                        })
                     }
-
-                    override fun onAnimationEnd(p0: Animation?) {
-                        blurAppBar.visibility = View.VISIBLE
-                        blurAppBar.enable()
-                        blurNavigationView.enable()
-                    }
-
-                    override fun onAnimationRepeat(p0: Animation?) {
-
-                    }
-                })
+                    blurAppBar.startAnimation(animation)
+                } else {
+                    //blurAppBar.enable()
+                }
             }
-            blurAppBar.startAnimation(animation)
-        } else {
-            blurAppBar.enable()
-            blurNavigationView.enable()
+            //blurNavigationView.disable()
+            blurNavigationView.viewBehind = view
+            //blurNavigationView.enable()
+        } catch (e: Exception) {
+            Log.e(TAG, e.toString())
         }
     }
 
     override fun disableBlur() {
         blurAppBar.disable()
+        blurAppBar.viewBehind = null
         blurNavigationView.disable()
+        blurNavigationView.viewBehind = null
     }
 
     override fun hideAppBar() {
@@ -385,6 +392,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 }
             })
         }
+        blurAppBar.disable()
+        blurAppBar.viewBehind = null
         blurAppBar.startAnimation(animation)
     }
 
@@ -406,7 +415,7 @@ interface OnlineStatusUpdater {
 }
 
 interface ActivityUpdater {
-    fun setupBlur(view: View)
+    fun setupBlur(view: View, setupBar: Boolean = true)
     fun disableBlur()
     fun hideAppBar()
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)

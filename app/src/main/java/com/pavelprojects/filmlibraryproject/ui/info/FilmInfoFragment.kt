@@ -66,6 +66,7 @@ class FilmInfoFragment : Fragment() {
     private lateinit var progressBarRating: ProgressBar
     private lateinit var textViewRating: TextView
 
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
@@ -75,7 +76,6 @@ class FilmInfoFragment : Fragment() {
         )
     }
     private lateinit var blurLayout: BlurBehindLayout
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         App.appComponent.inject(this)
@@ -94,17 +94,19 @@ class FilmInfoFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_film_info, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_film_info, container, false)
+
         callerFragmentTag = arguments?.getString(KEY_FRAGMENT_TAG, FilmListFragment.TAG)
             ?: FilmListFragment.TAG
         val filmId = arguments?.getInt(KEY_FILMID, 0) ?: 0
-        initViews(view)
+        initViews(rootView)
         initModel(filmId)
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
-        (activity as? ActivityUpdater)?.disableBlur()
         (activity as? ActivityUpdater)?.hideAppBar()
+        (activity as? ActivityUpdater)?.setupBlur(rootView, false)
 
-        return view
+
+        return rootView
     }
 
     private fun initModel(id: Int) {
@@ -212,7 +214,6 @@ class FilmInfoFragment : Fragment() {
             }
         })
         checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
-            changedFilmItem?.isWatchLater = compoundButton.isChecked
             if (compoundButton.isChecked) {
                 createDatePickerDialog()
             } else {
@@ -239,6 +240,9 @@ class FilmInfoFragment : Fragment() {
                 callerFragmentTag
             )
         }
+        blurLayout.viewBehind = null
+        (requireActivity() as AppCompatActivity).setSupportActionBar(null)
+        (requireActivity() as ActivityUpdater).disableBlur()
         super.onDestroy()
     }
 
@@ -272,9 +276,8 @@ class FilmInfoFragment : Fragment() {
                     calendar.set(Calendar.HOUR_OF_DAY, i)
                     calendar.set(Calendar.MINUTE, i1)
                     calendar.add(Calendar.SECOND, 5)
-                    changedFilmItem?.watchLaterDate = calendar.timeInMillis
                     changedFilmItem?.let {
-                        viewModel.onWatchLaterDateAdded(it)
+                        viewModel.onWatchLaterDateAdded(it, calendar.timeInMillis)
                         (activity as? ActivityUpdater)?.makeSnackBar(
                             getString(R.string.snackbar_watchlater_added),
                             Snackbar.LENGTH_SHORT
@@ -286,7 +289,9 @@ class FilmInfoFragment : Fragment() {
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         ).apply { this.datePicker.minDate = calendar.timeInMillis }.show()
-
+        if(changedFilmItem?.isWatchLater == false){
+            checkBoxWatchLater.isChecked = false
+        }
     }
 
     interface OnInfoFragmentListener {

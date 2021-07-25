@@ -21,7 +21,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.WatchLaterViewModel
 import java.util.*
 import javax.inject.Inject
 
@@ -39,8 +39,8 @@ class WatchLaterFragment : Fragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: ChangedViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ChangedViewModel::class.java)
+    private val viewModel: WatchLaterViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(WatchLaterViewModel::class.java)
     }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager

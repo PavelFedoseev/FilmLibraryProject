@@ -68,7 +68,7 @@
                 android:layout_marginTop="20dp"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
                 app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                tools:title="FilmName"></androidx.appcompat.widget.Toolbar>
+                tools:title="FilmName" />
 
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

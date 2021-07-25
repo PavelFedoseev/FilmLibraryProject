@@ -29,7 +29,7 @@ class RoomModule constructor(val application: App) {
 
     @Singleton
     @Provides
-    fun providesFilmRepository() = FilmRepository(application)
+    fun providesFilmRepository() = FilmRepository()
 
 
 }

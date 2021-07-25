@@ -20,7 +20,7 @@ import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.FavoriteViewModel
 import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 import javax.inject.Inject
 
@@ -38,8 +38,8 @@ class FavoriteFilmsFragment : Fragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: ChangedViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ChangedViewModel::class.java)
+    private val viewModel: FavoriteViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(FavoriteViewModel::class.java)
     }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
@@ -155,12 +155,12 @@ class FavoriteFilmsFragment : Fragment() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        view?.let {
-            (activity as? ActivityUpdater)?.setupBlur(requireView())
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        view?.let {
+//            (activity as? ActivityUpdater)?.setupBlur(requireView())
+//        }
+//    }
 
 
     interface OnFavoriteListener {
