@@ -1,116 +1,91 @@
 package com.pavelprojects.filmlibraryproject.repository
 
-import android.os.Build
-import android.util.Log
 import com.pavelprojects.filmlibraryproject.App
-import com.pavelprojects.filmlibraryproject.database.FilmDatabaseObject
 import com.pavelprojects.filmlibraryproject.database.dao.ChangedItemDao
 import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
+import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
-import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.pavelprojects.filmlibraryproject.network.RetroApi
+import javax.inject.Inject
 
-class FilmRepository() {
+class FilmRepository {
 
     companion object {
-        const val TAG_FILM_REPO = "FilmRepository"
+        const val TAG = "FilmRepository"
         const val CODE_FILM_TABLE = 1
-        const val CODE_CHANGED_FILM_TABLE = 2
     }
 
+    var loadedPage: Int = 1
+    var recFilmListPos: Int = 0
+    var recWatchLaterPos: Int = 0
+    var recFavoritePos: Int = 0
 
-    private var filmItemDao: FilmItemDao? =
-            FilmDatabaseObject.getInstance(App.instance)?.getFilmItemDao()
+    init {
+        App.appComponent.inject(this)
+    }
 
-    private var changedItemDao: ChangedItemDao? =
-        FilmDatabaseObject.getInstance(App.instance)?.getChangedItemDao()
+    @Inject
+    lateinit var filmItemDao: FilmItemDao
+
+    @Inject
+    lateinit var changedItemDao: ChangedItemDao
+
+    @Inject
+    lateinit var retroApi: RetroApi
 
     fun insert(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_TABLE)
-            filmItemDao?.insert(filmItem)
-        else changedItemDao?.insert(filmItem.toChangedFilmItem())
+            filmItemDao.insert(filmItem)
+        else changedItemDao.insert(filmItem.toChangedFilmItem())
+    }
+
+    fun insertChanged(changedFilmItem: ChangedFilmItem){
+        changedItemDao.insert(changedFilmItem)
+    }
+
+    fun updateChanged(changedFilmItem: ChangedFilmItem) {
+        changedItemDao.update(changedFilmItem)
     }
 
     fun insertAll(listOfFilms: List<FilmItem>, code: Int) {
         if (code == CODE_FILM_TABLE)
-            filmItemDao?.insertAll(listOfFilms)
-        else changedItemDao?.insertAllFav(listOfFilms.map { it.toChangedFilmItem() })
-    }
-
-    fun insertAllGetFilms(listOfFilms: List<FilmItem>): List<FilmItem>? {
-        filmItemDao?.insertAll(listOfFilms)
-        return filmItemDao?.getAll()
+            filmItemDao.insertAll(listOfFilms)
+        else changedItemDao.insertAllFav(listOfFilms.map { it.toChangedFilmItem() })
     }
 
     fun update(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_TABLE)
-            filmItemDao?.update(filmItem)
-        else changedItemDao?.update(filmItem.toChangedFilmItem())
+            filmItemDao.update(filmItem)
+        else changedItemDao.update(filmItem.toChangedFilmItem())
     }
 
-    fun getAllFilms(): List<FilmItem>? {
-        return filmItemDao?.getAll()
-    }
+    fun getAllFilms() = filmItemDao.getAll()
 
-    fun getFavFilms(): List<FilmItem>? {
-        return changedItemDao?.getAllFav()
-    }
+    fun getFavFilms() = changedItemDao.getAllFav()
 
-    fun getFilmById(id: Long): FilmItem? {
-        return filmItemDao?.getById(id)
-    }
+    fun getWatchLaterFilms() = changedItemDao.getAllWatchLater()
+
+    fun getAllChanged() = changedItemDao.getAllChanged()
+
+    fun getFilmById(id: Int) = filmItemDao.getById(id)
+
+    fun getChangedFilmById(id: Int) = changedItemDao.getById(id)
 
     fun delete(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_TABLE)
-            filmItemDao?.delete(filmItem)
-        else changedItemDao?.delete(filmItem.toChangedFilmItem())
+            filmItemDao.delete(filmItem)
+        else changedItemDao.delete(filmItem.toChangedFilmItem())
     }
 
     fun deleteAll(code: Int) {
         if (code == CODE_FILM_TABLE)
-            filmItemDao?.deleteAllFilms()
-        else changedItemDao?.deleteAllFavFilms()
+            filmItemDao.deleteAllFilms()
+        else changedItemDao.deleteAllChangedFilms()
     }
 
-    fun getPopularMovies(page: Int, listener: PopularMoviesResponseListener) {
-        val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            App.instance.applicationContext.resources.configuration.locales[0].language
-        } else {
-            App.instance.applicationContext.resources.configuration.locale.language
-        }
-        App.instance.api.getPopularMovies(page = page, language = languageCode)
-                .enqueue(object : Callback<FilmDataResponse> {
-                    override fun onFailure(call: Call<FilmDataResponse>, t: Throwable) {
-                        listener.onFailure()
-                        Log.e(TAG_FILM_REPO, t.toString())
-                    }
+    fun getPopularMovies(page: Int, languageCode: String) =
+        retroApi.getPopularMovies(page = page, language = languageCode)
 
-                    override fun onResponse(
-                        call: Call<FilmDataResponse>,
-                        response: Response<FilmDataResponse>
-                    ) {
-                        if (response.isSuccessful) {
-                            val responseBody = response.body()
-
-                            if (responseBody != null) {
-                                listener.onSuccess(response.body())
-                                Log.d(TAG_FILM_REPO, "Movies: ${responseBody.movies}")
-                            } else {
-                                listener.onFailure()
-                                Log.d(TAG_FILM_REPO, "Failed to get response")
-                            }
-                        }
-                    }
-                })
-
-    }
-
-    interface PopularMoviesResponseListener {
-        fun onSuccess(data: FilmDataResponse?)
-        fun onFailure()
-    }
-
+    fun toImageUrl(imagePath: String) = RetroApi.BASE_URL_POSTER_HIGH + imagePath
 }

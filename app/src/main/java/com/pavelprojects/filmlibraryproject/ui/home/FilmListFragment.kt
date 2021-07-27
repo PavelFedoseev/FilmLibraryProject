@@ -1,5 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui.home
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -12,12 +13,15 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
-import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
-import com.pavelprojects.filmlibraryproject.ui.FilmItemAnimator
-import com.pavelprojects.filmlibraryproject.ui.FilmLibraryViewModel
-import com.pavelprojects.filmlibraryproject.ui.OnLibraryActivityChild
+import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
+import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
+import com.pavelprojects.filmlibraryproject.ui.*
+import com.pavelprojects.filmlibraryproject.ui.FilmItemAnimator.Companion.TAG_LIKE_ANIM
+import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
+import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import javax.inject.Inject
 
-class FilmListFragment : Fragment(), OnLibraryActivityChild {
+class FilmListFragment : Fragment(), OnlineStatusUpdater {
     companion object {
         const val TAG = "FilmListFragment"
         const val KEY_LIST = "FilmList"
@@ -30,30 +34,38 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
         }
     }
 
-    lateinit var listOfFilms: ArrayList<FilmItem>
-    var listOfFavFilms = listOf<FilmItem>()
+    @Inject
+    lateinit var application: App
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel: FilmLibraryViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
+    }
+
+    var listOfFilms: ArrayList<FilmItem> = arrayListOf()
     var orientation = 0
     private var position = 0
 
     lateinit var layoutManager: GridLayoutManager
     private lateinit var recyclerView: RecyclerView
-    private lateinit var viewModel: FilmLibraryViewModel
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        App.appComponent.inject(this)
+    }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         Log.d(TAG, "onCreateView")
         val view = inflater.inflate(R.layout.fragment_filmlist, container, false)
-        viewModel = ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
-                    .create(FilmLibraryViewModel::class.java)
-
-        listOfFilms = arguments?.getParcelableArrayList(KEY_LIST) ?: arrayListOf()
-        position = App.instance.recFilmListPos
+        position = viewModel.getRecyclerSavedPos()
         orientation = resources.configuration.orientation
-
+        listOfFilms = arguments?.getParcelableArrayList(KEY_LIST) ?: arrayListOf()
         layoutManager = if (orientation == Configuration.ORIENTATION_PORTRAIT)
             GridLayoutManager(requireContext(), 2)
         else
@@ -61,91 +73,107 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
 
         initRecycler(view, position)
         initModel()
+        (activity as? ActivityUpdater)?.setupBlur(view)
         return view
     }
+
+
 
 
     private fun initModel() {
         Log.d(TAG, "initModel")
         var position: Int
 
-        viewModel.getAllFilms().observe(this.viewLifecycleOwner){
-            if(it!=null && App.instance.loadedPage==1){
+        viewModel.subscribeToDatabase().observe(this.viewLifecycleOwner) {
+            if (it != null && viewModel.getLoadedPage() == 1) {
                 position = listOfFilms.size
                 if (!listOfFilms.containsAll(it)) {
                     listOfFilms.addAll(it)
-                    recyclerView.adapter?.notifyItemRangeInserted(position + 2, listOfFilms.size) // size + 1 Footer
+                    recyclerView.adapter?.notifyItemRangeInserted(
+                        position,
+                        listOfFilms.size
+                    ) // size + 1 Footer
                 }
             }
         }
-        viewModel.getPopularMovies().observe(this.viewLifecycleOwner) {
+        viewModel.subscribeToDownloads().observe(this.viewLifecycleOwner) {
             if (it != null) {
-                if(App.instance.loadedPage == 2){
+                if (viewModel.getLoadedPage() == 2) {
                     listOfFilms.clear()
                     recyclerView.adapter?.notifyDataSetChanged()
                 }
                 position = listOfFilms.size
                 if (!listOfFilms.containsAll(it)) {
                     listOfFilms.addAll(it)
-                    recyclerView.adapter?.notifyItemRangeInserted(position + 2, listOfFilms.size) // size + 1 Footer
+                    recyclerView.adapter?.notifyItemRangeInserted(
+                        position + 2,
+                        listOfFilms.size
+                    ) // size + 1 Footer
                 }
             }
         }
-
-        viewModel.getNetworkLoadingStatus().observe(this.viewLifecycleOwner) {
-
-        }
-        viewModel.getFavFilms().observe(this.viewLifecycleOwner) {
-            listOfFavFilms = it
+        viewModel.observeAllChanged().observe(this.viewLifecycleOwner) {
             listOfFilms.iterator().forEach { item ->
                 it.iterator().forEach { item1 ->
-                    item.isLiked = item1.filmId == item.filmId
-                    //item.userComment = item1.userComment
+                    if (item1.id == item.id) {
+                        item.isLiked = item1.isLiked
+                        item.isWatchLater = item1.isWatchLater
+                    }
                 }
             }
             recyclerView.adapter?.notifyDataSetChanged()
         }
 
+        viewModel.observeSnackBarString().observe(this.viewLifecycleOwner) {
+
+        }
+        viewModel.observeNetworkLoadingStatus().observe(this.viewLifecycleOwner){ isLoading ->
+            if(!isLoading){
+                (activity as? FilmLibraryActivity)?.makeSnackBar(
+                    resources.getString(R.string.snackbar_download_error),
+                    action = resources.getString(R.string.snackbar_repeat)
+                )
+            }
+            else (activity as? FilmLibraryActivity)?.dismissSnackBar()
+        }
+        viewModel.onObserversInitialized()
     }
+
 
     private fun initRecycler(view: View, position: Int = 0) {
         Log.d(TAG, "initRecycler")
         recyclerView = view.findViewById(R.id.recyclerView_films)
         val adapter = FilmAdapter(
-                listOfFilms,
-                requireContext().getString(R.string.label_library),
-                viewModel,
-                object : FilmAdapter.FilmClickListener() {
-                    override fun onDetailClick(
-                            filmItem: FilmItem,
-                            position: Int,
-                            adapterPosition: Int,
-                            view: View
-                    ) {
-                        (activity as? OnFilmListFragmentAdapter)?.onDetailClicked(
-                                filmItem,
-                                position,
-                                adapterPosition
-                        )
-                    }
+            listOfFilms,
+            requireContext().getString(R.string.label_library),
+            viewModel,
+            listener = object : FilmAdapter.FilmClickListener() {
+                override fun onDetailClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    (activity as? OnFilmListFragmentAdapter)?.onDetailClicked(
+                        filmItem,
+                        position,
+                        adapterPosition
+                    )
+                }
 
-                    override fun onDoubleClick(
-                            filmItem: FilmItem,
-                            position: Int,
-                            adapterPosition: Int
-                    ) {
-                        if (filmItem.isLiked) {
-                            viewModel.delete(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-                            filmItem.isLiked = false
-                        } else {
-                            filmItem.isLiked = true
-                            viewModel.insert(filmItem, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-                        }
-                        viewModel.update(filmItem, FilmLibraryViewModel.CODE_FILM_TABLE)
-                        listOfFilms[position - 1] = filmItem
-                        recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
-                    }
-                })
+                override fun onDoubleClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    filmItem.isLiked = !filmItem.isLiked
+                    (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
+                        filmItem.toChangedFilmItem(),
+                        TAG
+                    )
+                    listOfFilms[position - 1] = filmItem
+                    recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
+                }
+            })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (adapter.getItemViewType(position)) {
@@ -166,13 +194,9 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val visibleItemCount = layoutManager.childCount
                 val pastVisibleItem = layoutManager.findFirstVisibleItemPosition()
-                this@FilmListFragment.position = pastVisibleItem
-                App.instance.recFilmListPos = pastVisibleItem
                 val viewCount = adapter.itemCount - 2 // - 2 Header + Footer
-                if (viewModel.getLoadingStatus() != true && App.instance.loadedPage < viewModel.allPages)
-                    if (visibleItemCount + pastVisibleItem >= viewCount) {
-                        viewModel.getPopularMovies()
-                    }
+                this@FilmListFragment.position = pastVisibleItem
+                viewModel.onRecyclerScrolled(pastVisibleItem, visibleItemCount, viewCount)
                 super.onScrolled(recyclerView, dx, dy)
             }
         })
@@ -180,27 +204,11 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
             recyclerView.scrollToPosition(position)
     }
 
-    override fun onButtonRateClick(filmItem: FilmItem) {
-        if (this::listOfFilms.isInitialized) {
-            listOfFilms.forEach {
-                if (it.filmId == filmItem.filmId) {
-                    filmItem.id = it.id
-                    listOfFilms[listOfFilms.indexOf(it)] = filmItem
-                    if (this::recyclerView.isInitialized) {
-                        recyclerView.adapter?.notifyDataSetChanged()
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "onActivityCreated")
         if (savedInstanceState != null) {
             listOfFilms = savedInstanceState.getParcelableArrayList(KEY_LIST) ?: arrayListOf()
-            if (position > 0)
-                recyclerView.smoothScrollToPosition(position)
         }
     }
 
@@ -212,8 +220,15 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
-        (activity as OnFilmListFragmentAdapter).saveListState(listOfFilms)
+        (activity as? OnFilmListFragmentAdapter)?.saveListState(listOfFilms)
         super.onDestroy()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        view?.let {
+            (activity as? ActivityUpdater)?.setupBlur(requireView())
+        }
     }
 
     override fun onDetach() {
@@ -221,10 +236,8 @@ class FilmListFragment : Fragment(), OnLibraryActivityChild {
         super.onDetach()
     }
 
-    override fun onOnllineStatusChanged(isOnline: Boolean) {
-        if(isOnline){
-            viewModel.downloadPopularMovies()
-        }
+    override fun onOnlineStatusChanged(isOnline: Boolean) {
+        viewModel.onOnlineStatusChanged(isOnline)
     }
 
     interface OnFilmListFragmentAdapter {

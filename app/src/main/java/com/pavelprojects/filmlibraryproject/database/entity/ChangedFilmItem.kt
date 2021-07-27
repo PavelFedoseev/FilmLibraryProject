@@ -11,27 +11,29 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class ChangedFilmItem(
     @ColumnInfo(name = "id")
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = -1,
-    @ColumnInfo(name = "film_id") var filmId: Int?, //TMDB film id
+    @PrimaryKey(autoGenerate = false)
+    var id: Int,
     var name: String?,
     var description: String?,
-    val posterPath: String?,
-    val backdropPath: String?,
-    val rating: Float?,
-    val releaseDate: String?,
+    var posterPath: String?,
+    var backdropPath: String?,
+    var rating: Float?,
+    var releaseDate: String?,
     var userComment: String? = null,
-    var isLiked: Boolean = false
+    var isLiked: Boolean = false,
+    @ColumnInfo(name ="isWatchLater")var isWatchLater: Boolean = false,
+    @ColumnInfo(name ="watchLatterDate")var watchLaterDate: Long = -1
 ) : Parcelable
 
 fun ChangedFilmItem.toFilmItem() = FilmItem(
-    0,
-    filmId,
+    id,
     name,
     description,
     posterPath,
     backdropPath,
     rating,
     releaseDate,
-    userComment
+    userComment,
+    isLiked,
+    isWatchLater
 )

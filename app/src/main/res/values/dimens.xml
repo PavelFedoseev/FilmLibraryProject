@@ -8,12 +8,25 @@
     <dimen name="cardview_2_row">370dp</dimen>
     <dimen name="cardview_width">150dp</dimen>
     <dimen name="imageview_size_width">125dp</dimen>
-    <dimen name="imageview_size_height">200dp</dimen>
+    <dimen name="imageview_size_height">235dp</dimen>
+    <dimen name="filmelement_size_height">300dp</dimen>
+    <dimen name="imageview_wh_height">50dp</dimen>
     <dimen name="button_size_height">45dp</dimen>
     <dimen name="element_box_elevation">6dp</dimen>
     <dimen name="info_fragment_elevation">6dp</dimen>
     <dimen name="element_elevation">9dp</dimen>
     <dimen name="element_radius">20dp</dimen>
+
+    <dimen name="layout_rating_margin">20dp</dimen>
+
+    <dimen name="progress_bar_size">60dp</dimen>
+    <dimen name="progress_bar_text">20sp</dimen>
+    <dimen name="progress_bar_rating_text">20sp</dimen>
+
+    <dimen name="filmitem_rotation">2dp</dimen>
+    <dimen name="nav_bar_size">48dp</dimen>
+
+    <dimen name="recycler_header_margin">80dp</dimen>
 
     <dimen name="like_anim_scale">80dp</dimen>
 
@@ -26,5 +39,8 @@
     <dimen name="text_film_name">14sp</dimen>
     <dimen name="text_film_info">16sp</dimen>
     <dimen name="text_labels">18sp</dimen>
-    <dimen name="toolbar_title_expanded">30sp</dimen>
+    <dimen name="text_exit_dialog">16sp</dimen>
+    <dimen name="text_app_name">22sp</dimen>
+    <dimen name="toolbar_title_expanded">20sp</dimen>
+    <dimen name="toolbar_title_collapsed">16sp</dimen>
 </resources>
