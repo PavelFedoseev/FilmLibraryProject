@@ -22,7 +22,7 @@ class NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(
-                client.newBuilder().connectTimeout(20, TimeUnit.SECONDS)
+                client.newBuilder().connectTimeout(5, TimeUnit.SECONDS)
                     .readTimeout(10, TimeUnit.SECONDS).build()
             )
             .build()

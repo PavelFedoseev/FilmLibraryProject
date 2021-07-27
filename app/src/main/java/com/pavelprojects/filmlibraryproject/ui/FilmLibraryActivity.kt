@@ -67,8 +67,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         )
     }
 
-    private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
-
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
@@ -104,6 +102,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
 
     }
+
 
     private fun processIntent(intent: Intent) {
         val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
@@ -152,18 +151,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             ?: arrayListOf()
     }
 
-    /*private fun initModel() {
-        viewModel.observeSnackBarString().observe(this) {
-            Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
-                .setAction(R.string.snackbar_repeat) {
-                    viewModel.initFilmDownloading()
-                }.show()
-        }
-
-    }
-
-     */
-
     private fun checkAndRequestPermissions() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             Log.d(TAG, "Notification permission sending request...")
@@ -209,18 +196,15 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         broadcast = InternetBroadcast(
             object : InternetBroadcast.OnBroadcastReceiver {
                 override fun onOnlineStatus(isOnline: Boolean) {
-                    if (isOnline) {
-                        if (supportFragmentManager.fragments.size > 0)
-                            (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged()
-                        dismissSnackBar()
-                    } else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
+                    if (supportFragmentManager.fragments.size > 0)
+                        (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged(isOnline)
+                    if (isOnline) dismissSnackBar() else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
                 }
             })
         registerReceiver(broadcast, filter)
     }
 
     private fun openFilmListFragment() {
-        //disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -233,7 +217,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
-        //disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -261,7 +244,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFavoriteFilmsFragment() {
-        //disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -336,7 +318,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     override fun setupBlur(view: View, setupBar: Boolean) {
         try {
             if (setupBar) {
-                //blurAppBar.disable()
                 blurAppBar.viewBehind = view
                 if (blurAppBar.visibility == View.GONE) {
                     val animation = AnimationUtils.loadAnimation(this, R.anim.anim_show_bar).apply {
@@ -347,8 +328,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
                             override fun onAnimationEnd(p0: Animation?) {
                                 blurAppBar.visibility = View.VISIBLE
-                                blurAppBar.enable()
-                                blurNavigationView.enable()
                             }
 
                             override fun onAnimationRepeat(p0: Animation?) {
@@ -357,23 +336,12 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                         })
                     }
                     blurAppBar.startAnimation(animation)
-                } else {
-                    //blurAppBar.enable()
                 }
             }
-            //blurNavigationView.disable()
             blurNavigationView.viewBehind = view
-            //blurNavigationView.enable()
         } catch (e: Exception) {
             Log.e(TAG, e.toString())
         }
-    }
-
-    override fun disableBlur() {
-        blurAppBar.disable()
-        blurAppBar.viewBehind = null
-        blurNavigationView.disable()
-        blurNavigationView.viewBehind = null
     }
 
     override fun hideAppBar() {
@@ -392,7 +360,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 }
             })
         }
-        blurAppBar.disable()
         blurAppBar.viewBehind = null
         blurAppBar.startAnimation(animation)
     }
@@ -411,12 +378,11 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 }
 
 interface OnlineStatusUpdater {
-    fun onOnlineStatusChanged()
+    fun onOnlineStatusChanged(isOnline: Boolean)
 }
 
 interface ActivityUpdater {
     fun setupBlur(view: View, setupBar: Boolean = true)
-    fun disableBlur()
     fun hideAppBar()
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)
 }

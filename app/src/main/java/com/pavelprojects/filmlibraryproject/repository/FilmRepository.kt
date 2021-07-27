@@ -40,6 +40,10 @@ class FilmRepository {
         else changedItemDao.insert(filmItem.toChangedFilmItem())
     }
 
+    fun insertChanged(changedFilmItem: ChangedFilmItem){
+        changedItemDao.insert(changedFilmItem)
+    }
+
     fun updateChanged(changedFilmItem: ChangedFilmItem) {
         changedItemDao.update(changedFilmItem)
     }
@@ -65,6 +69,8 @@ class FilmRepository {
     fun getAllChanged() = changedItemDao.getAllChanged()
 
     fun getFilmById(id: Int) = filmItemDao.getById(id)
+
+    fun getChangedFilmById(id: Int) = changedItemDao.getById(id)
 
     fun delete(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_TABLE)

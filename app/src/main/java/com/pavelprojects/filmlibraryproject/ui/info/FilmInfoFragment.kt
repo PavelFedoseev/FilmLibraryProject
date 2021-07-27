@@ -26,7 +26,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
-import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
@@ -95,32 +94,35 @@ class FilmInfoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_film_info, container, false)
-
         callerFragmentTag = arguments?.getString(KEY_FRAGMENT_TAG, FilmListFragment.TAG)
             ?: FilmListFragment.TAG
         val filmId = arguments?.getInt(KEY_FILMID, 0) ?: 0
         initViews(rootView)
         initModel(filmId)
+        toolbar.title = ""
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
         (activity as? ActivityUpdater)?.hideAppBar()
         (activity as? ActivityUpdater)?.setupBlur(rootView, false)
-
-
         return rootView
     }
 
     private fun initModel(id: Int) {
         viewModel.observeFilmById().observe(this.viewLifecycleOwner) {
-            changedFilmItem = it.toChangedFilmItem()
-            setupText()
-            setupProgressBar()
-            initListeners()
+            if(it!=null) {
+                changedFilmItem = it
+                setupText()
+                setupProgressBar()
+                initListeners()
+            }
+            else{
+                viewModel.onItemIsNull()
+            }
         }
         viewModel.onArgsReceived(id)
     }
 
     private fun setupText() {
-        toolbar.title = changedFilmItem?.name
+        (requireActivity() as AppCompatActivity).supportActionBar?.title = changedFilmItem?.name
         textViewDescriprion.text = changedFilmItem?.description
         editTextComment.setText(changedFilmItem?.userComment)
         Glide.with(this)
@@ -213,8 +215,18 @@ class FilmInfoFragment : Fragment() {
                 changedFilmItem?.userComment = p0?.toString()
             }
         })
-        checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
-            if (compoundButton.isChecked) {
+//        checkBoxWatchLater.setOnCheckedChangeListener { compoundButton, _ ->
+//            if (compoundButton.isChecked) {
+//                createDatePickerDialog()
+//            } else {
+//                (activity as? ActivityUpdater)?.makeSnackBar(
+//                    getString(R.string.snackbar_watchlater_removed),
+//                    Snackbar.LENGTH_SHORT
+//                )
+//            }
+//        }
+        checkBoxWatchLater.setOnClickListener {
+            if (checkBoxWatchLater.isChecked) {
                 createDatePickerDialog()
             } else {
                 (activity as? ActivityUpdater)?.makeSnackBar(
@@ -242,7 +254,6 @@ class FilmInfoFragment : Fragment() {
         }
         blurLayout.viewBehind = null
         (requireActivity() as AppCompatActivity).setSupportActionBar(null)
-        (requireActivity() as ActivityUpdater).disableBlur()
         super.onDestroy()
     }
 
@@ -282,6 +293,7 @@ class FilmInfoFragment : Fragment() {
                             getString(R.string.snackbar_watchlater_added),
                             Snackbar.LENGTH_SHORT
                         )
+                        checkBoxWatchLater.isChecked = true
                     }
                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
             },

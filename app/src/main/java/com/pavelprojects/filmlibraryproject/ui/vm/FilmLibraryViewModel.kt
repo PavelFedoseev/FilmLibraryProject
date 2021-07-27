@@ -43,7 +43,8 @@ class FilmLibraryViewModel @Inject constructor(
     private val listOfDatabase = MutableLiveData<List<FilmItem>>()
     private val listOfDownloads = MutableLiveData<List<FilmItem>>()
     private val snackBarText = MutableLiveData<String>()
-    override val isNetworkLoading = MutableLiveData<Boolean>()
+    override val isNetworkLoading = MutableLiveData(true)
+    private var isConnectionStatusOk = true
 
     var allPages = 1
 
@@ -59,6 +60,15 @@ class FilmLibraryViewModel @Inject constructor(
                 repository.insert(filmItem, CODE_CHANGED_FILM_TABLE)
             } else
                 repository.insert(filmItem, CODE_FILM_TABLE)
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
+    }
+
+    fun insertChanged(changedFilmItem: ChangedFilmItem){
+        Completable.fromRunnable {
+                repository.insertChanged(changedFilmItem)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -138,6 +148,8 @@ class FilmLibraryViewModel @Inject constructor(
             })
         return listOfWatchLaterFilmItem
     }
+
+    fun observeNetworkLoadingStatus(): LiveData<Boolean> = isNetworkLoading
 
     fun observeSnackBarString(): LiveData<String> = snackBarText
 
@@ -243,7 +255,6 @@ class FilmLibraryViewModel @Inject constructor(
 
     fun initFilmDownloading() {
         Log.d(TAG, "initFilmDownloading: loadedPage = ${repository.loadedPage}")
-        isNetworkLoading.postValue(true)
         val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             app.applicationContext.resources.configuration.locales[0].language
         } else {
@@ -277,7 +288,7 @@ class FilmLibraryViewModel @Inject constructor(
                         }
                         insertAll(movies, CODE_FILM_TABLE)
                         listOfDownloads.postValue(movies)
-                        isNetworkLoading.postValue(false)
+                        isNetworkLoading.postValue(true)
                     }
 
                     override fun onSubscribe(d: Disposable) {
@@ -314,13 +325,16 @@ class FilmLibraryViewModel @Inject constructor(
             delete(item, CODE_CHANGED_FILM_TABLE)
         }
         if (changedFilmItem.watchLaterDate != -1L) {
+            insertChanged(changedFilmItem)
             updateChanged(changedFilmItem)
             notificationRepository.updateNotificationChannel(changedFilmItem)
         }
     }
 
-    fun onOnlineStatusChanged() {
-        initModelDownloads()
+    fun onOnlineStatusChanged(isOnline: Boolean) {
+        if(isOnline != isConnectionStatusOk)
+            initModelDownloads()
+        isConnectionStatusOk = isOnline
     }
 
     fun onObserversInitialized() {

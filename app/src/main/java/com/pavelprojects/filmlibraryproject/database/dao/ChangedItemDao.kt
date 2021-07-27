@@ -33,4 +33,7 @@ interface ChangedItemDao {
     @Query("SELECT * FROM changed_film_table WHERE isWatchLater = 1")
     fun getAllWatchLater(): Maybe<List<ChangedFilmItem>>
 
+    @Query("SELECT * FROM changed_film_table WHERE id = :id")
+    fun getById(id: Int): Maybe<ChangedFilmItem>
+
 }

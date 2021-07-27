@@ -125,10 +125,16 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         }
 
         viewModel.observeSnackBarString().observe(this.viewLifecycleOwner) {
-            (activity as? FilmLibraryActivity)?.makeSnackBar(
-                it,
-                action = resources.getString(R.string.snackbar_repeat)
-            )
+
+        }
+        viewModel.observeNetworkLoadingStatus().observe(this.viewLifecycleOwner){ isLoading ->
+            if(!isLoading){
+                (activity as? FilmLibraryActivity)?.makeSnackBar(
+                    resources.getString(R.string.snackbar_download_error),
+                    action = resources.getString(R.string.snackbar_repeat)
+                )
+            }
+            else (activity as? FilmLibraryActivity)?.dismissSnackBar()
         }
         viewModel.onObserversInitialized()
     }
@@ -223,7 +229,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         view?.let {
             (activity as? ActivityUpdater)?.setupBlur(requireView())
         }
-        viewModel.onOnlineStatusChanged()
     }
 
     override fun onDetach() {
@@ -231,8 +236,8 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         super.onDetach()
     }
 
-    override fun onOnlineStatusChanged() {
-        viewModel.onOnlineStatusChanged()
+    override fun onOnlineStatusChanged(isOnline: Boolean) {
+        viewModel.onOnlineStatusChanged(isOnline)
     }
 
     interface OnFilmListFragmentAdapter {
