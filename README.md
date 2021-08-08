@@ -1,6 +1,6 @@
 ![ic_launcher_round](https://user-images.githubusercontent.com/69648986/123343889-61886100-d55b-11eb-8a3f-b92a539868dd.png)
 # FilmLibraryProject
-Приложение разработанное в качестве проектной работы по курсу Android Beginer в OTUS
+Приложение разработанное в качестве проектной работы по курсу Android Beginner в OTUS
 
 Данное прил
 
