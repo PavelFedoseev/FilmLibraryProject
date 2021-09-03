@@ -92,6 +92,7 @@ class FavoriteFilmsFragment : Fragment() {
         recyclerView.adapter = FilmAdapter(
             listOfFavorite,
             requireContext().getString(R.string.label_favorite),
+            viewModel as NetworkLoadChecker,
             false,
             object : FilmAdapter.FilmClickListener() {
 

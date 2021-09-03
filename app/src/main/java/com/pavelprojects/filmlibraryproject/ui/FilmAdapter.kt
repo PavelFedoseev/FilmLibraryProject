@@ -20,6 +20,7 @@ import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 class FilmAdapter(
     var list: List<FilmItem>,
     var header: String,
+    var networkLoadChecker: NetworkLoadChecker,
     var isAddRotation: Boolean = true,
     var listener: FilmClickListener
 ) :
@@ -70,7 +71,7 @@ class FilmAdapter(
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
         } else if (holder is FooterItemViewHolder) {
-            holder.bindView()
+            holder.bindView(networkLoadChecker.getLoadingStatus())
         }
     }
 
@@ -112,9 +113,13 @@ class FilmAdapter(
 
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
-        fun bindView() {
+        fun bindView(isLoading: Boolean?) {
             Log.d(TAG, "FooterItemViewHolder: bindView")
+            if (isLoading == true) {
+                progressBar.visibility = View.VISIBLE
+            } else {
                 progressBar.visibility = View.GONE
+            }
         }
     }
 

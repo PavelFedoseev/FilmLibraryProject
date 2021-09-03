@@ -1,6 +1,5 @@
 package com.pavelprojects.filmlibraryproject.ui.home
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
@@ -10,21 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.paging.LoadState
-import androidx.paging.PagingData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.pavelprojects.filmlibraryproject.App
-import com.pavelprojects.filmlibraryproject.R
+import com.pavelprojects.filmlibraryproject.*
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
-import com.pavelprojects.filmlibraryproject.domain.extentions.compare
 import com.pavelprojects.filmlibraryproject.ui.*
+import com.pavelprojects.filmlibraryproject.ui.FilmItemAnimator.Companion.TAG_LIKE_ANIM
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
-import io.reactivex.disposables.CompositeDisposable
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
 class FilmListFragment : Fragment(), OnlineStatusUpdater {
@@ -46,13 +40,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val mDisposable = CompositeDisposable()
-
-    private lateinit var adapter: FilmPagingAdapter
-    private var isConnected = false
-
-    private var curSource = FilmSource.REMOTE
-
     private val viewModel: FilmLibraryViewModel by lazy {
         ViewModelProvider(this, viewModelFactory).get(FilmLibraryViewModel::class.java)
     }
@@ -69,38 +56,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         App.appComponent.inject(this)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        adapter = FilmPagingAdapter(
-            requireContext().getString(R.string.label_library),
-            listener = object : FilmPagingAdapter.FilmClickListener() {
-                override fun onDetailClick(
-                    filmItem: FilmItem,
-                    position: Int,
-                    adapterPosition: Int
-                ) {
-                    (activity as? OnFilmListFragmentAdapter)?.onDetailClicked(
-                        filmItem,
-                        position,
-                        adapterPosition
-                    )
-                }
-
-                override fun onDoubleClick(
-                    filmItem: FilmItem,
-                    position: Int,
-                    adapterPosition: Int
-                ) {
-                    filmItem.isLiked = !filmItem.isLiked
-                    (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
-                        filmItem.toChangedFilmItem(),
-                        TAG
-                    )
-                }
-            })
-    }
-
-    @ExperimentalCoroutinesApi
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -123,29 +78,40 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     }
 
 
-    @ExperimentalCoroutinesApi
+
+
     private fun initModel() {
         Log.d(TAG, "initModel")
         var position: Int
 
         viewModel.subscribeToDatabase().observe(this.viewLifecycleOwner) {
-            if (it != null) {
+            if (it != null && viewModel.getLoadedPage() == 1) {
                 position = listOfFilms.size
-                listOfFilms.addAll(it.compare(listOfFilms))
-                if(viewModel.getLoadedPage() == 1 && !isConnected)
-                    initLocalSource()
+                if (!listOfFilms.containsAll(it)) {
+                    listOfFilms.addAll(it)
+                    recyclerView.adapter?.notifyItemRangeInserted(
+                        position,
+                        listOfFilms.size
+                    ) // size + 1 Footer
+                }
             }
         }
-        viewModel.isConnectionStatus.observe(this.viewLifecycleOwner){ isConnected ->
-            this.isConnected = isConnected
-            if(isConnected){
-                initRemoteSource()
-            }
-            else {
-                viewModel.getCachedFilmList()
+        viewModel.subscribeToDownloads().observe(this.viewLifecycleOwner) {
+            if (it != null) {
+                if (viewModel.getLoadedPage() == 2) {
+                    listOfFilms.clear()
+                    recyclerView.adapter?.notifyDataSetChanged()
+                }
+                position = listOfFilms.size
+                if (!listOfFilms.containsAll(it)) {
+                    listOfFilms.addAll(it)
+                    recyclerView.adapter?.notifyItemRangeInserted(
+                        position + 2,
+                        listOfFilms.size
+                    ) // size + 1 Footer
+                }
             }
         }
-
         viewModel.observeAllChanged().observe(this.viewLifecycleOwner) {
             listOfFilms.iterator().forEach { item ->
                 it.iterator().forEach { item1 ->
@@ -155,6 +121,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                     }
                 }
             }
+            recyclerView.adapter?.notifyDataSetChanged()
         }
 
         viewModel.observeSnackBarString().observe(this.viewLifecycleOwner) {
@@ -169,12 +136,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
             }
             else (activity as? FilmLibraryActivity)?.dismissSnackBar()
         }
-        viewModel.getPopularFilms().observe(this.viewLifecycleOwner){ flowable ->
-            if(flowable!= null)
-            mDisposable.add(flowable.subscribe {
-                adapter.submitData(lifecycle, it)
-            })
-        }
         viewModel.onObserversInitialized()
     }
 
@@ -182,57 +143,65 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     private fun initRecycler(view: View, position: Int = 0) {
         Log.d(TAG, "initRecycler")
         recyclerView = view.findViewById(R.id.recyclerView_films)
+        val adapter = FilmAdapter(
+            listOfFilms,
+            requireContext().getString(R.string.label_library),
+            viewModel,
+            listener = object : FilmAdapter.FilmClickListener() {
+                override fun onDetailClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    (activity as? OnFilmListFragmentAdapter)?.onDetailClicked(
+                        filmItem,
+                        position,
+                        adapterPosition
+                    )
+                }
+
+                override fun onDoubleClick(
+                    filmItem: FilmItem,
+                    position: Int,
+                    adapterPosition: Int
+                ) {
+                    filmItem.isLiked = !filmItem.isLiked
+                    (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
+                        filmItem.toChangedFilmItem(),
+                        TAG
+                    )
+                    listOfFilms[position - 1] = filmItem
+                    recyclerView.adapter?.notifyItemChanged(position, TAG_LIKE_ANIM)
+                }
+            })
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (adapter.getItemViewType(position)) {
-                    FilmPagingAdapter.VIEW_TYPE_HEADER -> {
+                    FilmAdapter.VIEW_TYPE_HEADER -> {
                         if (orientation == Configuration.ORIENTATION_PORTRAIT) 2
                         else 4
                     }
-                    FilmPagingAdapter.VIEW_TYPE_FILM -> 1
-                    else -> 1
+                    FilmAdapter.VIEW_TYPE_FILM -> 1
+                    else -> 2
                 }
             }
         }
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
-        recyclerView.adapter = adapter.withLoadStateFooter(LoadingGridStateAdapter())
-        adapter.addLoadStateListener {
-                loadState ->
-            val errorState = loadState.source.append as? LoadState.Error
-                ?: loadState.source.prepend as? LoadState.Error
-                ?: loadState.append as? LoadState.Error
-                ?: loadState.prepend as? LoadState.Error
+        recyclerView.itemAnimator = FilmItemAnimator(requireContext())
 
-            errorState?.let {
-                AlertDialog.Builder(view.context)
-                    .setTitle(R.string.snackbar_network_error)
-                    .setMessage(it.error.localizedMessage)
-                    .setNegativeButton(R.string.snackbar_cancel) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .setPositiveButton(R.string.snackbar_repeat) { _, _ ->
-                        adapter.retry()
-                    }
-                    .show()
-            }
-        }
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
+                val visibleItemCount = layoutManager.childCount
+                val pastVisibleItem = layoutManager.findFirstVisibleItemPosition()
+                val viewCount = adapter.itemCount - 2 // - 2 Header + Footer
+                this@FilmListFragment.position = pastVisibleItem
+                viewModel.onRecyclerScrolled(pastVisibleItem, visibleItemCount, viewCount)
+                super.onScrolled(recyclerView, dx, dy)
             }
         })
-        //recyclerView.itemAnimator = FilmItemAnimator(requireContext())
-    }
-
-    @ExperimentalCoroutinesApi
-    private fun initRemoteSource(){
-        viewModel.onInitRemoteSource(curSource == FilmSource.LOCAL)
-        curSource = FilmSource.REMOTE
-    }
-    private fun initLocalSource(){
-        adapter.submitData(lifecycle, PagingData.from(listOfFilms))
-        curSource = FilmSource.LOCAL
+        if (position > 0 && listOfFilms.size > position)
+            recyclerView.scrollToPosition(position)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -255,11 +224,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         super.onDestroy()
     }
 
-    private fun countRecyclerPos(){
-        val pastVisibleItem = layoutManager.findFirstVisibleItemPosition()
-        viewModel.onRecyclerScrolled(pastVisibleItem)
-    }
-
     override fun onResume() {
         super.onResume()
         view?.let {
@@ -267,15 +231,13 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         }
     }
 
-    override fun onDestroyView() {
-        countRecyclerPos()
-        mDisposable.dispose()
-        super.onDestroyView()
+    override fun onDetach() {
+        Log.d(TAG, "onDetach")
+        super.onDetach()
     }
 
     override fun onOnlineStatusChanged(isOnline: Boolean) {
         viewModel.onOnlineStatusChanged(isOnline)
-        adapter.retry()
     }
 
     interface OnFilmListFragmentAdapter {
@@ -283,9 +245,4 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         fun saveListState(list: ArrayList<FilmItem>)
     }
 
-}
-
-enum class FilmSource{
-    REMOTE,
-    LOCAL
 }

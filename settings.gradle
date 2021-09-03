@@ -1,2 +1,2 @@
-include ':app', ':blurbehindlib'
+include ':app'
 rootProject.name = "FilmLibraryProject"

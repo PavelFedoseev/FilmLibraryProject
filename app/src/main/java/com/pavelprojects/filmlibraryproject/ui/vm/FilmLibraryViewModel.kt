@@ -1,24 +1,27 @@
 package com.pavelprojects.filmlibraryproject.ui.vm
 
 import android.app.Application
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.rxjava2.cachedIn
+import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.network.FilmDataResponse
+import com.pavelprojects.filmlibraryproject.network.toFilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import io.reactivex.Completable
-import io.reactivex.Flowable
 import io.reactivex.MaybeObserver
+import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
 class FilmLibraryViewModel @Inject constructor(
@@ -41,12 +44,7 @@ class FilmLibraryViewModel @Inject constructor(
     private val listOfDownloads = MutableLiveData<List<FilmItem>>()
     private val snackBarText = MutableLiveData<String>()
     override val isNetworkLoading = MutableLiveData(true)
-
-    private var _pagingFlowable: MutableLiveData<Flowable<PagingData<FilmItem>>?> = MutableLiveData<Flowable<PagingData<FilmItem>>?>(null)
-
-    private val _isConnectionStatus = MutableLiveData(true)
-    val isConnectionStatus: LiveData<Boolean> = _isConnectionStatus
-
+    private var isConnectionStatusOk = true
 
     var allPages = 1
 
@@ -198,21 +196,6 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
 
-    @ExperimentalCoroutinesApi
-    fun getPopularFilms(): LiveData<Flowable<PagingData<FilmItem>>?> {
-        return _pagingFlowable
-    }
-
-    @ExperimentalCoroutinesApi
-    fun onInitRemoteSource(isReload: Boolean){
-        if(_pagingFlowable.value == null || isReload){
-            _pagingFlowable.postValue(repository.getRemoteMovies().cachedIn(viewModelScope))
-        }
-        else
-        _pagingFlowable.postValue(_pagingFlowable.value)
-    }
-
-
     fun getCachedFilmList() {
         repository.getAllFilms().subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -234,100 +217,104 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
 
-    fun subscribeToDatabase(): LiveData<List<FilmItem>> {
-        getCachedFilmList()
-        return listOfDatabase
-    }
+    fun subscribeToDatabase() = listOfDatabase
     fun subscribeToDownloads() = listOfDownloads
 
 
-//    fun initModelDownloads() {
-//        if (isOnline(app))
-//            initFilmDownloading()
-//        else
-//            getCachedFilmList()
-//    }
-
-//    private fun isOnline(context: Context): Boolean {
-//        val connectivityManager =
-//            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        val capabilities =
-//            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-//        if (capabilities != null) {
-//            when {
-//                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-//                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
-//                    return true
-//                }
-//                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-//                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_WIFI")
-//                    return true
-//                }
-//                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-//                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_ETHERNET")
-//                    return true
-//                }
-//            }
-//        }
-//        Log.i(LOG_INTERNET, "Connection failed")
-//        return false
-//    }
-
-//    fun initFilmDownloading() {
-//        Log.d(TAG, "initFilmDownloading: loadedPage = ${repository.loadedPage}")
-//        val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//            app.applicationContext.resources.configuration.locales[0].language
-//        } else {
-//            app.applicationContext.resources.configuration.locale.language
-//        }
-//        repository.getRemoteMovies(
-//            repository.loadedPage,
-//            languageCode
-//        )
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                object : SingleObserver<FilmDataResponse> {
-//                    override fun onSuccess(t: FilmDataResponse) {
-//                        allPages = t.totalPages
-//                        if (repository.loadedPage == 1) {
-//                            deleteAll(CODE_FILM_TABLE)
-//                        }
-//                        repository.loadedPage++
-//                        val movies = t.films.map { it.toFilmItem() }
-//                        movies.forEach { item ->
-//                            listOfChangedFilmItem.value?.forEach { item1 ->
-//                                if (item.id == item1.id) {
-//                                    item.isLiked = item1.isLiked
-//                                    item.userComment = item1.userComment
-//                                    item.isWatchLater = item1.isWatchLater
-//                                }
-//                            }
-//                            item.posterPath = item.posterPath?.let { repository.toImageUrl(it) }
-//                            item.backdropPath = item.backdropPath?.let { repository.toImageUrl(it) }
-//                        }
-//                        insertAll(movies, CODE_FILM_TABLE)
-//                        listOfDownloads.postValue(movies)
-//                        isNetworkLoading.postValue(true)
-//                    }
-//
-//                    override fun onSubscribe(d: Disposable) {
-//                    }
-//
-//                    override fun onError(e: Throwable) {
-//                        snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
-//                        isNetworkLoading.postValue(false)
-//                        getCachedFilmList()
-//                    }
-//                })
-//    }
-
-    fun getRecyclerSavedPos() = repository.recFilmListPos
-    fun onRecyclerScrolled(pastVisibleItem: Int) {
-        repository.recFilmListPos = pastVisibleItem
+    fun initModelDownloads() {
+        if (isOnline(app))
+            initFilmDownloading()
+        else
+            getCachedFilmList()
     }
 
-    fun getLoadedPage() = repository.getLoadedPage()
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        if (capabilities != null) {
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        Log.i(LOG_INTERNET, "Connection failed")
+        return false
+    }
+
+    fun initFilmDownloading() {
+        Log.d(TAG, "initFilmDownloading: loadedPage = ${repository.loadedPage}")
+        val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            app.applicationContext.resources.configuration.locales[0].language
+        } else {
+            app.applicationContext.resources.configuration.locale.language
+        }
+        repository.getPopularMovies(
+            repository.loadedPage,
+            languageCode
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                object : SingleObserver<FilmDataResponse> {
+                    override fun onSuccess(t: FilmDataResponse) {
+                        allPages = t.pages
+                        if (repository.loadedPage == 1) {
+                            deleteAll(CODE_FILM_TABLE)
+                        }
+                        repository.loadedPage++
+                        val movies = t.movies.map { it.toFilmItem() }
+                        movies.forEach { item ->
+                            listOfChangedFilmItem.value?.forEach { item1 ->
+                                if (item.id == item1.id) {
+                                    item.isLiked = item1.isLiked
+                                    item.userComment = item1.userComment
+                                    item.isWatchLater = item1.isWatchLater
+                                }
+                            }
+                            item.posterPath = item.posterPath?.let { repository.toImageUrl(it) }
+                            item.backdropPath = item.backdropPath?.let { repository.toImageUrl(it) }
+                        }
+                        insertAll(movies, CODE_FILM_TABLE)
+                        listOfDownloads.postValue(movies)
+                        isNetworkLoading.postValue(true)
+                    }
+
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onError(e: Throwable) {
+                        snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
+                        isNetworkLoading.postValue(false)
+                        getCachedFilmList()
+                    }
+                })
+    }
+
+    fun getRecyclerSavedPos() = repository.recFilmListPos
+    fun onRecyclerScrolled(pastVisibleItem: Int, visibleItemCount: Int, viewCount: Int) {
+        repository.recFilmListPos = pastVisibleItem
+        if (getLoadingStatus() != true && getLoadedPage() < allPages)
+            if (visibleItemCount + pastVisibleItem >= viewCount) {
+                initModelDownloads()
+            }
+    }
+
+    fun getLoadedPage() = repository.loadedPage
+    fun onActivityCreated() {
+        repository.loadedPage = 1
+    }
 
     fun onRateButtonClicked(item: FilmItem, changedFilmItem: ChangedFilmItem) {
         update(item, CODE_FILM_TABLE)
@@ -345,10 +332,12 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
     fun onOnlineStatusChanged(isOnline: Boolean) {
-        _isConnectionStatus.postValue(isOnline)
+        if(isOnline != isConnectionStatusOk)
+            initModelDownloads()
+        isConnectionStatusOk = isOnline
     }
 
     fun onObserversInitialized() {
-//        initModelDownloads()
+        initModelDownloads()
     }
 }

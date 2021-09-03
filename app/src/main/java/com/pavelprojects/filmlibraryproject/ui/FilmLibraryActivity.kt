@@ -83,6 +83,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         initViews()
 
         if (savedInstanceState == null) {
+            viewModel.onActivityCreated()
             openFilmListFragment()
             processIntent(intent)
         }
@@ -257,8 +258,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     override fun makeSnackBar(text: String, length: Int, action: String?) {
         snackbar = Snackbar.make(fragmentContainer, text, length)
             .setAction(action) {
-                //TODO Сделать инициализацию загрузки
-                //viewModel.initModelDownloads()
+                viewModel.initModelDownloads()
             }.setAnchorView(navigationView).also { it.show() }
     }
 

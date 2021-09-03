@@ -7,7 +7,7 @@ import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 
-@Database(entities = [FilmItem::class, ChangedFilmItem::class], version = 10, exportSchema = false)
+@Database(entities = [FilmItem::class, ChangedFilmItem::class], version = 8, exportSchema = false)
 abstract class FilmDatabase : RoomDatabase() {
     abstract fun getFilmItemDao(): FilmItemDao
     abstract fun getChangedItemDao(): ChangedItemDao
