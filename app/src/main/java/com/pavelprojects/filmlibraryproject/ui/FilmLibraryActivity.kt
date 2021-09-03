@@ -1,9 +1,6 @@
 package com.pavelprojects.filmlibraryproject.ui
 
 import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -47,7 +44,7 @@ import java.util.*
 import javax.inject.Inject
 
 
-class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUpdater,
+class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     FilmListFragment.OnFilmListFragmentAdapter,
     FilmInfoFragment.OnInfoFragmentListener, FavoriteFilmsFragment.OnFavoriteListener,
     WatchLaterFragment.OnWatchLaterListener {
@@ -70,15 +67,11 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         )
     }
 
-    private val frameLayout by lazy { findViewById<FrameLayout>(R.id.fragmentContainer) }
-
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private var listOfFilms = arrayListOf<FilmItem>()
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,10 +81,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         checkAndRequestPermissions()
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         initViews()
-        initModel()
 
         if (savedInstanceState == null) {
-            viewModel.setLoadedPage(1)
             openFilmListFragment()
             processIntent(intent)
         }
@@ -111,19 +102,16 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
 
     }
 
-    private fun processIntent(intent: Intent){
+
+    private fun processIntent(intent: Intent) {
         val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
         if (bundle != null) {
             val item = bundle.getParcelable<ChangedFilmItem>(ReminderBroadcast.BUNDLE_FILMITEM)
-            item?.let { openFilmInfoFragment(item.toFilmItem()) }
+            item?.let { openFilmInfoFragment(item.id) }
         } else {
             val filmId = intent.getStringExtra(NotificationFirebaseService.INTENT_FILM_CODE)
             if (filmId != null) {
-                viewModel.getFilmById(filmId.toInt()).observe(this) {
-                    if (it != null) {
-                        openFilmInfoFragment(it)
-                    }
-                }
+                openFilmInfoFragment(Integer.parseInt(filmId))
             }
         }
     }
@@ -162,21 +150,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
             ?: arrayListOf()
     }
 
-    private fun initModel() {
-        viewModel.getSnackBarString().observe(this) {
-            Snackbar.make(frameLayout, it, Snackbar.LENGTH_SHORT)
-                .setAction(R.string.snackbar_repeat) {
-                    viewModel.initFilmDownloading()
-                }.show()
-        }
-
-        viewModel.getNotificationList().observe(this) {
-            updateNotificationChannel(this, it)
-        }
-
-
-    }
-
     private fun checkAndRequestPermissions() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             Log.d(TAG, "Notification permission sending request...")
@@ -213,7 +186,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         initInternetBroadcast()
     }
 
-    private fun initInternetBroadcast(){
+    private fun initInternetBroadcast() {
         val filter = IntentFilter("com.pavelprojects.BroadcastReceiver").apply {
             addAction(
                 ConnectivityManager.CONNECTIVITY_ACTION
@@ -222,20 +195,15 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         broadcast = InternetBroadcast(
             object : InternetBroadcast.OnBroadcastReceiver {
                 override fun onOnlineStatus(isOnline: Boolean) {
-                    if (isOnline) {
-                        if (supportFragmentManager.fragments.size > 0)
-                            (supportFragmentManager.fragments[0] as? LibraryActivityChild)?.onOnlineStatusChanged(
-                                isOnline
-                            )
-                        dismissSnackBar()
-                    } else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
+                    if (supportFragmentManager.fragments.size > 0)
+                        (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged(isOnline)
+                    if (isOnline) dismissSnackBar() else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
                 }
             })
         registerReceiver(broadcast, filter)
     }
 
     private fun openFilmListFragment() {
-        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -248,7 +216,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     }
 
     private fun openWatchLatterFragment() {
-        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -259,8 +226,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
             .commit()
     }
 
-    private fun openFilmInfoFragment(filmItem: FilmItem) {
-        disableBlur()
+    private fun openFilmInfoFragment(filmId: Int) {
         val callerFragmentTag = when {
             supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) != null -> FilmListFragment.TAG
             supportFragmentManager.findFragmentByTag(FavoriteFilmsFragment.TAG) != null -> FavoriteFilmsFragment.TAG
@@ -269,7 +235,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         supportFragmentManager
             .beginTransaction()
             .replace(
-                R.id.fragmentContainer, FilmInfoFragment.newInstance(filmItem, callerFragmentTag),
+                R.id.fragmentContainer, FilmInfoFragment.newInstance(filmId, callerFragmentTag),
                 FilmInfoFragment.TAG
             )
             .addToBackStack(FilmInfoFragment.TAG)
@@ -277,7 +243,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     }
 
     private fun openFavoriteFilmsFragment() {
-        disableBlur()
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -292,7 +257,8 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
     override fun makeSnackBar(text: String, length: Int, action: String?) {
         snackbar = Snackbar.make(fragmentContainer, text, length)
             .setAction(action) {
-                viewModel.initFilmDownloading()
+                //TODO Сделать инициализацию загрузки
+                //viewModel.initModelDownloads()
             }.setAnchorView(navigationView).also { it.show() }
     }
 
@@ -308,29 +274,19 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
             if (it.id == item.id)
                 listOfFilms[listOfFilms.indexOf(it)] = item
         }
-        viewModel.update(item, FilmLibraryViewModel.CODE_FILM_TABLE)
-        viewModel.update(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        if (item.isLiked || item.isWatchLater) {
-            viewModel.insert(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        } else {
-            viewModel.delete(item, FilmLibraryViewModel.CODE_CHANGED_FILM_TABLE)
-        }
-        if (changedFilmItem.watchLaterDate != -1L) {
-            updateNotificationChannel(this, listOf(changedFilmItem))
-            viewModel.updateChanged(changedFilmItem)
-        }
+        viewModel.onRateButtonClicked(item, changedFilmItem)
     }
 
     override fun onDetailClicked(filmItem: FilmItem, position: Int, adapterPosition: Int) {
-        openFilmInfoFragment(filmItem)
+        openFilmInfoFragment(filmItem.id)
     }
 
     override fun onFavoriteDetail(item: FilmItem) {
-        openFilmInfoFragment(item)
+        openFilmInfoFragment(item.id)
     }
 
     override fun onWatchLaterDetail(item: FilmItem) {
-        openFilmInfoFragment(item)
+        openFilmInfoFragment(item.id)
     }
 
     override fun onBackPressed() {
@@ -356,43 +312,36 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
 
     override fun onStop() {
         unregisterReceiver(broadcast)
-        viewModel.deleteAllIncorrect()
         super.onStop()
     }
 
-    override fun setupBlur(view: View) {
-        blurAppBar.disable()
-        blurNavigationView.disable()
-        blurAppBar.viewBehind = view
-        blurNavigationView.viewBehind = view
-        if (blurAppBar.visibility == View.GONE) {
-            val animation = AnimationUtils.loadAnimation(this, R.anim.anim_show_bar).apply {
-                setAnimationListener(object : Animation.AnimationListener {
-                    override fun onAnimationStart(p0: Animation?) {
+    override fun setupBlur(view: View, setupBar: Boolean) {
+        try {
+            if (setupBar) {
+                blurAppBar.viewBehind = view
+                if (blurAppBar.visibility == View.GONE) {
+                    val animation = AnimationUtils.loadAnimation(this, R.anim.anim_show_bar).apply {
+                        setAnimationListener(object : Animation.AnimationListener {
+                            override fun onAnimationStart(p0: Animation?) {
 
+                            }
+
+                            override fun onAnimationEnd(p0: Animation?) {
+                                blurAppBar.visibility = View.VISIBLE
+                            }
+
+                            override fun onAnimationRepeat(p0: Animation?) {
+
+                            }
+                        })
                     }
-
-                    override fun onAnimationEnd(p0: Animation?) {
-                        blurAppBar.visibility = View.VISIBLE
-                        blurAppBar.enable()
-                        blurNavigationView.enable()
-                    }
-
-                    override fun onAnimationRepeat(p0: Animation?) {
-
-                    }
-                })
+                    blurAppBar.startAnimation(animation)
+                }
             }
-            blurAppBar.startAnimation(animation)
-        } else {
-            blurAppBar.enable()
-            blurNavigationView.enable()
+            blurNavigationView.viewBehind = view
+        } catch (e: Exception) {
+            Log.e(TAG, e.toString())
         }
-    }
-
-    override fun disableBlur() {
-        blurAppBar.disable()
-        blurNavigationView.disable()
     }
 
     override fun hideAppBar() {
@@ -411,6 +360,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
                 }
             })
         }
+        blurAppBar.viewBehind = null
         blurAppBar.startAnimation(animation)
     }
 
@@ -425,40 +375,15 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater, NotificationUp
         layoutParams.topMargin = margin
         return layoutParams
     }
-
-
-    override fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>) {
-
-        val alarmManager = getSystemService(ALARM_SERVICE) as? AlarmManager
-        for (item in list) {
-            if (item.watchLaterDate != -1L && item.watchLaterDate >= Calendar.getInstance().timeInMillis) {
-                val intent = Intent(context, ReminderBroadcast::class.java)
-                val bundle =
-                    Bundle().apply { putParcelable(ReminderBroadcast.BUNDLE_FILMITEM, item) }
-                intent.putExtra(ReminderBroadcast.INTENT_FILMITEM_BUNDLE, bundle)
-                val pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    item.id,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
-                alarmManager?.set(AlarmManager.RTC_WAKEUP, item.watchLaterDate, pendingIntent)
-            }
-        }
-    }
 }
 
-interface LibraryActivityChild {
+interface OnlineStatusUpdater {
     fun onOnlineStatusChanged(isOnline: Boolean)
 }
 
 interface ActivityUpdater {
-    fun setupBlur(view: View)
-    fun disableBlur()
+    fun setupBlur(view: View, setupBar: Boolean = true)
     fun hideAppBar()
     fun makeSnackBar(text: String, length: Int = Snackbar.LENGTH_INDEFINITE, action: String? = null)
 }
 
-interface NotificationUpdater {
-    fun updateNotificationChannel(context: Context, list: List<ChangedFilmItem>)
-}

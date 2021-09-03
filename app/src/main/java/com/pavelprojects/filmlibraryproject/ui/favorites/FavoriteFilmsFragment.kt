@@ -19,14 +19,13 @@ import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
-import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.FavoriteViewModel
 import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 import javax.inject.Inject
 
 
-class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
+class FavoriteFilmsFragment : Fragment() {
 
     companion object {
         const val TAG = "Favorite Fragment"
@@ -39,8 +38,8 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: ChangedViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ChangedViewModel::class.java)
+    private val viewModel: FavoriteViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(FavoriteViewModel::class.java)
     }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
@@ -68,8 +67,7 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
     }
 
     private fun initModel() {
-
-        viewModel.getFavFilms().observe(this.viewLifecycleOwner) {
+        viewModel.observeFavFilms().observe(this.viewLifecycleOwner) {
             listOfFavorite.clear()
             listOfFavorite.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
@@ -94,7 +92,6 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
         recyclerView.adapter = FilmAdapter(
             listOfFavorite,
             requireContext().getString(R.string.label_favorite),
-            viewModel as NetworkLoadChecker,
             false,
             object : FilmAdapter.FilmClickListener() {
 
@@ -145,6 +142,11 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
                 }
             }
         }
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
+            }
+        })
 
 
         if (position > 0 && listOfFavorite.size > position)
@@ -152,27 +154,15 @@ class FavoriteFilmsFragment : Fragment(), LibraryActivityChild {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        view?.let {
-            (activity as? ActivityUpdater)?.setupBlur(requireView())
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        view?.let {
+//            (activity as? ActivityUpdater)?.setupBlur(requireView())
+//        }
+//    }
 
-    override fun onOnlineStatusChanged(isOnline: Boolean) {
-    }
 
     interface OnFavoriteListener {
         fun onFavoriteDetail(item: FilmItem)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
-    }
-
-    override fun onDestroy() {
-        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
-        super.onDestroy()
     }
 }

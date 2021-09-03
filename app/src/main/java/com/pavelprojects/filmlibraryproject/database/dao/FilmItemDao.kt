@@ -1,8 +1,10 @@
 package com.pavelprojects.filmlibraryproject.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.*
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.database.entity.FilmItemRemoteKeys
 import io.reactivex.Maybe
 
 @Dao
@@ -21,7 +23,7 @@ interface FilmItemDao {
     fun delete(filmItem: FilmItem)
 
     @Query("DELETE FROM film_table")
-    fun deleteAllFilms()
+    fun clearFilms()
 
     @Query("SELECT * FROM film_table")
     fun getAll(): Maybe<List<FilmItem>>

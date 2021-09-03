@@ -20,15 +20,13 @@ import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
-import com.pavelprojects.filmlibraryproject.ui.LibraryActivityChild
-import com.pavelprojects.filmlibraryproject.ui.NotificationUpdater
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.ChangedViewModel
+import com.pavelprojects.filmlibraryproject.ui.vm.WatchLaterViewModel
 import java.util.*
 import javax.inject.Inject
 
 
-class WatchLaterFragment : Fragment(), LibraryActivityChild {
+class WatchLaterFragment : Fragment() {
 
     companion object {
         const val TAG = "WatchLatter Tag"
@@ -41,8 +39,8 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: ChangedViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ChangedViewModel::class.java)
+    private val viewModel: WatchLaterViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(WatchLaterViewModel::class.java)
     }
     private lateinit var recyclerView: RecyclerView
     private lateinit var layoutManager: GridLayoutManager
@@ -71,11 +69,10 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     private fun initModel() {
 
-        viewModel.getWatchLatter().observe(this.viewLifecycleOwner) {
+        viewModel.observeWatchLater().observe(this.viewLifecycleOwner) {
             listOfWatchLater.clear()
             listOfWatchLater.addAll(it)
             recyclerView.adapter?.notifyDataSetChanged()
-            (activity as? NotificationUpdater)?.updateNotificationChannel(requireContext(), it)
             if (listOfWatchLater.isEmpty()) {
                 recyclerView.background = ResourcesCompat.getDrawable(
                     requireContext().resources,
@@ -158,6 +155,11 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                 return false
             }
         }
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
+            }
+        })
         ItemTouchHelper(simpleCallback).apply { attachToRecyclerView(recyclerView) }
 
     }
@@ -178,11 +180,7 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
                     changedFilmItem.watchLaterDate = calendar.timeInMillis
                     listOfWatchLater[position] = changedFilmItem
                     recyclerView.adapter?.notifyItemChanged(position + 1) //+1 Header
-                    viewModel.updateChanged(changedFilmItem)
-                    (activity as? NotificationUpdater)?.updateNotificationChannel(
-                        requireContext(),
-                        listOfWatchLater
-                    )
+                    viewModel.onDatePicked(changedFilmItem)
                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
             },
             calendar.get(Calendar.YEAR),
@@ -192,20 +190,12 @@ class WatchLaterFragment : Fragment(), LibraryActivityChild {
 
     }
 
-    override fun onOnlineStatusChanged(isOnline: Boolean) {
-    }
-
     interface OnWatchLaterListener {
         fun onWatchLaterDetail(item: FilmItem)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
-    }
-
-    override fun onDestroy() {
-        viewModel.setRecyclerPos(layoutManager.findLastVisibleItemPosition())
-        super.onDestroy()
+        viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
     }
 }

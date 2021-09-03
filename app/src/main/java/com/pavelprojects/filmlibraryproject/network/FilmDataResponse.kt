@@ -5,6 +5,6 @@ import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 
 class FilmDataResponse(
     @SerializedName("page") val page: Int,
-    @SerializedName("results") val movies: List<ResponseItem>,
-    @SerializedName("total_pages") val pages: Int
+    @SerializedName("results") val films: List<ResponseItem>,
+    @SerializedName("total_pages") val totalPages: Int
 )

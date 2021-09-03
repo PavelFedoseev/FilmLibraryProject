@@ -14,6 +14,7 @@ import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
+import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
 import java.text.SimpleDateFormat
 import java.util.*
@@ -113,7 +114,7 @@ class WatchLaterAdapter(
             }
 
             Glide.with(itemView)
-                .load("https://image.tmdb.org/t/p/w342${item.posterPath}")
+                .load(RetroApi.BASE_URL_POSTER + item.posterPath)
                 .transform()
                 .into(imageView)
         }

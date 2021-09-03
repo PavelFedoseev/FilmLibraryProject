@@ -14,7 +14,7 @@
     <dimen name="button_size_height">45dp</dimen>
     <dimen name="element_box_elevation">6dp</dimen>
     <dimen name="info_fragment_elevation">6dp</dimen>
-    <dimen name="element_elevation">9dp</dimen>
+    <dimen name="element_elevation">8dp</dimen>
     <dimen name="element_radius">20dp</dimen>
 
     <dimen name="layout_rating_margin">20dp</dimen>

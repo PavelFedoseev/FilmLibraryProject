@@ -3,6 +3,7 @@ package com.pavelprojects.filmlibraryproject.database.dao
 import androidx.room.*
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import io.reactivex.Completable
 import io.reactivex.Maybe
 
 @Dao
@@ -31,5 +32,8 @@ interface ChangedItemDao {
 
     @Query("SELECT * FROM changed_film_table WHERE isWatchLater = 1")
     fun getAllWatchLater(): Maybe<List<ChangedFilmItem>>
+
+    @Query("SELECT * FROM changed_film_table WHERE id = :id")
+    fun getById(id: Int): Maybe<ChangedFilmItem>
 
 }

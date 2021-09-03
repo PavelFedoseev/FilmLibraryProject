@@ -17,10 +17,10 @@ data class FilmItem(
         var id: Int, //TMDB film id
         @SerializedName("title") var name: String?,
         @SerializedName("overview") var description: String?,
-        @SerializedName("poster_path") val posterPath: String?,
-        @SerializedName("backdrop_path") val backdropPath: String?,
-        @SerializedName("vote_average") val rating: Float?,
-        @SerializedName("release_date") val releaseDate: String?,
+        @SerializedName("poster_path") var posterPath: String?,
+        @SerializedName("backdrop_path") var backdropPath: String?,
+        @SerializedName("vote_average") var rating: Float?,
+        @SerializedName("release_date") var releaseDate: String?,
         var userComment: String? = null,
         var isLiked: Boolean = false,
         @ColumnInfo(name ="isWatchLater")var isWatchLater: Boolean = false

@@ -5,16 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.util.Log
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationManagerCompat
-import com.google.android.datatransport.runtime.dagger.internal.MapFactory.builder
 import com.pavelprojects.filmlibraryproject.di.*
-import com.pavelprojects.filmlibraryproject.repository.FilmRepository
-import com.pavelprojects.filmlibraryproject.network.RetroApi
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
 class App : Application() {
     companion object {

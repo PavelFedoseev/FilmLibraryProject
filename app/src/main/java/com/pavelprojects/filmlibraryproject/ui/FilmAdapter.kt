@@ -11,16 +11,15 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.pavelprojects.filmlibraryproject.LINK_TMDB_POSTER_PREVIEW
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
+import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 
 
 class FilmAdapter(
     var list: List<FilmItem>,
     var header: String,
-    var networkLoadChecker: NetworkLoadChecker,
     var isAddRotation: Boolean = true,
     var listener: FilmClickListener
 ) :
@@ -71,7 +70,7 @@ class FilmAdapter(
         } else if (holder is HeaderItemViewHolder) {
             holder.bindView()
         } else if (holder is FooterItemViewHolder) {
-            holder.bindView(networkLoadChecker.getLoadingStatus())
+            holder.bindView()
         }
     }
 
@@ -105,7 +104,7 @@ class FilmAdapter(
                     itemView.rotationY =
                         -itemView.context.resources.getDimension(R.dimen.filmitem_rotation)
             Glide.with(itemView)
-                .load(LINK_TMDB_POSTER_PREVIEW + item.posterPath)
+                .load(RetroApi.BASE_URL_POSTER + item.posterPath)
                 .transform()
                 .into(imageView)
         }
@@ -113,13 +112,9 @@ class FilmAdapter(
 
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
-        fun bindView(isLoading: Boolean?) {
+        fun bindView() {
             Log.d(TAG, "FooterItemViewHolder: bindView")
-            if (isLoading == true) {
-                progressBar.visibility = View.VISIBLE
-            } else {
                 progressBar.visibility = View.GONE
-            }
         }
     }
 
