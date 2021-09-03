@@ -3,6 +3,7 @@ package com.pavelprojects.filmlibraryproject.di
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.database.FilmDatabase
 import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
+import com.pavelprojects.filmlibraryproject.network.FilmDataPagingSource
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
@@ -29,4 +30,5 @@ interface AppComponent {
     fun application(): App
     fun notificationRepo(): NotificationRepository
     fun retroApi(): RetroApi
+    fun filmDataPagingSource(): FilmDataPagingSource
 }
