@@ -4,7 +4,9 @@ import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
+import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
 import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import io.reactivex.Maybe
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -27,13 +29,16 @@ class IntegrationTest {
     @Mock
     lateinit var repository: FilmRepository
 
+    @Mock
+    lateinit var notificatioRepository: NotificationRepository
+
     lateinit var filmLibViewModel: FilmLibraryViewModel
 
     @Before
     fun setBefore() {
         MockitoAnnotations.initMocks(this)
         filmLibViewModel =
-            FilmLibraryViewModel(ApplicationProvider.getApplicationContext(), repository)
+            FilmLibraryViewModel(ApplicationProvider.getApplicationContext(), repository, notificatioRepository)
     }
 
     @Test
@@ -45,25 +50,24 @@ class IntegrationTest {
         var isGetWatchLaterChecked = false
         var isGetFilmByIdChecked = false
 
-        Mockito.`when`(repository.getAllFilms(any(FilmRepository.FilmListResponseCallback::class.java)))
+        Mockito.`when`(repository.getAllFilms())
             .then {
                 isGetFilmsChecked = true
                 Any()
             }
-        Mockito.`when`(repository.getAllChanged(any(FilmRepository.ChangedFilmListResponseCallback::class.java)))
+        Mockito.`when`(repository.getAllChanged())
             .then {
                 isGetFavFilmsChecked = true
                 Any()
             }
-        Mockito.`when`(repository.getWatchLaterFilms(any(FilmRepository.ChangedFilmListResponseCallback::class.java)))
+        Mockito.`when`(repository.getWatchLaterFilms())
             .then {
                 isGetWatchLaterChecked = true
                 Any()
             }
         Mockito.`when`(
             repository.getFilmById(
-                Mockito.anyInt(),
-                any(FilmRepository.FilmResponseCallback::class.java)
+                Mockito.anyInt()
             )
         ).then {
             isGetFilmByIdChecked = true
@@ -74,7 +78,6 @@ class IntegrationTest {
         filmLibViewModel.observeAllChanged()
         filmLibViewModel.observeNotificationList()
         filmLibViewModel.getFilmById(0)
-        filmLibViewModel.initFilmDownloading()
 
         shadowOf(Looper.getMainLooper()).idle()
         assertTrue(isGetFilmsChecked)
@@ -154,17 +157,13 @@ class IntegrationTest {
 
         var isDownloadChecked = false
         Mockito.`when`(
-            repository.getPopularMovies(
-                Mockito.anyInt(),
-                any(FilmRepository.PopularMoviesResponseListener::class.java)
-            )
+            repository.getRemoteMovies()
         ).then {
             isDownloadChecked = true
             Any()
         }
 
         runBlocking(Dispatchers.IO) {
-            filmLibViewModel.initFilmDownloading()
         }
         shadowOf(Looper.getMainLooper()).idle()
         assertTrue(isDownloadChecked)

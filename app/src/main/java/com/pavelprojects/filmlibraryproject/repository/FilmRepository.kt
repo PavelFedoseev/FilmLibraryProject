@@ -1,12 +1,18 @@
 package com.pavelprojects.filmlibraryproject.repository
 
+import androidx.paging.*
+import androidx.paging.rxjava2.flowable
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.database.dao.ChangedItemDao
 import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
+import com.pavelprojects.filmlibraryproject.network.FilmDataPagingSource
 import com.pavelprojects.filmlibraryproject.network.RetroApi
+import io.reactivex.Flowable
+import io.reactivex.Maybe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
 class FilmRepository {
@@ -16,7 +22,6 @@ class FilmRepository {
         const val CODE_FILM_TABLE = 1
     }
 
-    var loadedPage: Int = 1
     var recFilmListPos: Int = 0
     var recWatchLaterPos: Int = 0
     var recFavoritePos: Int = 0
@@ -33,6 +38,9 @@ class FilmRepository {
 
     @Inject
     lateinit var retroApi: RetroApi
+
+    @Inject
+    lateinit var pagingSource: FilmDataPagingSource
 
     fun insert(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_TABLE)
@@ -80,12 +88,27 @@ class FilmRepository {
 
     fun deleteAll(code: Int) {
         if (code == CODE_FILM_TABLE)
-            filmItemDao.deleteAllFilms()
+            filmItemDao.clearFilms()
         else changedItemDao.deleteAllChangedFilms()
     }
 
-    fun getPopularMovies(page: Int, languageCode: String) =
-        retroApi.getPopularMovies(page = page, language = languageCode)
+
+    @ExperimentalCoroutinesApi
+    fun getRemoteMovies() : Flowable<PagingData<FilmItem>> {
+
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false,
+                maxSize = 30,
+                prefetchDistance = 5,
+                initialLoadSize = 40
+            ),
+            pagingSourceFactory = { pagingSource }
+        ).flowable
+    }
 
     fun toImageUrl(imagePath: String) = RetroApi.BASE_URL_POSTER_HIGH + imagePath
+
+    fun getLoadedPage() = pagingSource.loadedPage
 }

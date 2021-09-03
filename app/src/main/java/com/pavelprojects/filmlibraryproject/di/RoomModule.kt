@@ -14,6 +14,7 @@ class RoomModule constructor(val application: App) {
         application,
         FilmDatabase::class.java, "filmDatabase.db"
     )
+        .fallbackToDestructiveMigration()
         .build()
     @Singleton
     @Provides
@@ -30,6 +31,7 @@ class RoomModule constructor(val application: App) {
     @Singleton
     @Provides
     fun providesFilmRepository() = FilmRepository()
+
 
 
 }
