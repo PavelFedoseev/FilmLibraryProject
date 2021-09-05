@@ -39,13 +39,11 @@ class ReminderBroadcast : BroadcastReceiver() {
                 .setSmallIcon(R.drawable.ic_baseline_local_movies_24)
                 .setContentTitle(context.getString(R.string.reminder_titile) + filmItem.name)
                 .setContentText(context.getString(R.string.reminder_text))
-//                .setLargeIcon(Glide.with(context).asBitmap().load("https://image.tmdb.org/t/p/w92${filmItem.posterPath}").submit().get())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(activityIntent)
             val notificationManagerCompat = NotificationManagerCompat.from(context)
             notificationManagerCompat.notify(filmItem.id, builder.build())
         }
-
     }
 
 }

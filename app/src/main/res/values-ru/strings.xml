@@ -47,4 +47,6 @@
 
     <string name="reminder_titile">Вы хотели посмотреть фильм: </string>
     <string name="reminder_text">Нажмите на уведомление чтобы перейти к описанию</string>
+
+    <string name="hint_search">Поиск…</string>
 </resources>

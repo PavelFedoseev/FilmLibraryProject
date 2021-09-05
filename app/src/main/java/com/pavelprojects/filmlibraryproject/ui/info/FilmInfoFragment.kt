@@ -31,7 +31,7 @@ import com.pavelprojects.filmlibraryproject.network.RetroApi
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.ProgressBarAnimation
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmInfoViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FilmInfoViewModel
 import no.danielzeller.blurbehindlib.BlurBehindLayout
 import java.util.*
 import javax.inject.Inject
@@ -108,13 +108,12 @@ class FilmInfoFragment : Fragment() {
 
     private fun initModel(id: Int) {
         viewModel.observeFilmById().observe(this.viewLifecycleOwner) {
-            if(it!=null) {
+            if (it != null) {
                 changedFilmItem = it
                 setupText()
                 setupProgressBar()
                 initListeners()
-            }
-            else{
+            } else {
                 viewModel.onItemIsNull()
             }
         }
@@ -233,6 +232,7 @@ class FilmInfoFragment : Fragment() {
                     getString(R.string.snackbar_watchlater_removed),
                     Snackbar.LENGTH_SHORT
                 )
+                changedFilmItem?.let { viewModel.onWatchLaterRemoved(it) }
             }
         }
     }
@@ -301,7 +301,7 @@ class FilmInfoFragment : Fragment() {
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         ).apply { this.datePicker.minDate = calendar.timeInMillis }.show()
-        if(changedFilmItem?.isWatchLater == false){
+        if (changedFilmItem?.isWatchLater == false) {
             checkBoxWatchLater.isChecked = false
         }
     }

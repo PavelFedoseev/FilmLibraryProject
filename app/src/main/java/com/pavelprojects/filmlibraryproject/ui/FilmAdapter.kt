@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.network.RetroApi
-import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
 
 
 class FilmAdapter(

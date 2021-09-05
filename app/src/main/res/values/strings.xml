@@ -48,4 +48,6 @@
 
     <string name="reminder_titile">You wanted to watch: </string>
     <string name="reminder_text">Press on the notification to open description</string>
+
+    <string name="hint_search">Search…</string>
 </resources>

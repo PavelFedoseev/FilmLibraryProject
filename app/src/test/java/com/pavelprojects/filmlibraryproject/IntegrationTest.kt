@@ -5,8 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
-import io.reactivex.Maybe
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FilmLibraryViewModel
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

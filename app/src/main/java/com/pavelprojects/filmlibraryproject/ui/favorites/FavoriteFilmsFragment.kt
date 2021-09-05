@@ -20,8 +20,7 @@ import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.FilmAdapter
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.FavoriteViewModel
-import com.pavelprojects.filmlibraryproject.ui.vm.NetworkLoadChecker
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FavoriteViewModel
 import javax.inject.Inject
 
 

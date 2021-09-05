@@ -2,7 +2,6 @@ package com.pavelprojects.filmlibraryproject.ui
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.network.RetroApi
+import timber.log.Timber
 
 class FilmPagingAdapter(
     var header: String,
@@ -61,11 +61,10 @@ class FilmPagingAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (position) {
             0 -> VIEW_TYPE_HEADER
-            itemCount + 1 -> VIEW_TYPE_FOOTER
+            itemCount -> VIEW_TYPE_FOOTER
             else -> VIEW_TYPE_FILM
         }
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -102,7 +101,7 @@ class FilmPagingAdapter(
     class FilmItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageViewLike: ImageView = itemView.findViewById(R.id.imageView_like)
         private val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        val titleTv: TextView = itemView.findViewById(R.id.textView_name)
+        private val titleTv: TextView = itemView.findViewById(R.id.textView_name)
         var item: FilmItem? = null
 
         fun bindView(item: FilmItem, position: Int, isAddRotation: Boolean) {
@@ -126,7 +125,7 @@ class FilmPagingAdapter(
     class FooterItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val progressBar = itemView.findViewById<ProgressBar>(R.id.progrss_bar_loading)
         fun bindView() {
-            Log.d(FilmAdapter.TAG, "FooterItemViewHolder: bindView")
+            Timber.tag(FilmAdapter.TAG).d("FooterItemViewHolder: bindView")
             progressBar.visibility = View.GONE
         }
     }
@@ -142,7 +141,7 @@ class FilmPagingAdapter(
 
     abstract class FilmClickListener : FilmClickInterface {
         companion object {
-            private const val DOUBLE_CLICK_DELTA = 200 //milleseconds interaval between clicks
+            private const val DOUBLE_CLICK_DELTA = 200 //interval between clicks
         }
 
         private var lastClickTime: Long = 0

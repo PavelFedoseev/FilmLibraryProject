@@ -33,6 +33,31 @@
             android:alpha="0.4"
             android:background="@android:color/black" />
 
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/appBarCardSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/film_spacing">
+        <EditText
+            android:id="@+id/appBarSearch"
+            android:layout_gravity="center_vertical|start"
+            android:layout_width="@dimen/appbar_search_size"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            android:hint="@string/hint_search"/>
+            <ImageButton
+                android:id="@+id/appBarSearchButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:src="@drawable/ic_search"
+                android:background="@android:color/transparent"/>
+        </com.google.android.material.card.MaterialCardView>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

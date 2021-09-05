@@ -19,6 +19,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG_APP, "$TAG_APP onCreate")
+        Runtime.getRuntime().exec("logcat -d FrameEvents:S mlibraryprojec:S")
         initDagger()
     }
 

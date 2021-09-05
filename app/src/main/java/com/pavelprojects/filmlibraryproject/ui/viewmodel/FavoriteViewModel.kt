@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject.ui.vm
+package com.pavelprojects.filmlibraryproject.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -15,10 +15,9 @@ import javax.inject.Inject
 class FavoriteViewModel @Inject constructor(
     app: Application,
     val repository: FilmRepository
-) : AndroidViewModel(app), NetworkLoadChecker {
+) : AndroidViewModel(app){
 
     private val listOfFavoriteFilmItem = MutableLiveData<List<FilmItem>>()
-    override val isNetworkLoading = MutableLiveData(false)
 
     fun observeFavFilms(): LiveData<List<FilmItem>> {
         repository.getFavFilms()

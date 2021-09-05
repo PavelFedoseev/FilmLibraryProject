@@ -6,21 +6,26 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
 import com.pavelprojects.filmlibraryproject.App
@@ -35,14 +40,15 @@ import com.pavelprojects.filmlibraryproject.firebase.NotificationFirebaseService
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FilmLibraryViewModel
 import com.pavelprojects.filmlibraryproject.ui.watchlater.WatchLaterFragment
 import kotlinx.android.synthetic.main.activity_filmlibrary.*
 import kotlinx.android.synthetic.main.fragment_film_info.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import no.danielzeller.blurbehindlib.BlurBehindLayout
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
-
 
 class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     FilmListFragment.OnFilmListFragmentAdapter,
@@ -71,7 +77,17 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     private lateinit var broadcast: InternetBroadcast
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
+    private val editTextSearch: EditText by lazy {
+        findViewById(R.id.appBarSearch)
+    }
+    private val buttonSearch: ImageButton by lazy {
+        findViewById(R.id.appBarSearchButton)
+    }
+    private val searchCard: MaterialCardView by lazy {
+        findViewById(R.id.appBarCardSearch)
+    }
     private var listOfFilms = arrayListOf<FilmItem>()
+    private var isSearchMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +97,11 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         checkAndRequestPermissions()
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         initViews()
+        initModel()
 
+        if (supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) == null){
+            searchCard.visibility = View.GONE
+        }
         if (savedInstanceState == null) {
             openFilmListFragment()
             processIntent(intent)
@@ -89,19 +109,22 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                Timber.tag(TAG).w(task.exception, "Fetching FCM registration token failed")
                 return@OnCompleteListener
             }
             // Get new FCM registration token
             val token = task.result
             // Log and toast
             val msg = token.toString()
-            Log.d(TAG, msg)
+            Timber.tag(TAG).d(msg)
         })
 
-
+        if (editTextSearch.text.isNotEmpty()) {
+            buttonSearch.visibility = View.VISIBLE
+        } else {
+            buttonSearch.visibility = View.GONE
+        }
     }
-
 
     private fun processIntent(intent: Intent) {
         val bundle = intent.getBundleExtra(ReminderBroadcast.BUNDLE_OUT)
@@ -116,6 +139,30 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         }
     }
 
+    private fun initModel() {
+        viewModel.isSearchMode.observe(this) { status ->
+            isSearchMode = status
+            if (status) {
+                buttonSearch.setImageDrawable(
+                    ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_cancel,
+                        null
+                    )
+                )
+            } else {
+                buttonSearch.setImageDrawable(
+                    ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_search,
+                        null
+                    )
+                )
+            }
+        }
+    }
+
+    @ExperimentalCoroutinesApi
     private fun initViews() {
         appBarDimmer.layoutParams = getStatusBarHeightParams()
         val bottomNavView = findViewById<BottomNavigationView>(R.id.navigationView)
@@ -137,6 +184,32 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
             return@setOnNavigationItemSelectedListener true
         }
+
+        editTextSearch.doOnTextChanged { text, _, _, _ ->
+            viewModel.onEditTextSearchChanged()
+            if (text != null && text.isNotEmpty()) {
+                buttonSearch.visibility = View.VISIBLE
+            } else {
+                buttonSearch.visibility = View.GONE
+            }
+        }
+        editTextSearch.setOnEditorActionListener { _, i, _ ->
+            var handled = false
+            if (i == EditorInfo.IME_ACTION_DONE && editTextSearch.text.isNotEmpty()) {
+                viewModel.onSearchBarButtonClicked(editTextSearch.text.toString())
+                editTextSearch.clearFocus()
+                handled = true
+            }
+            handled
+        }
+        buttonSearch.setOnClickListener {
+            if(isSearchMode && editTextSearch.text.isNotEmpty()){
+                editTextSearch.text.clear()
+            }
+            editTextSearch.clearFocus()
+            viewModel.onSearchBarButtonClicked(editTextSearch.text.toString())
+        }
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -152,14 +225,14 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     private fun checkAndRequestPermissions() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
-            Log.d(TAG, "Notification permission sending request...")
+            Timber.tag(TAG).d("Notification permission sending request...")
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_NOTIFICATION_POLICY),
                 NOTIF_REQUEST_PERM
             )
         } else {
-            Log.d(TAG, "Notification permission granted")
+            Timber.tag(TAG).d("Notification permission granted")
             this.application.createNotificationChannel()
         }
     }
@@ -173,10 +246,10 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == NOTIF_REQUEST_PERM) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Notification permission granted")
+                Timber.tag(TAG).d("Notification permission granted")
                 application.createNotificationChannel()
             } else {
-                Log.d(TAG, "Notification permission denied")
+                Timber.tag(TAG).d("Notification permission denied")
             }
         }
     }
@@ -196,14 +269,21 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             object : InternetBroadcast.OnBroadcastReceiver {
                 override fun onOnlineStatus(isOnline: Boolean) {
                     if (supportFragmentManager.fragments.size > 0)
-                        (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged(isOnline)
-                    if (isOnline) dismissSnackBar() else makeSnackBar(this@FilmLibraryActivity.getString(R.string.snackbar_network_error))
+                        (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged(
+                            isOnline
+                        )
+                    if (isOnline) dismissSnackBar() else makeSnackBar(
+                        this@FilmLibraryActivity.getString(
+                            R.string.snackbar_network_error
+                        )
+                    )
                 }
             })
         registerReceiver(broadcast, filter)
     }
 
     private fun openFilmListFragment() {
+        searchCard.visibility = View.VISIBLE
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -216,6 +296,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openWatchLatterFragment() {
+        searchCard.visibility = View.GONE
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -243,6 +324,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     }
 
     private fun openFavoriteFilmsFragment() {
+        searchCard.visibility = View.GONE
         supportFragmentManager.popBackStack()
         supportFragmentManager
             .beginTransaction()
@@ -257,8 +339,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
     override fun makeSnackBar(text: String, length: Int, action: String?) {
         snackbar = Snackbar.make(fragmentContainer, text, length)
             .setAction(action) {
-                //TODO Сделать инициализацию загрузки
-                //viewModel.initModelDownloads()
+
             }.setAnchorView(navigationView).also { it.show() }
     }
 
@@ -340,7 +421,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             }
             blurNavigationView.viewBehind = view
         } catch (e: Exception) {
-            Log.e(TAG, e.toString())
+            Timber.tag(TAG).e(e.toString())
         }
     }
 
