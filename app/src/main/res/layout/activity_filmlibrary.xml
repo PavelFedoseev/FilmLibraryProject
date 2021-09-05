@@ -16,7 +16,7 @@
     <no.danielzeller.blurbehindlib.BlurBehindLayout
         android:id="@+id/topBarBlurLayout"
         android:layout_width="0dp"
-        android:layout_height="70dp"
+        android:layout_height="80dp"
         app:blurRadius="30.0"
         app:blurTextureScale="0.5"
         app:layout_constraintEnd_toEndOf="parent"
@@ -37,25 +37,39 @@
             android:id="@+id/appBarCardSearch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/film_spacing"
             android:layout_marginTop="10dp"
-            android:layout_gravity="center_vertical|start"
-            android:layout_marginStart="@dimen/film_spacing">
-        <EditText
-            android:id="@+id/appBarSearch"
-            android:layout_gravity="center_vertical|start"
-            android:layout_width="@dimen/appbar_search_size"
-            android:layout_height="wrap_content"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            android:imeOptions="actionDone"
-            android:hint="@string/hint_search"/>
-            <ImageButton
-                android:id="@+id/appBarSearchButton"
+            app:cardCornerRadius="@dimen/element_radius"
+            android:animateLayoutChanges="true">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end|center_vertical"
-                android:src="@drawable/ic_search"
-                android:background="@android:color/transparent"/>
+                android:layout_marginStart="@dimen/film_spacing"
+                android:layout_marginEnd="@dimen/film_spacing"
+                android:orientation="horizontal"
+                android:animateLayoutChanges="true">
+
+                <EditText
+                    android:id="@+id/appBarSearch"
+                    android:layout_width="@dimen/appbar_search_size"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|start"
+                    android:hint="@string/hint_search"
+                    android:imeOptions="actionDone"
+                    android:importantForAutofill="no"
+                    android:inputType="text" />
+
+                <ImageButton
+                    android:id="@+id/appBarSearchButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_search"
+                    android:contentDescription="@string/cd_search" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
@@ -65,7 +79,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="@dimen/film_spacing"
             android:fontFamily="@font/appfont"
-            android:text="@string/app_name"
+            android:text="@string/app_name_short"
             android:textSize="@dimen/text_app_name"
             android:textStyle="bold" />
     </no.danielzeller.blurbehindlib.BlurBehindLayout>
