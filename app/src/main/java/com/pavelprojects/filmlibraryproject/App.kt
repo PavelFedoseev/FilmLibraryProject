@@ -12,6 +12,8 @@ class App : Application() {
 
         const val REMINDER_CHANNEL_ID = "reminder channel"
         const val TAG_APP = "App"
+        const val LINK_GITHUB = "https://github.com/PavelFedoseev"
+        const val LINK_PROFILE = "https://github.com/PavelFedoseev"
         lateinit var appComponent: AppComponent
     }
 
