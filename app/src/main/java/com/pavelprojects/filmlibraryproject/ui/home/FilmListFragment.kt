@@ -278,7 +278,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     }
 
     override fun onOnlineStatusChanged(isOnline: Boolean) {
-        viewModel.onOnlineStatusChanged(isOnline)
         isConnected = isOnline
         adapter.retry()
     }
