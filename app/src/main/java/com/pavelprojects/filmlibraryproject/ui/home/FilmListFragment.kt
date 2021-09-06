@@ -232,6 +232,9 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 ).show()
             }
         }
+        if(position > 0 && adapter.snapshot().size > position){
+            recyclerView.scrollToPosition(position)
+        }
     }
 
 
