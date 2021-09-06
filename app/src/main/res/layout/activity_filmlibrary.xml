@@ -16,7 +16,7 @@
     <no.danielzeller.blurbehindlib.BlurBehindLayout
         android:id="@+id/topBarBlurLayout"
         android:layout_width="0dp"
-        android:layout_height="80dp"
+        android:layout_height="@dimen/appbar_size"
         app:blurRadius="30.0"
         app:blurTextureScale="0.5"
         app:layout_constraintEnd_toEndOf="parent"

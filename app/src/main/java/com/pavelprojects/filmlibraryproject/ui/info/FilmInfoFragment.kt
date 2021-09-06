@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -18,8 +19,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -127,6 +130,10 @@ class FilmInfoFragment : Fragment() {
         Glide.with(this)
             .load(RetroApi.BASE_URL_POSTER_HIGH + changedFilmItem?.backdropPath)
             .transform(CenterCrop())
+            .placeholder(R.drawable.info_placeholder)
+            .error(R.mipmap.ic_launcher_background)
+            //.transition(GenericTransitionOptions.with(R.anim.anim_load_image))
+            .transition(DrawableTransitionOptions.withCrossFade(1200))
             .into(imageViewPreview)
         textViewDate.text = "${resources.getString(R.string.textview_date)} ${
             changedFilmItem?.releaseDate ?: resources.getString(R.string.textview_date_unknown)

@@ -1,22 +1,16 @@
 package no.danielzeller.blurbehindlib
 
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.opengl.GLSurfaceView
 import android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY
 import android.util.AttributeSet
-import android.view.Choreographer
-import android.view.TextureView
-import android.view.View
-import android.view.ViewTreeObserver
+import android.view.*
 import android.widget.FrameLayout
 import no.danielzeller.blurbehindlib.renderers.CommonRenderer
 import no.danielzeller.blurbehindlib.renderers.GLSurfaceViewRenderer
 import no.danielzeller.blurbehindlib.renderers.TextureViewRenderer
-import android.view.ViewGroup
-import kotlin.IllegalStateException
 
 
 enum class UpdateMode {
@@ -261,10 +255,10 @@ class BlurBehindLayout : FrameLayout {
         val behindMatrix = viewBehind?.matrix
         behindMatrix?.postTranslate(behindViewPosition[0] - thisViewPosition[0].toFloat() - paddingLeft, behindViewPosition[1] - thisViewPosition[1].toFloat() - paddingTop)
         glCanvas?.concat(behindMatrix)
-
-        viewBehind?.draw(glCanvas?: Canvas())
-
-        commonRenderer.behindViewSurfaceTexture.endDraw(glCanvas?: Canvas())
+        glCanvas?.let {
+            viewBehind?.draw(it)
+            commonRenderer.behindViewSurfaceTexture.endDraw(it)
+        }
     }
 
     private fun renderChildViewToTexture() {

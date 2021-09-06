@@ -36,7 +36,7 @@
     <string name="snackbar_network_error">Ошибка подключения</string>
     <string name="snackbar_network_error_action">Повторить</string>
 
-    <string name="message_favorite_delete">Фильм убран из избраного</string>
+    <string name="message_favorite_delete">Фильм убран из избранного</string>
 
     <string name="snackbar_watchlater_added">Фильм добавлен в "Посмотреть позже"</string>
     <string name="snackbar_watchlater_removed">Фильм убран из "Посмотреть позже"</string>

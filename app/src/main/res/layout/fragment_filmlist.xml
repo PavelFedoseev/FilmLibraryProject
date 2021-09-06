@@ -17,17 +17,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView_films"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/layout_swipe_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_marginStart="@dimen/layout_borders_margin"
-            android:layout_marginTop="@dimen/layout_borders_margin"
-            android:layout_marginEnd="@dimen/layout_borders_margin"
-            android:layoutAnimation="@anim/anim_recycler_in"
-            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="2" />
+            android:layout_marginTop="@dimen/layout_borders_margin">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_films"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/layout_borders_margin"
+                android:layout_marginTop="@dimen/layout_borders_margin"
+                android:layout_marginEnd="@dimen/layout_borders_margin"
+                android:layoutAnimation="@anim/anim_recycler_in"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="2" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -34,6 +34,7 @@
             android:fitsSystemWindows="true"
             android:textAlignment="center"
             app:autoSizeTextType="uniform"
+            app:maxLines="2"
             app:collapsedTitleTextAppearance="@style/CollapsedToolBarTextStyle"
             app:contentScrim="@android:color/transparent"
             app:expandedTitleTextAppearance="@style/ExpandedToolBarTextStyle"
@@ -60,6 +61,13 @@
                 app:updateMode="continuously"
                 app:useChildAlphaAsMask="false"
                 app:useTextureView="false" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/blur_info_height"
+                android:layout_gravity="bottom"
+                android:alpha="0.3"
+                android:background="@android:color/black"/>
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"

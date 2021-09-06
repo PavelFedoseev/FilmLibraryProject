@@ -17,18 +17,18 @@
     <style name="ExpandedToolBarTextStyle" parent="TextAppearance.AppCompat">
         <item name="android:textSize">@dimen/toolbar_title_expanded</item>
         <item name="android:shadowColor">#000000</item>
-        <item name="android:shadowDx">8</item>
-        <item name="android:shadowDy">8</item>
-        <item name="android:shadowRadius">8</item>
+<!--        <item name="android:shadowDx">6</item>-->
+<!--        <item name="android:shadowDy">6</item>-->
+<!--        <item name="android:shadowRadius">6</item>-->
     </style>
 
     <style name="CollapsedToolBarTextStyle" parent="TextAppearance.AppCompat">
         <item name="android:textSize">@dimen/toolbar_title_collapsed</item>
         <item name="android:shadowColor">#000000</item>
         <item name="android:maxLines">2</item>
-        <item name="android:shadowDx">4</item>
-        <item name="android:shadowDy">4</item>
-        <item name="android:shadowRadius">4</item>
+<!--        <item name="android:shadowDx">4</item>-->
+<!--        <item name="android:shadowDy">4</item>-->
+<!--        <item name="android:shadowRadius">4</item>-->
     </style>
     
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>

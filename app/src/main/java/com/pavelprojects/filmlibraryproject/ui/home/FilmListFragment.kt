@@ -7,12 +7,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
@@ -67,6 +69,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
 
     lateinit var layoutManager: GridLayoutManager
     private lateinit var recyclerView: RecyclerView
+    private lateinit var swipeLayout: SwipeRefreshLayout
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -144,22 +147,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         viewModel.isConnectionStatus.observe(this.viewLifecycleOwner) { isConnected ->
             this.isConnected = isConnected
         }
-//        viewModel.filmSource.observe(this.viewLifecycleOwner) { source ->
-//            curSource = source
-//            when(source){
-//                FilmSource.SEARCH ->{
-//                    initSearchSource()
-//                }
-//                FilmSource.REMOTE ->{
-//                    initRemoteSource()
-//                }
-//                FilmSource.LOCAL -> {
-//                    initLocalSource()
-//                }
-//                else ->{
-//                }
-//            }
-//        }
+
         viewModel.observeAllChanged().observe(this.viewLifecycleOwner) {
             listOfFilms.iterator().forEach { item ->
                 it.iterator().forEach { item1 ->
@@ -175,6 +163,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 mDisposable.add(flowable.subscribe {
                     adapter.submitData(lifecycle, it)
                 })
+            swipeLayout.isRefreshing = false
         }
         viewModel.onFragmentCreated()
     }
@@ -183,6 +172,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
     private fun initRecycler(view: View, position: Int = 0) {
         Timber.tag(TAG).d("initRecycler")
         recyclerView = view.findViewById(R.id.recyclerView_films)
+        swipeLayout = view.findViewById(R.id.layout_swipe_refresh)
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (adapter.getItemViewType(position)) {
@@ -207,7 +197,9 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 ?: loadState.source.prepend as? LoadState.Error
                 ?: loadState.append as? LoadState.Error
                 ?: loadState.prepend as? LoadState.Error
-
+            if (errorState == null) {
+                swipeLayout.isRefreshing = false
+            }
             errorState?.let {
                 alertDialog?.dismiss()
                 alertDialog =
@@ -228,8 +220,20 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
             }
         })
-        recyclerView.itemAnimator = FilmItemAnimator(requireContext())
+        swipeLayout.setProgressViewOffset(true, 0, resources.getDimensionPixelOffset(R.dimen.appbar_refresh_offset))
+        swipeLayout.setOnRefreshListener {
+            viewModel.onRefreshOccurred()
+            if (!isConnected) {
+                swipeLayout.isRefreshing = false
+                Toast.makeText(
+                    requireContext(),
+                    resources.getString(R.string.snackbar_network_error),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -258,6 +262,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
 
     override fun onResume() {
         super.onResume()
+        recyclerView.itemAnimator = FilmItemAnimator(requireContext())
         view?.let {
             (activity as? ActivityUpdater)?.setupBlur(requireView())
         }

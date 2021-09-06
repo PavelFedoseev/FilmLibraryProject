@@ -39,10 +39,11 @@ class FilmLibraryViewModel @Inject constructor(
     private val filmItemById = MutableLiveData<FilmItem?>()
     private val listOfDatabase = MutableLiveData<List<FilmItem>>()
 
-    private var _pagingFlowable: MutableLiveData<Flowable<PagingData<FilmItem>>?> = MutableLiveData<Flowable<PagingData<FilmItem>>?>(null)
+    private var _pagingFlowable: MutableLiveData<Flowable<PagingData<FilmItem>>?> =
+        MutableLiveData<Flowable<PagingData<FilmItem>>?>(null)
 
-    private val _isConnectionStatus = MutableLiveData(true)
-    val isConnectionStatus: LiveData<Boolean> = _isConnectionStatus
+    private val _isConnectionOk = MutableLiveData(true)
+    val isConnectionStatus: LiveData<Boolean> = _isConnectionOk
 
     private val _isSearchMode = MutableLiveData(false)
     val isSearchMode: LiveData<Boolean> = _isSearchMode
@@ -71,9 +72,9 @@ class FilmLibraryViewModel @Inject constructor(
             .subscribe()
     }
 
-    fun insertChanged(changedFilmItem: ChangedFilmItem){
+    fun insertChanged(changedFilmItem: ChangedFilmItem) {
         Completable.fromRunnable {
-                repository.insertChanged(changedFilmItem)
+            repository.insertChanged(changedFilmItem)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -112,21 +113,21 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
     @ExperimentalCoroutinesApi
-    fun onFragmentCreated(){
-        when(_filmSource.value){
-            FilmSource.SEARCH ->{
+    fun onFragmentCreated() {
+        when (_filmSource.value) {
+            FilmSource.SEARCH -> {
                 _searchQuery.value?.let {
-                    onInitSearchSource(it)
-                }?: onInitRemoteSource(true)
+                    initSearchSource(it)
+                } ?: initRemoteSource(true)
             }
-            FilmSource.REMOTE ->{
-                onInitRemoteSource(false)
+            FilmSource.REMOTE -> {
+                initRemoteSource(false)
             }
             FilmSource.LOCAL -> {
                 requestCachedFilmList()
             }
-            else ->{
-                onInitRemoteSource(true)
+            else -> {
+                initRemoteSource(true)
             }
         }
     }
@@ -212,53 +213,50 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
     @ExperimentalCoroutinesApi
-    fun onInitRemoteSource(isReload: Boolean){
-        if(_pagingFlowable.value == null || isReload){
+    fun initRemoteSource(isReload: Boolean) {
+        if (_pagingFlowable.value == null || isReload) {
             _pagingFlowable.postValue(repository.getRemoteMovies().cachedIn(viewModelScope))
-        }
-        else
-        _pagingFlowable.postValue(_pagingFlowable.value)
+        } else
+            _pagingFlowable.postValue(_pagingFlowable.value)
         _filmSource.postValue(FilmSource.REMOTE)
     }
 
     @ExperimentalCoroutinesApi
-    fun onInitSearchSource(searchQuery: String){
+    fun initSearchSource(searchQuery: String, isReload: Boolean = false) {
         val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             app.applicationContext.resources.configuration.locales[0].language
         } else {
             app.applicationContext.resources.configuration.locale.language
         }
-        if(searchQuery != _searchQuery.value) {
+        if (searchQuery != _searchQuery.value || isReload) {
             _pagingFlowable.postValue(repository.getMovieBySearch(searchQuery, languageCode))
         }
         _filmSource.postValue(FilmSource.SEARCH)
     }
 
     @ExperimentalCoroutinesApi
-    fun onSearchBarButtonClicked(text: String){
-        if(_isSearchMode.value == false) {
+    fun onSearchBarButtonClicked(text: String) {
+        if (_isSearchMode.value == false) {
             _isSearchMode.postValue(true)
 
             val searchQuery = text.replace(' ', '+', true)
-            onInitSearchSource(searchQuery)
+            initSearchSource(searchQuery)
             _searchQuery.postValue(searchQuery)
             _filmSource.postValue(FilmSource.SEARCH)
-        }
-        else {
+        } else {
             _isSearchMode.postValue(false)
             _searchQuery.postValue(null)
-            if(isConnectionStatus.value == true){
-                onInitRemoteSource(true)
-            }
-            else {
+            if (isConnectionStatus.value == true) {
+                initRemoteSource(true)
+            } else {
                 requestCachedFilmList()
                 _filmSource.postValue(FilmSource.LOCAL)
             }
         }
     }
 
-    fun onEditTextSearchChanged(){
-        if(_isSearchMode.value == true){
+    fun onEditTextSearchChanged() {
+        if (_isSearchMode.value == true) {
             _isSearchMode.postValue(false)
         }
 
@@ -312,15 +310,23 @@ class FilmLibraryViewModel @Inject constructor(
     }
 
     fun onOnlineStatusChanged(isOnline: Boolean) {
-        _isConnectionStatus.postValue(isOnline)
-        if(isOnline){
-            onInitRemoteSource(_filmSource.value != FilmSource.REMOTE)
-        }
-        else
-            if(getInitState()) {
+        _isConnectionOk.postValue(isOnline)
+        if (isOnline) {
+            initRemoteSource(_filmSource.value != FilmSource.REMOTE)
+        } else
+            if (getInitState()) {
                 requestCachedFilmList()
                 _filmSource.postValue(FilmSource.LOCAL)
             }
+    }
+
+    fun onRefreshOccurred() {
+        if (_isConnectionOk.value == true) {
+            if (_filmSource.value == FilmSource.SEARCH) {
+                _searchQuery.value?.let { initSearchSource(it, isReload = true) }
+            } else
+                initRemoteSource(true)
+        }
     }
 }
 

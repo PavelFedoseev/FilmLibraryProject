@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.Glide
 import com.pavelprojects.filmlibraryproject.R
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
@@ -117,6 +118,9 @@ class FilmPagingAdapter(
             Glide.with(itemView)
                 .load(RetroApi.BASE_URL_POSTER + item.posterPath)
                 .transform()
+                .placeholder(R.drawable.info_placeholder)
+                .error(R.mipmap.ic_launcher_foreground)
+                .transition(GenericTransitionOptions.with(R.anim.anim_load_image))
                 .into(imageView)
         }
 
