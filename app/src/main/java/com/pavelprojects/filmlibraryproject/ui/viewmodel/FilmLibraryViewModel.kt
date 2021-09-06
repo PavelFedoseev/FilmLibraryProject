@@ -1,7 +1,7 @@
-package com.pavelprojects.filmlibraryproject.ui.vm
+package com.pavelprojects.filmlibraryproject.ui.viewmodel
 
 import android.app.Application
-import android.util.Log
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -19,6 +19,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import timber.log.Timber
 import javax.inject.Inject
 
 class FilmLibraryViewModel @Inject constructor(
@@ -26,10 +27,9 @@ class FilmLibraryViewModel @Inject constructor(
     val repository: FilmRepository,
     private val notificationRepository: NotificationRepository
 ) :
-    AndroidViewModel(app), NetworkLoadChecker {
+    AndroidViewModel(app) {
     companion object {
         const val TAG = "FilmLibraryViewModel"
-        const val LOG_INTERNET = "Network Status"
         const val CODE_FILM_TABLE = 1
         const val CODE_CHANGED_FILM_TABLE = 2
     }
@@ -38,20 +38,23 @@ class FilmLibraryViewModel @Inject constructor(
     private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
     private val filmItemById = MutableLiveData<FilmItem?>()
     private val listOfDatabase = MutableLiveData<List<FilmItem>>()
-    private val listOfDownloads = MutableLiveData<List<FilmItem>>()
-    private val snackBarText = MutableLiveData<String>()
-    override val isNetworkLoading = MutableLiveData(true)
 
     private var _pagingFlowable: MutableLiveData<Flowable<PagingData<FilmItem>>?> = MutableLiveData<Flowable<PagingData<FilmItem>>?>(null)
 
     private val _isConnectionStatus = MutableLiveData(true)
     val isConnectionStatus: LiveData<Boolean> = _isConnectionStatus
 
+    private val _isSearchMode = MutableLiveData(false)
+    val isSearchMode: LiveData<Boolean> = _isSearchMode
 
-    var allPages = 1
+    private val _searchQuery = MutableLiveData<String?>(null)
+    val searchQuery: LiveData<String?> = _searchQuery
+
+    private val _filmSource = MutableLiveData<FilmSource?>(null)
+    val filmSource: LiveData<FilmSource?> = _filmSource
 
     init {
-        Log.d(TAG, this.toString())
+        Timber.tag(TAG).d(this.toString())
         if (listOfChangedFilmItem.value == null)
             listOfChangedFilmItem.postValue(listOf())
     }
@@ -108,6 +111,25 @@ class FilmLibraryViewModel @Inject constructor(
             .subscribe()
     }
 
+    @ExperimentalCoroutinesApi
+    fun onFragmentCreated(){
+        when(_filmSource.value){
+            FilmSource.SEARCH ->{
+                _searchQuery.value?.let {
+                    onInitSearchSource(it)
+                }?: onInitRemoteSource(true)
+            }
+            FilmSource.REMOTE ->{
+                onInitRemoteSource(false)
+            }
+            FilmSource.LOCAL -> {
+                requestCachedFilmList()
+            }
+            else ->{
+                onInitRemoteSource(true)
+            }
+        }
+    }
 
     fun observeAllChanged(): LiveData<List<ChangedFilmItem>> {
         repository.getAllChanged()
@@ -151,10 +173,6 @@ class FilmLibraryViewModel @Inject constructor(
         return listOfWatchLaterFilmItem
     }
 
-    fun observeNetworkLoadingStatus(): LiveData<Boolean> = isNetworkLoading
-
-    fun observeSnackBarString(): LiveData<String> = snackBarText
-
     fun getFilmById(id: Int): LiveData<FilmItem?> {
         repository.getFilmById(id)
             .subscribeOn(Schedulers.io())
@@ -188,18 +206,8 @@ class FilmLibraryViewModel @Inject constructor(
             .subscribe()
     }
 
-    fun deleteAll(code: Int) {
-        Completable.fromRunnable {
-            repository.deleteAll(code)
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe()
-    }
-
-
     @ExperimentalCoroutinesApi
-    fun getPopularFilms(): LiveData<Flowable<PagingData<FilmItem>>?> {
+    fun getFilmSourceFlowable(): LiveData<Flowable<PagingData<FilmItem>>?> {
         return _pagingFlowable
     }
 
@@ -210,10 +218,53 @@ class FilmLibraryViewModel @Inject constructor(
         }
         else
         _pagingFlowable.postValue(_pagingFlowable.value)
+        _filmSource.postValue(FilmSource.REMOTE)
     }
 
+    @ExperimentalCoroutinesApi
+    fun onInitSearchSource(searchQuery: String){
+        val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            app.applicationContext.resources.configuration.locales[0].language
+        } else {
+            app.applicationContext.resources.configuration.locale.language
+        }
+        if(searchQuery != _searchQuery.value) {
+            _pagingFlowable.postValue(repository.getMovieBySearch(searchQuery, languageCode))
+        }
+        _filmSource.postValue(FilmSource.SEARCH)
+    }
 
-    fun getCachedFilmList() {
+    @ExperimentalCoroutinesApi
+    fun onSearchBarButtonClicked(text: String){
+        if(_isSearchMode.value == false) {
+            _isSearchMode.postValue(true)
+
+            val searchQuery = text.replace(' ', '+', true)
+            onInitSearchSource(searchQuery)
+            _searchQuery.postValue(searchQuery)
+            _filmSource.postValue(FilmSource.SEARCH)
+        }
+        else {
+            _isSearchMode.postValue(false)
+            _searchQuery.postValue(null)
+            if(isConnectionStatus.value == true){
+                onInitRemoteSource(true)
+            }
+            else {
+                requestCachedFilmList()
+                _filmSource.postValue(FilmSource.LOCAL)
+            }
+        }
+    }
+
+    fun onEditTextSearchChanged(){
+        if(_isSearchMode.value == true){
+            _isSearchMode.postValue(false)
+        }
+
+    }
+
+    fun requestCachedFilmList() {
         repository.getAllFilms().subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : MaybeObserver<List<FilmItem>> {
@@ -230,104 +281,20 @@ class FilmLibraryViewModel @Inject constructor(
                 override fun onComplete() {
                 }
             })
-
     }
 
 
     fun subscribeToDatabase(): LiveData<List<FilmItem>> {
-        getCachedFilmList()
+        requestCachedFilmList()
         return listOfDatabase
     }
-    fun subscribeToDownloads() = listOfDownloads
-
-
-//    fun initModelDownloads() {
-//        if (isOnline(app))
-//            initFilmDownloading()
-//        else
-//            getCachedFilmList()
-//    }
-
-//    private fun isOnline(context: Context): Boolean {
-//        val connectivityManager =
-//            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        val capabilities =
-//            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-//        if (capabilities != null) {
-//            when {
-//                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-//                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_CELLULAR")
-//                    return true
-//                }
-//                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-//                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_WIFI")
-//                    return true
-//                }
-//                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-//                    Log.i(LOG_INTERNET, "NetworkCapabilities.TRANSPORT_ETHERNET")
-//                    return true
-//                }
-//            }
-//        }
-//        Log.i(LOG_INTERNET, "Connection failed")
-//        return false
-//    }
-
-//    fun initFilmDownloading() {
-//        Log.d(TAG, "initFilmDownloading: loadedPage = ${repository.loadedPage}")
-//        val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//            app.applicationContext.resources.configuration.locales[0].language
-//        } else {
-//            app.applicationContext.resources.configuration.locale.language
-//        }
-//        repository.getRemoteMovies(
-//            repository.loadedPage,
-//            languageCode
-//        )
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                object : SingleObserver<FilmDataResponse> {
-//                    override fun onSuccess(t: FilmDataResponse) {
-//                        allPages = t.totalPages
-//                        if (repository.loadedPage == 1) {
-//                            deleteAll(CODE_FILM_TABLE)
-//                        }
-//                        repository.loadedPage++
-//                        val movies = t.films.map { it.toFilmItem() }
-//                        movies.forEach { item ->
-//                            listOfChangedFilmItem.value?.forEach { item1 ->
-//                                if (item.id == item1.id) {
-//                                    item.isLiked = item1.isLiked
-//                                    item.userComment = item1.userComment
-//                                    item.isWatchLater = item1.isWatchLater
-//                                }
-//                            }
-//                            item.posterPath = item.posterPath?.let { repository.toImageUrl(it) }
-//                            item.backdropPath = item.backdropPath?.let { repository.toImageUrl(it) }
-//                        }
-//                        insertAll(movies, CODE_FILM_TABLE)
-//                        listOfDownloads.postValue(movies)
-//                        isNetworkLoading.postValue(true)
-//                    }
-//
-//                    override fun onSubscribe(d: Disposable) {
-//                    }
-//
-//                    override fun onError(e: Throwable) {
-//                        snackBarText.postValue(app.resources.getString(R.string.snackbar_download_error))
-//                        isNetworkLoading.postValue(false)
-//                        getCachedFilmList()
-//                    }
-//                })
-//    }
 
     fun getRecyclerSavedPos() = repository.recFilmListPos
     fun onRecyclerScrolled(pastVisibleItem: Int) {
         repository.recFilmListPos = pastVisibleItem
     }
 
-    fun getLoadedPage() = repository.getLoadedPage()
+    fun getInitState() = repository.getInitState()
 
     fun onRateButtonClicked(item: FilmItem, changedFilmItem: ChangedFilmItem) {
         update(item, CODE_FILM_TABLE)
@@ -346,9 +313,19 @@ class FilmLibraryViewModel @Inject constructor(
 
     fun onOnlineStatusChanged(isOnline: Boolean) {
         _isConnectionStatus.postValue(isOnline)
+        if(isOnline){
+            onInitRemoteSource(_filmSource.value != FilmSource.REMOTE)
+        }
+        else
+            if(getInitState()) {
+                requestCachedFilmList()
+                _filmSource.postValue(FilmSource.LOCAL)
+            }
     }
+}
 
-    fun onObserversInitialized() {
-//        initModelDownloads()
-    }
+enum class FilmSource {
+    REMOTE,
+    SEARCH,
+    LOCAL
 }

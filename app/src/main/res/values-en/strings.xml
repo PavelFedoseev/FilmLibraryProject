@@ -44,8 +44,11 @@
 
     <string name="message_share">I use this app to watch movie ratings: https://github.com/PavelFedoseev/FilmLibraryProject</string>
 
-    <string name="content_description_watch_latter_tab">Go to watch later tab</string>
+    <string name="cd_watch_latter_tab">Go to watch later tab</string>
+    <string name="cd_search">Search</string>
 
     <string name="reminder_titile">You wanted to watch: </string>
     <string name="reminder_text">Press on the notification to open description</string>
+
+    <string name="hint_search">Search…</string>
 </resources>

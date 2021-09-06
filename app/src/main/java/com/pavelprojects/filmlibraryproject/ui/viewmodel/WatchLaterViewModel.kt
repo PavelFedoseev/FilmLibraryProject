@@ -1,4 +1,4 @@
-package com.pavelprojects.filmlibraryproject.ui.vm
+package com.pavelprojects.filmlibraryproject.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -21,9 +21,8 @@ class WatchLaterViewModel @Inject constructor(
     val repository: FilmRepository,
     val notificationRepository: NotificationRepository
 ) :
-    AndroidViewModel(app), NetworkLoadChecker {
+    AndroidViewModel(app) {
 
-    override val isNetworkLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     private val listOfWatchLaterFilmItem = MutableLiveData<List<ChangedFilmItem>>()
 
     fun observeWatchLater(): LiveData<List<ChangedFilmItem>> {
@@ -66,5 +65,9 @@ class WatchLaterViewModel @Inject constructor(
 
     private fun updateNotificationChannel(list: List<ChangedFilmItem>) {
         notificationRepository.updateNotificationChannel(list)
+    }
+
+    fun onItemSwiped(item: ChangedFilmItem){
+        notificationRepository.removeNotificationFromChannel(item)
     }
 }

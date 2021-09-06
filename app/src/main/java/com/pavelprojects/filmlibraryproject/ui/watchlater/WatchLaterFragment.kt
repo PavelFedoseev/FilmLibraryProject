@@ -21,7 +21,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.ui.ActivityUpdater
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
-import com.pavelprojects.filmlibraryproject.ui.vm.WatchLaterViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.WatchLaterViewModel
 import java.util.*
 import javax.inject.Inject
 
@@ -130,11 +130,13 @@ class WatchLaterFragment : Fragment() {
         val simpleCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 if (viewHolder.absoluteAdapterPosition != 0) {
-                    listOfWatchLater[viewHolder.absoluteAdapterPosition - 1].isWatchLater = false
+                    val item = listOfWatchLater[viewHolder.absoluteAdapterPosition - 1]
+                    item.isWatchLater = false
                     (activity as? FilmInfoFragment.OnInfoFragmentListener)?.onRateButtonClicked(
-                        listOfWatchLater[viewHolder.absoluteAdapterPosition - 1],
+                        item,
                         TAG
                     )
+                    viewModel.onItemSwiped(item)
                     listOfWatchLater.removeAt(viewHolder.absoluteAdapterPosition - 1)
                     recyclerView.adapter?.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
                 }

@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.repository.FilmRepository
 import com.pavelprojects.filmlibraryproject.repository.NotificationRepository
-import com.pavelprojects.filmlibraryproject.ui.vm.FavoriteViewModel
-import com.pavelprojects.filmlibraryproject.ui.vm.WatchLaterViewModel
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmInfoViewModel
-import com.pavelprojects.filmlibraryproject.ui.vm.FilmLibraryViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FavoriteViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.WatchLaterViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FilmInfoViewModel
+import com.pavelprojects.filmlibraryproject.ui.viewmodel.FilmLibraryViewModel
 import javax.inject.Inject
 
 class ViewModelFactory @Inject constructor(

@@ -14,7 +14,7 @@
     <string name="menu_watch_later">Посмотреть позже</string>
 
     <string name="label_library">Библиотека</string>
-    <string name="label_favorite">Избраное</string>
+    <string name="label_favorite">Избранное</string>
     <string name="label_watch_later">Смотреть позже</string>
 
     <string name="notification_channel_name">Посмотреть позже</string>
@@ -43,8 +43,11 @@
 
     <string name="message_share">Я пользуюсь этим приложением для просмотров рейтинга фильмов: https://github.com/PavelFedoseev/FilmLibraryProject</string>
 
-    <string name="content_description_watch_latter_tab">Вкладка посмотреть позже</string>
+    <string name="cd_watch_latter_tab">Вкладка посмотреть позже</string>
+    <string name="cd_search">Поиск</string>
 
     <string name="reminder_titile">Вы хотели посмотреть фильм: </string>
     <string name="reminder_text">Нажмите на уведомление чтобы перейти к описанию</string>
+
+    <string name="hint_search">Поиск…</string>
 </resources>

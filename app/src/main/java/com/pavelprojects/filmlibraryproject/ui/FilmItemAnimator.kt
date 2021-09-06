@@ -16,15 +16,17 @@ class FilmItemAnimator(val context: Context) : DefaultItemAnimator() {
 
     override fun animateChange(oldHolder: RecyclerView.ViewHolder, newHolder: RecyclerView.ViewHolder, preInfo: ItemHolderInfo, postInfo: ItemHolderInfo): Boolean {
 
-        val holder = newHolder as FilmAdapter.FilmItemViewHolder
+        val holder = newHolder as? FilmPagingAdapter.FilmItemViewHolder
 
-        if (preInfo is FilmItemHolderInfo) {
-            if (preInfo.wasLiked) {
-                animateLikeIcon(holder, R.drawable.ic_baseline_thumb_up_alt_24)
-            } else {
-                animateLikeIcon(holder, R.drawable.ic_baseline_thumb_down_alt_24)
+        holder?.let {
+            if (preInfo is FilmItemHolderInfo) {
+                if (preInfo.wasLiked) {
+                    animateLikeIcon(it, R.drawable.ic_baseline_thumb_up_alt_24)
+                } else {
+                    animateLikeIcon(it, R.drawable.ic_baseline_thumb_down_alt_24)
+                }
+                return true
             }
-            return true
         }
 
         return super.animateChange(oldHolder, newHolder, preInfo, postInfo)
@@ -34,12 +36,12 @@ class FilmItemAnimator(val context: Context) : DefaultItemAnimator() {
         if (changeFlags == FLAG_CHANGED)
             for (payload in payloads)
                 if (payload as? String == TAG_LIKE_ANIM) {
-                    return FilmItemHolderInfo((viewHolder as? FilmAdapter.FilmItemViewHolder)?.item!!.isLiked)
+                    return FilmItemHolderInfo((viewHolder as? FilmPagingAdapter.FilmItemViewHolder)?.item!!.isLiked)
                 }
         return super.recordPreLayoutInformation(state, viewHolder, changeFlags, payloads)
     }
 
-    private fun animateLikeIcon(holder: FilmAdapter.FilmItemViewHolder, resId: Int) {
+    private fun animateLikeIcon(holder: FilmPagingAdapter.FilmItemViewHolder, resId: Int) {
         holder.imageViewLike.visibility = View.VISIBLE
         holder.imageViewLike.setImageResource(resId)
 

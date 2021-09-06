@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.pavelprojects.filmlibraryproject.App
 import com.pavelprojects.filmlibraryproject.broadcast.ReminderBroadcast
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import java.util.*
@@ -49,10 +52,27 @@ class NotificationRepository @Inject constructor(val app: Application) : Notific
             alarmManager?.set(AlarmManager.RTC_WAKEUP, item.watchLaterDate, pendingIntent)
         }
     }
+
+    override fun removeNotificationFromChannel(item: ChangedFilmItem) {
+        val notificationManagerCompat = NotificationManagerCompat.from(app)
+        notificationManagerCompat.cancel(item.id)
+        val intent = Intent(app, ReminderBroadcast::class.java)
+        val bundle =
+            Bundle().apply { putParcelable(ReminderBroadcast.BUNDLE_FILMITEM, item) }
+        intent.putExtra(ReminderBroadcast.INTENT_FILMITEM_BUNDLE, bundle)
+        val pendingIntent = PendingIntent.getBroadcast(
+            app,
+            item.id,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        alarmManager?.cancel(pendingIntent)
+    }
 }
 
 interface NotificationUpdater {
     fun updateNotificationChannel(list: List<ChangedFilmItem>)
     fun updateNotificationChannel(item: ChangedFilmItem)
+    fun removeNotificationFromChannel(item: ChangedFilmItem)
 }
 

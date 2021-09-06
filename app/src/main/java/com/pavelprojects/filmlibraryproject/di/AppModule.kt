@@ -21,7 +21,7 @@ class AppModule(val application: App) {
     @Provides
     fun provideNotificationRepository() = NotificationRepository(application)
 
-
+    @Singleton
     @Provides
     fun provideFilmDataPagingSource(filmDatabase: FilmDatabase, retroApi: RetroApi): FilmDataPagingSource{
         val languageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -29,6 +29,7 @@ class AppModule(val application: App) {
         } else {
             application.applicationContext.resources.configuration.locale.language
         }
-        return FilmDataPagingSource(filmDatabase, retroApi, languageCode)
+        return FilmDataPagingSource.createSource(filmDatabase, retroApi, languageCode)
     }
+
 }

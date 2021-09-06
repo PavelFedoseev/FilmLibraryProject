@@ -15,6 +15,7 @@
     <color name="ultra_light_gray">#EFEFEF</color>
     <color name="cyan">#03A9F4</color>
     <color name="blur_dimmer">#DFDFDF</color>
+    <color name="search_bar_dimmer">#60252525</color>
 
     <color name="layout_rating">#EFEFEF</color>
     <color name="vector_shadow">#94000000</color>

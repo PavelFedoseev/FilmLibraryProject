@@ -1,17 +1,17 @@
 package com.pavelprojects.filmlibraryproject.repository
 
-import androidx.paging.*
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.paging.rxjava2.flowable
 import com.pavelprojects.filmlibraryproject.App
-import com.pavelprojects.filmlibraryproject.database.dao.ChangedItemDao
-import com.pavelprojects.filmlibraryproject.database.dao.FilmItemDao
+import com.pavelprojects.filmlibraryproject.database.FilmDatabase
 import com.pavelprojects.filmlibraryproject.database.entity.ChangedFilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toChangedFilmItem
 import com.pavelprojects.filmlibraryproject.network.FilmDataPagingSource
 import com.pavelprojects.filmlibraryproject.network.RetroApi
 import io.reactivex.Flowable
-import io.reactivex.Maybe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
@@ -31,10 +31,7 @@ class FilmRepository {
     }
 
     @Inject
-    lateinit var filmItemDao: FilmItemDao
-
-    @Inject
-    lateinit var changedItemDao: ChangedItemDao
+    lateinit var filmDatabase: FilmDatabase
 
     @Inject
     lateinit var retroApi: RetroApi
@@ -42,13 +39,17 @@ class FilmRepository {
     @Inject
     lateinit var pagingSource: FilmDataPagingSource
 
+    val filmItemDao = filmDatabase.getFilmItemDao()
+    val changedItemDao = filmDatabase.getChangedItemDao()
+
+
     fun insert(filmItem: FilmItem, code: Int) {
         if (code == CODE_FILM_TABLE)
             filmItemDao.insert(filmItem)
         else changedItemDao.insert(filmItem.toChangedFilmItem())
     }
 
-    fun insertChanged(changedFilmItem: ChangedFilmItem){
+    fun insertChanged(changedFilmItem: ChangedFilmItem) {
         changedItemDao.insert(changedFilmItem)
     }
 
@@ -92,10 +93,8 @@ class FilmRepository {
         else changedItemDao.deleteAllChangedFilms()
     }
 
-
     @ExperimentalCoroutinesApi
-    fun getRemoteMovies() : Flowable<PagingData<FilmItem>> {
-
+    fun getMovieBySearch(query: String, language: String): Flowable<PagingData<FilmItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
@@ -104,11 +103,25 @@ class FilmRepository {
                 prefetchDistance = 5,
                 initialLoadSize = 40
             ),
+            pagingSourceFactory = {
+                FilmDataPagingSource.createSearchSource(
+                    retroApi = retroApi,
+                    language = language,
+                    searchQuery = query,
+                    filmDatabase = filmDatabase
+                )
+            }
+        ).flowable
+    }
+
+
+    @ExperimentalCoroutinesApi
+    fun getRemoteMovies(): Flowable<PagingData<FilmItem>> {
+        return Pager(
+            config = FilmDataPagingSource.PAGING_CONFIG,
             pagingSourceFactory = { pagingSource }
         ).flowable
     }
 
-    fun toImageUrl(imagePath: String) = RetroApi.BASE_URL_POSTER_HIGH + imagePath
-
-    fun getLoadedPage() = pagingSource.loadedPage
+    fun getInitState() = pagingSource.isFirstInit
 }
