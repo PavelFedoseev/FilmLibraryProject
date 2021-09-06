@@ -50,4 +50,7 @@
     <string name="reminder_text">Нажмите на уведомление чтобы перейти к описанию</string>
 
     <string name="hint_search">Поиск…</string>
+
+    <string name="about_text">Приложение для просмотра информации о фильмах на основе библиотеки TMDB</string>
+    <string name="about_version">Версия: </string>
 </resources>

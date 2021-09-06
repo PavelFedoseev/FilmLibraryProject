@@ -1,6 +1,7 @@
 package no.danielzeller.blurbehindlib
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.opengl.GLSurfaceView
@@ -261,9 +262,9 @@ class BlurBehindLayout : FrameLayout {
         behindMatrix?.postTranslate(behindViewPosition[0] - thisViewPosition[0].toFloat() - paddingLeft, behindViewPosition[1] - thisViewPosition[1].toFloat() - paddingTop)
         glCanvas?.concat(behindMatrix)
 
-        viewBehind?.draw(glCanvas)
+        viewBehind?.draw(glCanvas?: Canvas())
 
-        commonRenderer.behindViewSurfaceTexture.endDraw(glCanvas)
+        commonRenderer.behindViewSurfaceTexture.endDraw(glCanvas?: Canvas())
     }
 
     private fun renderChildViewToTexture() {

@@ -51,4 +51,6 @@
     <string name="reminder_text">Press on the notification to open description</string>
 
     <string name="hint_search">Search…</string>
+    <string name="about_text">Application for viewing movie information based on the TMDB library</string>
+    <string name="about_version">App version: </string>
 </resources>

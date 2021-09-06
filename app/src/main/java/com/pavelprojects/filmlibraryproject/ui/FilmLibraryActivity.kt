@@ -16,6 +16,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -37,6 +38,7 @@ import com.pavelprojects.filmlibraryproject.database.entity.FilmItem
 import com.pavelprojects.filmlibraryproject.database.entity.toFilmItem
 import com.pavelprojects.filmlibraryproject.di.ViewModelFactory
 import com.pavelprojects.filmlibraryproject.firebase.NotificationFirebaseService
+import com.pavelprojects.filmlibraryproject.ui.about.AboutDialogFragment
 import com.pavelprojects.filmlibraryproject.ui.favorites.FavoriteFilmsFragment
 import com.pavelprojects.filmlibraryproject.ui.home.FilmListFragment
 import com.pavelprojects.filmlibraryproject.ui.info.FilmInfoFragment
@@ -75,11 +77,13 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
+    private val textViewAppName: TextView by lazy { findViewById(R.id.text_top_bar_name)}
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private val editTextSearch: EditText by lazy {
         findViewById(R.id.appBarSearch)
     }
+
     private val buttonSearch: ImageButton by lazy {
         findViewById(R.id.appBarSearchButton)
     }
@@ -183,6 +187,10 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             }
 
             return@setOnNavigationItemSelectedListener true
+        }
+
+        textViewAppName.setOnClickListener {
+            openAboutFragment()
         }
 
         editTextSearch.doOnTextChanged { text, _, _, _ ->
@@ -305,6 +313,11 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                 WatchLaterFragment.TAG
             )
             .commit()
+    }
+
+    private fun openAboutFragment(){
+        val dialog = AboutDialogFragment.newInstance()
+        dialog.show(supportFragmentManager, AboutDialogFragment.TAG)
     }
 
     private fun openFilmInfoFragment(filmId: Int) {
