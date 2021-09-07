@@ -280,7 +280,6 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
                         (supportFragmentManager.fragments[0] as? OnlineStatusUpdater)?.onOnlineStatusChanged(
                             isOnline
                         )
-                    viewModel.onOnlineStatusChanged(isOnline)
                     if (isOnline) dismissSnackBar() else makeSnackBar(
                         this@FilmLibraryActivity.getString(
                             R.string.snackbar_network_error

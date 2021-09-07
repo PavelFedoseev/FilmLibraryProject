@@ -54,6 +54,7 @@ class FilmLibraryViewModel @Inject constructor(
     private val _filmSource = MutableLiveData<FilmSource?>(null)
     val filmSource: LiveData<FilmSource?> = _filmSource
 
+
     init {
         Timber.tag(TAG).d(this.toString())
         if (listOfChangedFilmItem.value == null)
@@ -117,7 +118,7 @@ class FilmLibraryViewModel @Inject constructor(
         when (_filmSource.value) {
             FilmSource.SEARCH -> {
                 _searchQuery.value?.let {
-                    initSearchSource(it)
+                    initSearchSource(it, true)
                 } ?: initRemoteSource(true)
             }
             FilmSource.REMOTE -> {
@@ -216,8 +217,7 @@ class FilmLibraryViewModel @Inject constructor(
     fun initRemoteSource(isReload: Boolean) {
         if (_pagingFlowable.value == null || isReload) {
             _pagingFlowable.postValue(repository.getRemoteMovies().cachedIn(viewModelScope))
-        } else
-            _pagingFlowable.postValue(_pagingFlowable.value)
+        }
         _filmSource.postValue(FilmSource.REMOTE)
     }
 
@@ -312,6 +312,11 @@ class FilmLibraryViewModel @Inject constructor(
     fun onOnlineStatusChanged(isOnline: Boolean) {
         _isConnectionOk.postValue(isOnline)
         if (isOnline) {
+            if(_filmSource.value == FilmSource.SEARCH) {
+                _searchQuery.value?.let { initSearchSource(it, false) }
+                _isSearchMode.postValue(true)
+            }
+            else
             initRemoteSource(_filmSource.value != FilmSource.REMOTE)
         } else
             if (getInitState()) {
@@ -323,7 +328,7 @@ class FilmLibraryViewModel @Inject constructor(
     fun onRefreshOccurred() {
         if (_isConnectionOk.value == true) {
             if (_filmSource.value == FilmSource.SEARCH) {
-                _searchQuery.value?.let { initSearchSource(it, isReload = true) }
+                _searchQuery.value?.let { initSearchSource(it, true) }
             } else
                 initRemoteSource(true)
         }

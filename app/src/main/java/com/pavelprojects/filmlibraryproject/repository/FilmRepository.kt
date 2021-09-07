@@ -95,6 +95,7 @@ class FilmRepository {
 
     @ExperimentalCoroutinesApi
     fun getMovieBySearch(query: String, language: String): Flowable<PagingData<FilmItem>> {
+        pagingSource.searchQuery = query
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
@@ -104,12 +105,7 @@ class FilmRepository {
                 initialLoadSize = 40
             ),
             pagingSourceFactory = {
-                FilmDataPagingSource.createSearchSource(
-                    retroApi = retroApi,
-                    language = language,
-                    searchQuery = query,
-                    filmDatabase = filmDatabase
-                )
+                pagingSource
             }
         ).flowable
     }
@@ -117,10 +113,15 @@ class FilmRepository {
 
     @ExperimentalCoroutinesApi
     fun getRemoteMovies(): Flowable<PagingData<FilmItem>> {
+        pagingSource.searchQuery = null
         return Pager(
             config = FilmDataPagingSource.PAGING_CONFIG,
             pagingSourceFactory = { pagingSource }
         ).flowable
+    }
+
+    fun reloadSource(){
+        pagingSource.invalidate()
     }
 
     fun getInitState() = pagingSource.isFirstInit

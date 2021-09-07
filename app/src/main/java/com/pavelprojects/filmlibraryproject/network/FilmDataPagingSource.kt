@@ -57,6 +57,11 @@ class FilmDataPagingSource private constructor(
         return state.anchorPosition
     }
 
+    fun setQuerySearch(query: String?){
+        searchQuery = query
+        invalidate()
+    }
+
     override fun loadSingle(params: LoadParams<Int>): Single<LoadResult<Int, FilmItem>> {
         val page = params.key ?: 1
         val pageSize = params.loadSize.coerceAtMost(RetroApi.MAX_PAGE_SIZE)

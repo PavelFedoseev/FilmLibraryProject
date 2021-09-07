@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.LoadState
 import androidx.paging.PagingData
+import androidx.paging.insertFooterItem
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -142,6 +143,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 listOfFilms.addAll(it.compare(listOfFilms))
                 if (viewModel.getInitState() && !isConnected)
                     adapter.submitData(lifecycle, PagingData.from(listOfFilms))
+
             }
         }
         viewModel.isConnectionStatus.observe(this.viewLifecycleOwner) { isConnected ->
@@ -232,9 +234,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 ).show()
             }
         }
-        if(position > 0 && adapter.snapshot().size > position){
-            recyclerView.scrollToPosition(position)
-        }
+        recyclerView.scrollToPosition(position)
     }
 
 
@@ -271,6 +271,8 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
         }
     }
 
+
+
     override fun onDestroyView() {
         countRecyclerPos()
         mDisposable.dispose()
@@ -279,6 +281,7 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
 
     override fun onOnlineStatusChanged(isOnline: Boolean) {
         isConnected = isOnline
+        viewModel.onOnlineStatusChanged(isOnline)
         adapter.retry()
     }
 
