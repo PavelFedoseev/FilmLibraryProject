@@ -9,14 +9,7 @@ plugins {
 
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('C:\\Users\\pasho\\Desktop\\Android Projects\\Android Sign\\filmlibrarykey.jks')
-            storePassword 'cloudfoamf'
-            keyPassword 'cloudfoamf'
-            keyAlias 'key0'
-        }
-    }
+
     compileSdkVersion 31
     buildToolsVersion "30.0.3"
     defaultConfig {
