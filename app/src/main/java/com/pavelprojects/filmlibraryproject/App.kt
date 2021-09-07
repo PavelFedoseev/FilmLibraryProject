@@ -4,8 +4,9 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import android.util.Log
 import com.pavelprojects.filmlibraryproject.di.*
+import timber.log.Timber
+
 
 class App : Application() {
     companion object {
@@ -20,7 +21,10 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG_APP, "$TAG_APP onCreate")
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
+        Timber.tag(TAG_APP).d(TAG_APP + " onCreate")
         Runtime.getRuntime().exec("logcat -d FrameEvents:S mlibraryprojec:S")
         initDagger()
     }
