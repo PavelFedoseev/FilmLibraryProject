@@ -312,12 +312,11 @@ class FilmLibraryViewModel @Inject constructor(
     fun onOnlineStatusChanged(isOnline: Boolean) {
         _isConnectionOk.postValue(isOnline)
         if (isOnline) {
-            if(_filmSource.value == FilmSource.SEARCH) {
+            if (_filmSource.value == FilmSource.SEARCH) {
                 _searchQuery.value?.let { initSearchSource(it, false) }
                 _isSearchMode.postValue(true)
-            }
-            else
-            initRemoteSource(_filmSource.value != FilmSource.REMOTE)
+            } else
+                initRemoteSource(_filmSource.value != FilmSource.REMOTE)
         } else
             if (getInitState()) {
                 requestCachedFilmList()

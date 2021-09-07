@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.LoadState
 import androidx.paging.PagingData
-import androidx.paging.insertFooterItem
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -222,7 +221,11 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
                 viewModel.onRecyclerScrolled(layoutManager.findLastVisibleItemPosition())
             }
         })
-        swipeLayout.setProgressViewOffset(true, 0, resources.getDimensionPixelOffset(R.dimen.appbar_refresh_offset))
+        swipeLayout.setProgressViewOffset(
+            true,
+            0,
+            resources.getDimensionPixelOffset(R.dimen.appbar_refresh_offset)
+        )
         swipeLayout.setOnRefreshListener {
             viewModel.onRefreshOccurred()
             if (!isConnected) {
@@ -270,7 +273,6 @@ class FilmListFragment : Fragment(), OnlineStatusUpdater {
             (activity as? ActivityUpdater)?.setupBlur(requireView())
         }
     }
-
 
 
     override fun onDestroyView() {

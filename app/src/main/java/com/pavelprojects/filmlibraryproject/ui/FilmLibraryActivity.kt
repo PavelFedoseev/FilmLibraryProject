@@ -77,7 +77,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
 
     private lateinit var snackbar: Snackbar
     private lateinit var broadcast: InternetBroadcast
-    private val textViewAppName: TextView by lazy { findViewById(R.id.text_top_bar_name)}
+    private val textViewAppName: TextView by lazy { findViewById(R.id.text_top_bar_name) }
     private val blurAppBar: BlurBehindLayout by lazy { findViewById(R.id.topBarBlurLayout) }
     private val blurNavigationView: BlurBehindLayout by lazy { findViewById(R.id.navigationBarBlurLayout) }
     private val editTextSearch: EditText by lazy {
@@ -103,7 +103,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
         initViews()
         initModel()
 
-        if (supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) == null){
+        if (supportFragmentManager.findFragmentByTag(FilmListFragment.TAG) == null) {
             searchCard.visibility = View.GONE
         }
         if (savedInstanceState == null) {
@@ -211,7 +211,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             handled
         }
         buttonSearch.setOnClickListener {
-            if(isSearchMode && editTextSearch.text.isNotEmpty()){
+            if (isSearchMode && editTextSearch.text.isNotEmpty()) {
                 editTextSearch.text.clear()
             }
             editTextSearch.clearFocus()
@@ -315,7 +315,7 @@ class FilmLibraryActivity : AppCompatActivity(), ActivityUpdater,
             .commit()
     }
 
-    private fun openAboutFragment(){
+    private fun openAboutFragment() {
         val dialog = AboutDialogFragment.newInstance()
         dialog.show(supportFragmentManager, AboutDialogFragment.TAG)
     }

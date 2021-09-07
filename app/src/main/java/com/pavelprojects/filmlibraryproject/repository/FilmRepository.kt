@@ -120,7 +120,7 @@ class FilmRepository {
         ).flowable
     }
 
-    fun reloadSource(){
+    fun reloadSource() {
         pagingSource.invalidate()
     }
 

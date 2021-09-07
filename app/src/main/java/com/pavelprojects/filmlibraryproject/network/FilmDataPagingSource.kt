@@ -57,7 +57,7 @@ class FilmDataPagingSource private constructor(
         return state.anchorPosition
     }
 
-    fun setQuerySearch(query: String?){
+    fun setQuerySearch(query: String?) {
         searchQuery = query
         invalidate()
     }
